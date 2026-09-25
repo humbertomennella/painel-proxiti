@@ -18,6 +18,7 @@
     busy=value; buttons.forEach(button=>button.disabled=value||!client);
   }
   function showAuth(name="login") {
+    try{sessionStorage.setItem("proxiti-force-overview","1")}catch{}
     activeUserId=null;lastProfileKey=null;
     window.PROXITI_ACTIVE_SESSION=null;
     document.dispatchEvent(new Event("proxiti-session-ended"));
@@ -42,20 +43,20 @@
     const sameSession=activeUserId===session.user.id && !!window.PROXITI_ACTIVE_SESSION && !panel.hidden && !el("workspace").hidden;
     if (!sameSession) blocked("Verificando suas permissões…","Consultando seu perfil autorizado.");
     try {
-      const {data,error}=await client.from("profiles").select("display_name,role,status,permissions").eq("id",session.user.id).maybeSingle();
+      const {data,error}=await client.from("profiles").select("display_name,role,status,permissions,avatar_path").eq("id",session.user.id).maybeSingle();
       if(current!==generation||recovering)return;
       if(error){blocked("Não foi possível validar o acesso.","Revise a configuração do banco ou tente novamente.");return;}
       if(!data){blocked("Perfil não cadastrado.","A conta existe, mas não há um perfil PROXITI vinculado.");return;}
       if(data.status!=="active"){blocked(data.status==="suspended"?"Acesso suspenso.":"Acesso pendente.",data.status==="suspended"?"Seu acesso foi suspenso pela administração.":"A administração precisa autorizar sua conta antes do uso.");return;}
       if(!["administrator","technician"].includes(data.role)){blocked("Permissões inválidas.","Contate a administração da PROXITI.");return;}
-      const fingerprint=JSON.stringify([data.role,data.status,data.permissions]);
+      const fingerprint=JSON.stringify([data.role,data.status,data.permissions,data.display_name,data.avatar_path]);
       const previous=lastProfileKey;
       activeUserId=session.user.id;lastProfileKey=fingerprint;
       auth.hidden=true;panel.hidden=false;el("blocked").hidden=true;el("workspace").hidden=false;
       document.body.classList.add("workspace-mode");el("app-sidebar").hidden=false;
       const role=data.role==="administrator"?"Administrador":"Técnico parceiro";
       const name=String(data.display_name||session.user.email?.split("@")[0]||"Profissional").trim();
-      const givenName=name.split(/[.\\s_-]+/).filter(Boolean)[0]||"Profissional";
+      const givenName=name.split(/[.\s_-]+/).filter(Boolean)[0]||"Profissional";
       const displayName=givenName.charAt(0).toLocaleUpperCase("pt-BR")+givenName.slice(1);
       const hour=new Date().getHours();
       el("welcome").textContent=(hour<12?"Bom dia":hour<18?"Boa tarde":"Boa noite")+", "+displayName;
