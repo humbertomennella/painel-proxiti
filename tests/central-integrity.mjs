@@ -72,7 +72,7 @@ for(const name of ["proxiti_add_ticket_note","proxiti_prepare_ticket_checklist",
  "proxiti_attach_ticket_file","proxiti-ticket-selected"]){
  assert(techJs.includes(name),"Operação técnica ausente: "+name);
 }
-assert(techJs.includes('ticket.status!=="closed"'),"Histórico encerrado permite edição técnica");
+assert(techJs.includes('selected.status!=="closed"'),"Histórico encerrado permite edição técnica");
 assert(techJs.includes('file.size>5242880'),"Anexos sem tamanho máximo");
 assert(techJs.includes('document.createElement(tag)'),"Relatório sem criação segura de DOM");
 const migration=get("supabase/ticket_workflow_v7.sql");
