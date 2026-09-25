@@ -56,3 +56,13 @@ Os cursos completos com progresso/avaliações, portfólios públicos individuai
 - A Edge Function é pública **somente nas operações de visitante** e usa chave aleatória por conversa, validação de origem, honeypot e limite por identificador técnico. O limite não substitui proteção anti-bot dedicada, como Turnstile.
 - Revise o aviso de privacidade com os fluxos efetivamente oferecidos, habilite recursos de segurança de senha disponíveis no plano e teste recuperação de acesso.
 - Nenhum serviço começa automaticamente só porque o chamado foi aberto. Os técnicos precisam de autorização e as condições comerciais devem estar formalizadas.
+
+
+## Fluxo técnico por chamado (V7)
+
+A Central possui notas internas, checklists de diagnóstico por tipo de serviço, anexos privados de até 5 MB e preparação de relatório para revisão e impressão. O acesso de leitura e escrita é verificado no Supabase; a interface não substitui essas verificações. Chamados encerrados não entram nas pendências acionáveis e não podem receber novos registros técnicos.
+
+A migração aditiva `supabase/ticket_workflow_v7.sql` foi aplicada ao projeto Central Técnica PROXITI em 25/09/2026. A interface utiliza `assets/ticket-workflow.js` e `assets/ticket-workflow.css`. A Academia e o inventário permitem pesquisar os itens já carregados sem novas consultas a cada tecla.
+
+**Limites:** o relatório é gerado para revisão no navegador e não é enviado automaticamente; conteúdo real da Academia, segundo técnico, agenda e histórico consolidado de equipamentos exigem implantação operacional específica. A validação com duas contas reais ainda não foi realizada. Consulte [o fluxo, a matriz de acesso e o roteiro de testes](docs/fluxo-tecnico-v7.md).
+

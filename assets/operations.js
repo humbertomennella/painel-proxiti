@@ -151,7 +151,9 @@
       if(!events.length)list.append(elem("li","Nenhuma movimentação registrada desde a ativação do histórico."));
       const names={created:"Solicitação registrada",claimed:"Atendimento assumido",assigned:"Responsável designado",
         unassigned:"Retornado à fila",status_changed:"Situação alterada",staff_replied:"Equipe respondeu",
-        customer_replied:"Cliente enviou mensagem"};
+        customer_replied:"Cliente enviou mensagem",note_added:"Nota técnica registrada",
+        checklist_created:"Roteiro técnico criado",checklist_updated:"Etapa técnica atualizada",
+        attachment_added:"Anexo privado incluído"};
       for(const event of events){
         const item=elem("li");
         const actor=event.actor_id?staffName(event.actor_id):"Sistema / cliente";
@@ -208,7 +210,7 @@
   }
   function publishOverview(){
     if(!state.user||!can("tickets_view"))return;
-    const unread=t=>(!seenTicket(t.id)&&["new","triage"].includes(t.status))||unreadMessages(t.id)>0;
+    const unread=t=>t.status!=="closed"&&((!seenTicket(t.id)&&["new","triage"].includes(t.status))||unreadMessages(t.id)>0);
     const active=state.tickets.filter(isOpen);
     const priority=t=>unread(t)?0:["new","triage"].includes(t.status)?1:t.status==="in_progress"?2:3;
     const relevant=state.tickets.filter(t=>isOpen(t)||(t.status==="resolved"&&unread(t)));
@@ -234,7 +236,7 @@
     el("ticket-metric-closed").textContent=String(count(t=>t.status==="closed"));
     el("ticket-filter-all-count").textContent=String(state.tickets.length);
     el("ticket-filter-unread-count").textContent=String(state.tickets.filter(t=>
-      (!seenTicket(t.id)&&["new","triage"].includes(t.status))||unreadMessages(t.id)>0).length);
+      t.status!=="closed"&&((!seenTicket(t.id)&&["new","triage"].includes(t.status))||unreadMessages(t.id)>0)).length);
     for(const node of document.querySelectorAll("[data-ticket-filter]")){
       const active=node.dataset.ticketFilter===state.ticketFilter;
       node.classList.toggle("active",active);node.setAttribute("aria-pressed",String(active));
@@ -245,7 +247,7 @@
     updateMetrics();
     const filter=state.ticketFilter,search=state.ticketSearch.trim().toLocaleLowerCase("pt-BR");
     const rows=state.tickets.filter(t=>{
-      const unread=(!seenTicket(t.id)&&["new","triage"].includes(t.status))||unreadMessages(t.id)>0;
+      const unread=t.status!=="closed"&&((!seenTicket(t.id)&&["new","triage"].includes(t.status))||unreadMessages(t.id)>0);
       if(filter==="unread"&&!unread)return false;
       if(filter==="open"&&!["new","triage"].includes(t.status))return false;
       if(!["all","unread","open"].includes(filter)&&t.status!==filter)return false;
@@ -263,7 +265,7 @@
     if(!rows.length)list.append(elem("p",state.tickets.length?
       "Nenhum chamado corresponde aos filtros.":"A fila está vazia. Novos chamados aparecerão aqui.","ticket-list-empty"));
     for(const t of rows){
-      const unread=unreadMessages(t.id),fresh=!seenTicket(t.id)&&["new","triage"].includes(t.status);
+      const unread=t.status==="closed"?0:unreadMessages(t.id),fresh=t.status!=="closed"&&!seenTicket(t.id)&&["new","triage"].includes(t.status);
       const item=elem("div","","ticket-inbox-item");item.setAttribute("role","listitem");
       const card=button("Abrir chamado #"+t.reference,()=>openTicket(t.id),
         "ticket-inbox-card"+(unread||fresh?" has-unread":"")+(state.active?.id===t.id?" selected":""));
@@ -380,6 +382,10 @@
       }
     }catch(e){notice("Erro ao consultar técnicos: "+e.message,true);}
   }
+  function announceTicket(){
+    window.PROXITI_ACTIVE_TICKET=state.active;
+    document.dispatchEvent(new CustomEvent("proxiti-ticket-selected",{detail:{ticket:state.active}}));
+  }
   async function loadTickets(){
     if(!can("tickets_view")||state.loading)return;
     state.loading=true;
@@ -401,13 +407,13 @@
       void updatePresence();
       if(state.restoreTicketId&&!state.active){
         const recovered=state.tickets.find(t=>t.id===state.restoreTicketId);
-        if(recovered){state.active=recovered;updateTicketHeading();void loadMessages();el("staff-reply").value=recalled("draft-"+recovered.id)||"";}
+        if(recovered){state.active=recovered;updateTicketHeading();announceTicket();void loadMessages();el("staff-reply").value=recalled("draft-"+recovered.id)||"";}
         state.restoreTicketId=null;
       }
       if(state.active){
         const found=state.tickets.find(t=>t.id===state.active.id);
-        if(found){state.active=found;updateTicketHeading();}
-        else{state.active=null;remember("ticket","");el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;}
+        if(found){const changed=state.active.status!==found.status||state.active.assigned_to!==found.assigned_to;state.active=found;updateTicketHeading();if(changed)announceTicket();}
+        else{state.active=null;announceTicket();remember("ticket","");el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;}
       }
       updateInbox();renderTickets();
       if(state.restoreScroll!==null){
@@ -462,7 +468,7 @@
   async function openTicket(id){
     const t=state.tickets.find(t=>t.id===id);if(!t)return;
     if(state.active?.id&&state.active.id!==id)remember("draft-"+state.active.id,el("staff-reply").value);
-    state.active=t;remember("ticket",id);markTicketSeen(id);state.renderedThread="";updateTicketHeading();updateInbox();renderTickets();
+    state.active=t;remember("ticket",id);markTicketSeen(id);state.renderedThread="";updateTicketHeading();announceTicket();updateInbox();renderTickets();
     el("staff-reply").value=recalled("draft-"+id)||"";
     if(can("chat"))await loadMessages();
     else await rpc("proxiti_mark_ticket_read",{p_ticket:id}).then(()=>{markTicketSeen(id);void loadReadReceipts()}).catch(()=>{});
@@ -488,6 +494,16 @@
         list.append(entry);
       }
     }catch(e){notice("Falha ao carregar conteúdos: "+e.message,true);}
+  }
+  function filterOpsList(inputId,listId,statusId,label){
+    const q=el(inputId).value.trim().toLocaleLowerCase("pt-BR");
+    const entries=[...el(listId).querySelectorAll(".ops-list-item")];
+    let visible=0;
+    for(const item of entries){
+      const matches=!q||item.textContent.toLocaleLowerCase("pt-BR").includes(q);
+      item.hidden=!matches;if(matches)visible++;
+    }
+    el(statusId).textContent=entries.length?(visible+" de "+entries.length+" "+label):"";
   }
   async function loadTraining(){
     if(!can("training"))return;
@@ -518,6 +534,7 @@
         }));
         entry.append(controls);list.append(entry);
       }
+      filterOpsList("training-search","training-list","training-search-status","materiais");
     }catch(e){notice("Falha ao carregar academia: "+e.message,true);}
   }
   async function loadTools(){
@@ -551,6 +568,7 @@
         }
         list.append(entry);
       }
+      filterOpsList("tools-search","tools-list","tools-search-status","ferramentas");
     }catch(e){notice("Falha ao carregar ferramentas: "+e.message,true);}
   }
   function stop(){
@@ -565,7 +583,7 @@
     el("ticket-list").replaceChildren();el("staff-messages").replaceChildren();
     el("staff-reply").value="";el("notifications-list").replaceChildren();
     el("overview-open").textContent="Chamados: atualizando…";
-    el("operations").hidden=true;el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;notice("");
+    el("operations").hidden=true;el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;notice("");announceTicket();
   }
   async function start(e){
     const {client,user,profile}=e.detail;
@@ -620,6 +638,9 @@
   if(window.PROXITI_ACTIVE_SESSION)void start({detail:window.PROXITI_ACTIVE_SESSION});
   for(const tab of el("ops-tabs").querySelectorAll("[data-ops-view]"))
     tab.addEventListener("click",()=>showView(tab.dataset.opsView));
+  document.addEventListener("proxiti-ticket-activity",event=>{
+    if(state.active?.id===event.detail?.id)void loadAudit(state.active.id);
+  });
   document.addEventListener("proxiti-overview-open-ticket",event=>{
     const id=event.detail?.id;
     if(typeof id!=="string"||!state.tickets.some(t=>t.id===id)||!can("tickets_view"))return;
@@ -662,8 +683,10 @@
   el("reload-staff").addEventListener("click",()=>void loadStaff());
   el("reload-content").addEventListener("click",()=>void loadContent());
   el("reload-training").addEventListener("click",()=>void loadTraining());
+  el("training-search").addEventListener("input",()=>filterOpsList("training-search","training-list","training-search-status","materiais"));
   el("reload-tools").addEventListener("click",()=>void loadTools());
-  el("close-detail").addEventListener("click",()=>{state.active=null;remember("ticket","");el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;state.renderedTable="";renderTickets();});
+  el("tools-search").addEventListener("input",()=>filterOpsList("tools-search","tools-list","tools-search-status","ferramentas"));
+  el("close-detail").addEventListener("click",()=>{state.active=null;announceTicket();remember("ticket","");el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;state.renderedTable="";renderTickets();});
   el("staff-reply").addEventListener("input",()=>{if(state.active)remember("draft-"+state.active.id,el("staff-reply").value)});
   window.addEventListener("pagehide",()=>{if(state.user)remember("scroll",Math.round(window.scrollY))});
   document.addEventListener("visibilitychange",()=>{

@@ -22,7 +22,8 @@ function setReading(value,persist=false){
  const toggle=el("overview-reading-toggle");
  toggle.setAttribute("aria-pressed",String(active));
  toggle.title=active?"Voltar ao tamanho de leitura padrão":"Ampliar o texto da visão geral";
- el("overview-reading-label").textContent=active?"Leitura padrão":"Ampliar leitura";
+ el("overview-reading-label").textContent=active?"Padrão":"Leitura";
+ toggle.setAttribute("aria-label",active?"Voltar ao tamanho de leitura padrão":"Ampliar o texto da visão geral");
  if(persist&&userId){try{localStorage.setItem(readingKey(userId),String(active))}catch{}}
 }
 function setFocus(value,persist=false){

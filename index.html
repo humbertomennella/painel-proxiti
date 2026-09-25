@@ -10,7 +10,8 @@
 <link rel="stylesheet" href="./assets/style.css">
 <link rel="stylesheet" href="./assets/proxiti-ui.css">
 <link rel="stylesheet" href="./assets/interface.css">
-<link rel="stylesheet" href="./assets/overview-comfort.css">
+<link rel="stylesheet" href="./assets/overview-comfort.css?v=20260925-2">
+<link rel="stylesheet" href="./assets/ticket-workflow.css?v=1">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js" defer></script>
 <script src="./assets/config.js" defer></script>
 <script src="./assets/app.js" defer></script>
@@ -19,7 +20,8 @@
 <script src="./assets/layout.js" defer></script>
 <script src="./assets/profile.js" defer></script>
 <script src="./assets/appearance.js" defer></script>
-<script src="./assets/overview.js" defer></script>
+<script src="./assets/overview.js?v=20260925-2" defer></script>
+<script src="./assets/ticket-workflow.js?v=1" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Ir para o conteúdo</a>
@@ -59,7 +61,7 @@
   <button type="button" id="mobile-nav-toggle" class="secondary mobile-nav-toggle" aria-expanded="false" aria-controls="app-sidebar" aria-label="Abrir navegação">☰</button>
 </div></header><div id="alert-toast" class="alert-toast" role="status" aria-live="polite" hidden></div>
 <div id="blocked" class="blocked" hidden role="status"><strong id="blocked-title">Acesso pendente</strong><p id="blocked-text">Sua conta ainda não foi autorizada pela administração.</p></div>
-<div id="workspace" hidden><section id="overview-home" class="overview-home" aria-labelledby="overview-heading"><div class="section-heading overview-section-heading"><div><p class="kicker">PROXITI / SEU ESPAÇO DE TRABALHO <span id="person-role" hidden></span></p><h2 id="overview-heading">Visão geral</h2></div><div class="overview-view-controls" aria-label="Preferências da visão geral"><button type="button" id="overview-focus-toggle" class="overview-focus-toggle" aria-pressed="false" title="Concentrar a tela nos atendimentos"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3M8 12h8"/></svg><span id="overview-focus-label">Focar na fila</span></button><button type="button" id="overview-reading-toggle" class="overview-comfort-toggle" aria-pressed="false" title="Ampliar o texto da visão geral"><span class="overview-reading-icon" aria-hidden="true">A+</span><span id="overview-reading-label">Ampliar leitura</span></button><button type="button" id="overview-guide-toggle" class="overview-comfort-toggle" aria-expanded="false" aria-controls="overview-guide"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.4 2.4 0 0 1 4.5 1.1c0 1.8-2.3 2-2.3 3.8M12 17h.01"/></svg><span>Como usar</span></button></div></div>
+<div id="workspace" hidden><section id="overview-home" class="overview-home" aria-labelledby="overview-heading"><div class="section-heading overview-section-heading"><div><p class="kicker">PROXITI / SEU ESPAÇO DE TRABALHO <span id="person-role" hidden></span></p><h2 id="overview-heading">Visão geral</h2></div><div class="overview-view-controls" aria-label="Preferências da visão geral"><button type="button" id="overview-focus-toggle" class="overview-focus-toggle" aria-pressed="false" title="Concentrar a tela nos atendimentos"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3M8 12h8"/></svg><span id="overview-focus-label">Focar na fila</span></button><button type="button" id="overview-reading-toggle" class="overview-comfort-toggle" aria-pressed="false" title="Ampliar o texto da visão geral"><span class="overview-reading-icon" aria-hidden="true">A+</span><span id="overview-reading-label">Leitura</span></button><button type="button" id="overview-guide-toggle" class="overview-comfort-toggle" aria-expanded="false" aria-controls="overview-guide" aria-label="Como usar a Central Técnica" title="Orientações de uso"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.4 2.4 0 0 1 4.5 1.1c0 1.8-2.3 2-2.3 3.8M12 17h.01"/></svg><span>Ajuda</span></button></div></div>
 <div id="overview-guide" class="overview-guide" role="region" aria-labelledby="overview-guide-heading" hidden><div class="overview-guide-heading"><div><p class="kicker">ORIENTAÇÃO RÁPIDA</p><h3 id="overview-guide-heading">Encontre seu caminho na Central</h3></div><p>Abra apenas o que for útil agora. Suas áreas disponíveis dependem das permissões da conta.</p></div><div class="overview-guide-grid"><article id="overview-guide-tickets"><span class="overview-guide-step">01</span><h4>Comece pelas novidades</h4><p>Use “Ver pendências” para localizar respostas e chamados não lidos. Abra um item para retomar o contexto.</p></article><article><span class="overview-guide-step">02</span><h4>Tenha os recursos por perto</h4><p>Os cartões abaixo dão acesso às áreas autorizadas, como Academia, Ferramentas e seu perfil.</p></article><article><span class="overview-guide-step">03</span><h4>Ajuste sua tela</h4><p>Amplie a leitura quando precisar. O modo de foco reduz o que aparece na tela, sem modificar seus chamados.</p></article></div></div>
 <section class="overview-banner" aria-labelledby="overview-banner-title"><div class="overview-banner-copy"><p class="kicker">CENTRAL TÉCNICA · ATENDIMENTO</p><h3 id="overview-banner-title">Seu trabalho, com espaço para respirar.</h3><p id="overview-guidance">Os atendimentos e recursos aparecem de acordo com suas permissões. Comece pela fila ou abra uma área de trabalho.</p><div class="overview-hero-actions"><button type="button" id="overview-primary-action" class="px-button overview-primary-action" data-overview-view="tickets" data-overview-filter="unread"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 5h16v11H8l-4 3zM8 9h8M8 12h5"/></svg><span>Ver pendências</span><span id="overview-action-count" class="overview-action-count" hidden>0</span></button><button type="button" class="px-button overview-secondary-action" data-overview-view="tickets" data-overview-filter="all">Abrir fila completa <span aria-hidden="true">↗</span></button></div></div><div class="overview-hero-status" aria-label="Situação da operação"><span class="overview-status-kicker"><span class="overview-live-dot" aria-hidden="true"></span>ATENDIMENTO AGORA</span><strong id="overview-hero-state">Preparando sua visão geral</strong><p id="overview-hero-detail">Atualizando as informações da Central Técnica.</p><div class="overview-quick"><span id="overview-open">Chamados: carregando…</span><span id="overview-online">Equipe: verificando…</span></div></div></section>
 <section class="overview-focus" id="overview-metrics-section" aria-labelledby="overview-metrics-heading"><div class="overview-group-heading"><div><p class="kicker">PRIORIDADES VISÍVEIS</p><h3 id="overview-metrics-heading">Sua fila em números</h3></div><span id="overview-updated">Sincronizando…</span></div><div class="overview-metrics"><button type="button" class="overview-metric overview-metric-attention" data-overview-view="tickets" data-overview-filter="unread"><span class="overview-metric-label"><span class="overview-metric-glyph" aria-hidden="true">●</span>Pendências não lidas</span><strong id="overview-kpi-unread" class="overview-metric-value">—</strong><span class="overview-metric-description">Chamados novos ou com resposta do cliente</span><span class="overview-metric-link">Abrir na fila ↗</span></button><button type="button" class="overview-metric" data-overview-view="tickets" data-overview-filter="open"><span class="overview-metric-label"><span class="overview-metric-glyph" aria-hidden="true">○</span>Novos e em triagem</span><strong id="overview-kpi-open" class="overview-metric-value">—</strong><span class="overview-metric-description">Solicitações aguardando encaminhamento</span><span class="overview-metric-link">Abrir na fila ↗</span></button><button type="button" class="overview-metric" data-overview-view="tickets" data-overview-filter="in_progress"><span class="overview-metric-label"><span class="overview-metric-glyph" aria-hidden="true">↗</span>Em atendimento</span><strong id="overview-kpi-progress" class="overview-metric-value">—</strong><span class="overview-metric-description">Serviços em acompanhamento</span><span class="overview-metric-link">Abrir na fila ↗</span></button><button type="button" class="overview-metric" data-overview-view="tickets" data-overview-filter="waiting_customer"><span class="overview-metric-label"><span class="overview-metric-glyph" aria-hidden="true">◷</span>Aguardando cliente</span><strong id="overview-kpi-waiting" class="overview-metric-value">—</strong><span class="overview-metric-description">Conversas que dependem de retorno</span><span class="overview-metric-link">Abrir na fila ↗</span></button></div><p class="overview-data-note">Indicadores dos últimos 100 chamados acessíveis à sua conta. Atualização automática.</p></section>
@@ -97,6 +99,54 @@
       <button type="button" id="save-status" class="secondary">Salvar situação</button>
       <label id="assign-group" data-admin-only>Designar técnico <select id="ticket-assignee"></select></label>
       <button type="button" id="save-assignee" class="secondary" data-admin-only>Designar</button></div>
+
+      <section id="ticket-workflow" class="ticket-workflow" aria-labelledby="ticket-workflow-title" hidden>
+        <div class="ticket-workflow-head">
+          <div><p class="kicker">FERRAMENTAS DE ATENDIMENTO</p><h4 id="ticket-workflow-title">Área técnica do chamado</h4><p>Registre o diagnóstico e preserve o contexto. Notas internas e arquivos não são enviados ao cliente.</p></div>
+          <span id="ticket-workflow-mode" class="ticket-workflow-mode">Verificando permissões</span>
+        </div>
+        <p id="ticket-workflow-feedback" class="ticket-workflow-feedback" role="status" aria-live="polite" hidden></p>
+        <div class="ticket-workflow-grid">
+          <section class="ticket-workflow-card" aria-labelledby="ticket-note-heading">
+            <div class="ticket-workflow-card-head"><h5 id="ticket-note-heading">Notas internas</h5><span>Somente equipe autorizada</span></div>
+            <form id="ticket-note-form" class="ticket-workflow-form">
+              <label for="ticket-note-body">Registro técnico</label>
+              <textarea id="ticket-note-body" maxlength="3000" minlength="3" rows="3" placeholder="Registre observações técnicas, sem senhas, códigos ou dados desnecessários." required></textarea>
+              <button type="submit" class="primary">Salvar nota interna</button>
+            </form>
+            <ol id="ticket-notes-list" class="ticket-workflow-list" aria-label="Notas internas do chamado"><li class="ticket-workflow-empty">Selecione um chamado.</li></ol>
+          </section>
+          <section class="ticket-workflow-card" aria-labelledby="ticket-tasks-heading">
+            <div class="ticket-workflow-card-head"><h5 id="ticket-tasks-heading">Roteiro técnico</h5><span id="ticket-tasks-progress">Nenhum roteiro iniciado</span></div>
+            <div id="ticket-tasks-start" class="ticket-workflow-form">
+              <label for="ticket-task-template">Modelo de diagnóstico</label>
+              <select id="ticket-task-template"><option value="general">Atendimento geral</option><option value="computer">Computador ou notebook</option><option value="network">Redes e Wi-Fi</option><option value="backup">Backup e acessos</option><option value="security">Segurança preventiva</option></select>
+              <button type="button" id="ticket-tasks-create" class="secondary">Criar roteiro para este chamado</button>
+            </div>
+            <ol id="ticket-tasks-list" class="ticket-workflow-list" aria-label="Etapas do atendimento"><li class="ticket-workflow-empty">Escolha um roteiro depois de assumir o chamado.</li></ol>
+          </section>
+        </div>
+        <section class="ticket-workflow-card ticket-workflow-files" aria-labelledby="ticket-files-heading">
+          <div class="ticket-workflow-card-head"><h5 id="ticket-files-heading">Evidências e anexos</h5><span>Armazenamento privado</span></div>
+          <p class="ticket-workflow-help">Somente PDF, PNG, JPG ou WebP, até 5 MB por arquivo. Evite dados pessoais que não sejam necessários ao serviço.</p>
+          <form id="ticket-file-form" class="ticket-workflow-files-form">
+            <label for="ticket-file-input">Escolher arquivo do atendimento</label>
+            <input type="file" id="ticket-file-input" accept="application/pdf,image/png,image/jpeg,image/webp" required>
+            <button type="submit" class="secondary">Adicionar anexo privado</button>
+          </form>
+          <ul id="ticket-files-list" class="ticket-workflow-list" aria-label="Arquivos privados do atendimento"><li class="ticket-workflow-empty">Nenhum anexo neste chamado.</li></ul>
+        </section>
+        <details id="ticket-report-panel" class="ticket-workflow-report">
+          <summary>Preparar relatório de atendimento <span>Revisar antes de imprimir ou salvar em PDF</span></summary>
+          <form id="ticket-report-form" class="ticket-workflow-form">
+            <p class="ticket-workflow-help">O documento inclui dados do chamado e apenas os campos abaixo. Notas internas, conversa e anexos não entram no relatório.</p>
+            <label for="ticket-report-diagnosis">Diagnóstico realizado</label><textarea id="ticket-report-diagnosis" maxlength="3000" minlength="5" rows="3" required></textarea>
+            <label for="ticket-report-service">Serviço executado ou encaminhamento</label><textarea id="ticket-report-service" maxlength="3000" minlength="5" rows="3" required></textarea>
+            <label for="ticket-report-advice">Testes e orientações ao cliente</label><textarea id="ticket-report-advice" maxlength="3000" rows="3" placeholder="Informe apenas o que foi verificado e autorizado."></textarea>
+            <button type="submit" class="primary">Revisar e imprimir relatório</button>
+          </form>
+        </details>
+      </section>
       <div class="ops-conversation"><h4>Conversa do atendimento</h4><div id="staff-messages" class="ops-messages" aria-live="polite"></div>
       <form id="staff-reply-form"><label for="staff-reply">Responder ao cliente</label><textarea id="staff-reply" maxlength="2000" rows="3" required placeholder="Escreva sua mensagem para o cliente. Não solicite senhas."></textarea><button type="submit" class="primary">Enviar resposta ↗</button></form></div>
       <details class="ticket-audit-panel"><summary>Histórico das movimentações</summary><ol id="ticket-audit-list" class="ticket-audit-list"><li>Carregando histórico…</li></ol></details>
@@ -116,11 +166,13 @@
   </div>
   <div id="ops-training" class="ops-view px-panel" hidden>
     <div class="ops-section-head"><h3>Academia PROXITI</h3><button type="button" id="reload-training" class="secondary">Atualizar ↻</button></div>
+    <div class="ops-inline-search"><label for="training-search">Encontrar material técnico</label><input id="training-search" type="search" placeholder="Buscar por título ou descrição" autocomplete="off" maxlength="120"><p id="training-search-status" role="status" aria-live="polite"></p></div>
     <form id="training-form" class="ops-form" data-admin-only><label for="training-title">Título do material</label><input id="training-title" maxlength="160" minlength="3" required><label for="training-description">Descrição</label><textarea id="training-description" maxlength="2000" rows="2"></textarea><label for="training-file">Arquivo privado (PDF ou imagem, até 10 MB)</label><input id="training-file" type="file" accept="application/pdf,image/png,image/jpeg,image/webp"><label class="ops-check"><input id="training-published" type="checkbox"> Disponibilizar aos técnicos com permissão</label><button type="submit" class="primary">Adicionar material</button></form>
     <div id="training-list" class="ops-list"></div>
   </div>
   <div id="ops-tools" class="ops-view px-panel" hidden>
     <div class="ops-section-head"><h3>Ferramentas de trabalho</h3><button type="button" id="reload-tools" class="secondary">Atualizar ↻</button></div>
+    <div class="ops-inline-search"><label for="tools-search">Localizar equipamento</label><input id="tools-search" type="search" placeholder="Buscar por nome, patrimônio ou responsável" autocomplete="off" maxlength="120"><p id="tools-search-status" role="status" aria-live="polite"></p></div>
     <form id="tool-form" class="ops-form" data-admin-only><label for="tool-name">Ferramenta ou equipamento</label><input id="tool-name" required maxlength="160"><label for="tool-serial">Identificação / patrimônio (opcional)</label><input id="tool-serial" maxlength="160"><label for="tool-assignee">Responsável</label><select id="tool-assignee"><option value="">Disponível / não atribuído</option></select><label for="tool-notes">Orientações de uso</label><textarea id="tool-notes" maxlength="2000" rows="2"></textarea><button type="submit" class="primary">Cadastrar ferramenta</button></form>
     <div id="tools-list" class="ops-list"></div>
   </div>
