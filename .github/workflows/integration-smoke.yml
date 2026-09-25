@@ -1,0 +1,35 @@
+name: PROXITI API smoke
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/integration-smoke.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verificar integração pública e bloqueios
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=$(sed -n 's/.*url: "\([^"]*\)".*/\1/p' assets/config.js)
+          KEY=$(sed -n 's/.*publishableKey: "\([^"]*\)".*/\1/p' assets/config.js)
+          test -n "$BASE" && test -n "$KEY"
+          API="$BASE/functions/v1/proxiti-support"
+          http=$(curl -sS --max-time 25 -o online.json -w '%{http_code}' -X POST "$API" -H 'Origin: https://proxiti.com.br' -H "apikey: $KEY" -H 'Content-Type: application/json' --data '{"action":"online"}')
+          test "$http" = 200
+          jq -e '.online | type=="number"' online.json >/dev/null
+          http=$(curl -sS --max-time 25 -o invalid.json -w '%{http_code}' -X POST "$API" -H 'Origin: https://proxiti.com.br' -H "apikey: $KEY" -H 'Content-Type: application/json' --data '{"action":"create","privacy_accepted":false}')
+          test "$http" = 400
+          http=$(curl -sS --max-time 25 -o invite.json -w '%{http_code}' -X POST "$API" -H 'Origin: https://proxiti.com.br' -H "apikey: $KEY" -H 'Content-Type: application/json' --data '{"action":"invite","email":"none@example.org"}')
+          test "$http" = 401
+          http=$(curl -sS --max-time 25 -o cms.json -w '%{http_code}' "$BASE/rest/v1/site_content?select=content_key,value&is_published=eq.true" -H "apikey: $KEY")
+          test "$http" = 200
+          jq -e 'map(.content_key) | index("home.contact.intro") != null' cms.json >/dev/null
+          http=$(curl -sS --max-time 25 -o tickets.json -w '%{http_code}' "$BASE/rest/v1/support_tickets?select=id" -H "apikey: $KEY")
+          test "$http" != 200
+          echo 'API pública e políticas anônimas validadas.'
