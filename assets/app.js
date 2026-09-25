@@ -21,12 +21,16 @@
     activeUserId=null;lastProfileKey=null;
     window.PROXITI_ACTIVE_SESSION=null;
     document.dispatchEvent(new Event("proxiti-session-ended"));
+    document.body.classList.remove("workspace-mode");
+    el("app-sidebar").hidden=true;
     panel.hidden=true;auth.hidden=false;view(name);
   }
   function blocked(title,description) {
     activeUserId=null;lastProfileKey=null;
     window.PROXITI_ACTIVE_SESSION=null;
     document.dispatchEvent(new Event("proxiti-session-ended"));
+    document.body.classList.remove("workspace-mode");
+    el("app-sidebar").hidden=true;
     auth.hidden=true;panel.hidden=false;el("blocked").hidden=false;el("workspace").hidden=true;
     el("blocked-title").textContent=title;el("blocked-text").textContent=description;
     el("welcome").textContent="Identidade verificada. Os recursos permanecem restritos até a liberação.";
@@ -48,6 +52,7 @@
       const previous=lastProfileKey;
       activeUserId=session.user.id;lastProfileKey=fingerprint;
       auth.hidden=true;panel.hidden=false;el("blocked").hidden=true;el("workspace").hidden=false;
+      document.body.classList.add("workspace-mode");el("app-sidebar").hidden=false;
       const role=data.role==="administrator"?"Administrador":"Técnico parceiro";
       const name=String(data.display_name||session.user.email?.split("@")[0]||"Profissional").trim();
       const givenName=name.split(/[.\\s_-]+/).filter(Boolean)[0]||"Profissional";
