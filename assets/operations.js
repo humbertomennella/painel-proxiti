@@ -208,7 +208,7 @@
   }
   function publishOverview(){
     if(!state.user||!can("tickets_view"))return;
-    const unread=t=>(!seenTicket(t.id)&&["new","triage"].includes(t.status))||unreadMessages(t.id)>0;
+    const unread=t=>t.status!=="closed"&&((!seenTicket(t.id)&&["new","triage"].includes(t.status))||unreadMessages(t.id)>0);
     const active=state.tickets.filter(isOpen);
     const priority=t=>unread(t)?0:["new","triage"].includes(t.status)?1:t.status==="in_progress"?2:3;
     const relevant=state.tickets.filter(t=>isOpen(t)||(t.status==="resolved"&&unread(t)));
@@ -234,7 +234,7 @@
     el("ticket-metric-closed").textContent=String(count(t=>t.status==="closed"));
     el("ticket-filter-all-count").textContent=String(state.tickets.length);
     el("ticket-filter-unread-count").textContent=String(state.tickets.filter(t=>
-      (!seenTicket(t.id)&&["new","triage"].includes(t.status))||unreadMessages(t.id)>0).length);
+      t.status!=="closed"&&((!seenTicket(t.id)&&["new","triage"].includes(t.status))||unreadMessages(t.id)>0)).length);
     for(const node of document.querySelectorAll("[data-ticket-filter]")){
       const active=node.dataset.ticketFilter===state.ticketFilter;
       node.classList.toggle("active",active);node.setAttribute("aria-pressed",String(active));
@@ -245,7 +245,7 @@
     updateMetrics();
     const filter=state.ticketFilter,search=state.ticketSearch.trim().toLocaleLowerCase("pt-BR");
     const rows=state.tickets.filter(t=>{
-      const unread=(!seenTicket(t.id)&&["new","triage"].includes(t.status))||unreadMessages(t.id)>0;
+      const unread=t.status!=="closed"&&((!seenTicket(t.id)&&["new","triage"].includes(t.status))||unreadMessages(t.id)>0);
       if(filter==="unread"&&!unread)return false;
       if(filter==="open"&&!["new","triage"].includes(t.status))return false;
       if(!["all","unread","open"].includes(filter)&&t.status!==filter)return false;
@@ -263,7 +263,7 @@
     if(!rows.length)list.append(elem("p",state.tickets.length?
       "Nenhum chamado corresponde aos filtros.":"A fila está vazia. Novos chamados aparecerão aqui.","ticket-list-empty"));
     for(const t of rows){
-      const unread=unreadMessages(t.id),fresh=!seenTicket(t.id)&&["new","triage"].includes(t.status);
+      const unread=t.status==="closed"?0:unreadMessages(t.id),fresh=t.status!=="closed"&&!seenTicket(t.id)&&["new","triage"].includes(t.status);
       const item=elem("div","","ticket-inbox-item");item.setAttribute("role","listitem");
       const card=button("Abrir chamado #"+t.reference,()=>openTicket(t.id),
         "ticket-inbox-card"+(unread||fresh?" has-unread":"")+(state.active?.id===t.id?" selected":""));
