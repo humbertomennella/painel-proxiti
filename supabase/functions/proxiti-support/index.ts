@@ -59,6 +59,48 @@ async function onlineStaff() {
     (x.profiles?.role === "administrator" || (x.profiles?.permissions?.chat === true && x.profiles?.permissions?.tickets_view === true)));
 }
 
+
+/** Aviso administrativo sem dados pessoais: ativado somente após cadastrar RESEND_API_KEY no Supabase. */
+async function notifyAdministrators(reference: number, event: "created" | "customer_reply", eventId: string): Promise<void> {
+  const apiKey = Deno.env.get("RESEND_API_KEY") || "";
+  if (!apiKey) return;
+  try {
+    const { data: profiles, error: listError } = await admin.from("profiles")
+      .select("id").eq("role", "administrator").eq("status", "active").limit(5);
+    if (listError) throw listError;
+    const recipients: string[] = [];
+    for (const profile of profiles || []) {
+      const { data, error } = await admin.auth.admin.getUserById(profile.id);
+      const address = data?.user?.email?.trim().toLowerCase();
+      if (!error && address && validEmail(address)) recipients.push(address);
+    }
+    const to = [...new Set(recipients)];
+    if (!to.length) { console.warn("PROXITI: nenhum administrador com e-mail para o aviso."); return; }
+    const number = String(reference);
+    const title = event === "created" ? "Novo chamado" : "Nova mensagem de cliente";
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + apiKey,
+        "Content-Type": "application/json",
+        "Idempotency-Key": "proxiti/" + event + "/" + eventId
+      },
+      body: JSON.stringify({
+        from: "Central PROXITI <alertas@envios.proxiti.com.br>",
+        to,
+        subject: "[PROXITI] " + title + " #" + number,
+        text: title + " no chamado #" + number + ".\n\nAcesse a Central Tecnica para visualizar e atender: " +
+          ADMIN_PANEL + "\n\nEsta mensagem e automatica. Nao responda a este e-mail."
+      }),
+      signal: AbortSignal.timeout(4500)
+    });
+    if (!response.ok) console.warn("PROXITI: Resend retornou HTTP " + response.status + " ao enviar aviso.");
+  } catch (error) {
+    console.warn("PROXITI: aviso por e-mail indisponível (chamado preservado).",
+      error instanceof Error ? error.name : "unknown");
+  }
+}
+
 Deno.serve(async (req: Request) => {
   const origin = req.headers.get("origin") || "";
   if (req.method === "OPTIONS") {
@@ -138,6 +180,7 @@ Deno.serve(async (req: Request) => {
         ticket_id:ticket.id,sender_kind:"customer",body:description
       });
       if (msgError) throw msgError;
+      await notifyAdministrators(ticket.reference, "created", ticket.id);
       return json({
         ok:true,id:ticket.id,reference:ticket.reference,access_token:secret,
         status:ticket.status,online:!!assignedTo
@@ -158,11 +201,12 @@ Deno.serve(async (req: Request) => {
       if (!content || content.length>2000 || ticket.status==="closed")
         return json({ error: "Não é possível enviar essa mensagem." },400,origin);
       if (!await limit("msg:"+ticketId, true, 30)) return json({ error: "Limite de mensagens atingido. Aguarde um pouco." },429,origin);
-      const { error } = await admin.from("support_messages").insert({
+      const { data: reply, error } = await admin.from("support_messages").insert({
         ticket_id:ticketId,sender_kind:"customer",body:content
-      });
-      if (error) throw error;
+      }).select("id").single();
+      if (error || !reply) throw error || new Error("message missing");
       if (ticket.status === "resolved") await admin.from("support_tickets").update({status:"triage",updated_at:new Date().toISOString()}).eq("id",ticketId);
+      await notifyAdministrators(ticket.reference, "customer_reply", reply.id);
       return json({ok:true},200,origin);
     }
     return json({ error: "Operação desconhecida." },400,origin);
