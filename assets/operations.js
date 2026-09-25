@@ -325,6 +325,7 @@
   function updateTicketHeading(){
     const t=state.active;if(!t)return;
     el("ticket-detail").hidden=false;
+    el("ticket-detail").dataset.status=t.status;
     el("ticket-code").textContent="CHAMADO #"+t.reference+" · "+shortDate(t.created_at);
     el("ticket-subject").textContent=t.subject;
     el("ticket-current-status").replaceChildren(statusPill(t.status));
@@ -462,6 +463,9 @@
     el("alert-toast").hidden=true;el("notifications-panel").hidden=true;
     el("notifications-toggle").setAttribute("aria-expanded","false");
     el("notifications-count").hidden=true;el("ticket-badge").hidden=true;
+    el("tickets-body").replaceChildren();el("staff-messages").replaceChildren();
+    el("staff-reply").value="";el("notifications-list").replaceChildren();
+    el("overview-open").textContent="Chamados: atualizando…";
     el("operations").hidden=true;el("ticket-detail").hidden=true;notice("");
   }
   async function start(e){
