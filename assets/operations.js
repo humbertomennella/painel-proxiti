@@ -234,6 +234,7 @@
       training:can("training"),tools:can("resources")};
     for(const tab of el("ops-tabs").querySelectorAll("[data-ops-view]"))
       tab.hidden=!allowed[tab.dataset.opsView];
+    el("notifications-toggle").hidden=!can("tickets_view");
     const first=Object.keys(allowed).find(key=>allowed[key]);
     el("operations").hidden=!first;
     if(first)showView(allowed[state.currentView]?state.currentView:first);
@@ -326,6 +327,7 @@
     el("ticket-detail").hidden=false;
     el("ticket-code").textContent="CHAMADO #"+t.reference+" · "+shortDate(t.created_at);
     el("ticket-subject").textContent=t.subject;
+    el("ticket-current-status").replaceChildren(statusPill(t.status));
     el("ticket-customer").textContent=t.customer_name+" · "+t.customer_email+(t.customer_phone?" · "+t.customer_phone:"");
     el("ticket-description").textContent=t.description;
     el("ticket-status").value=t.status;
@@ -455,7 +457,11 @@
     if(state.poll)clearInterval(state.poll);
     if(state.heartbeat)clearInterval(state.heartbeat);
     if(state.channel&&state.db)void state.db.removeChannel(state.channel);
-    Object.assign(state,{db:null,user:null,profile:null,tickets:[],staff:[],active:null,channel:null,poll:null,heartbeat:null,loading:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false});
+    if(state.toastTimer)clearTimeout(state.toastTimer);
+    Object.assign(state,{db:null,user:null,profile:null,tickets:[],staff:[],active:null,channel:null,poll:null,heartbeat:null,loading:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),toastTimer:null});
+    el("alert-toast").hidden=true;el("notifications-panel").hidden=true;
+    el("notifications-toggle").setAttribute("aria-expanded","false");
+    el("notifications-count").hidden=true;el("ticket-badge").hidden=true;
     el("operations").hidden=true;el("ticket-detail").hidden=true;notice("");
   }
   async function start(e){
@@ -465,6 +471,10 @@
     }
     stop();state.db=client;state.user=user;state.profile=profile;presenceCheckedAt=0;
     state.currentView=recalled("view")||"tickets";
+    state.ticketFilter=recalled("ticket-filter")||"all";
+    if(!["all","unread","open","in_progress","waiting_customer","resolved","closed"].includes(state.ticketFilter))state.ticketFilter="all";
+    state.ticketSearch=recalled("ticket-search")||"";
+    el("ticket-search").value=state.ticketSearch;
     state.restoreTicketId=recalled("ticket");
     const y=Number(recalled("scroll"));
     state.restoreScroll=Number.isFinite(y)&&y>0?y:null;
@@ -500,6 +510,7 @@
     if(state.profile)state.profile.display_name=e.detail.display_name;
     const mine=state.staff.find(p=>p.id===state.user.id);
     if(mine)mine.display_name=e.detail.display_name;
+    state.renderedTable="";
     if(state.currentView==="tickets"&&can("tickets_view"))void loadTickets();
   });
   // Recupera o contexto se o SDK autenticou antes de este script terminar de carregar.
@@ -507,6 +518,32 @@
   for(const tab of el("ops-tabs").querySelectorAll("[data-ops-view]"))
     tab.addEventListener("click",()=>showView(tab.dataset.opsView));
   el("reload-tickets").addEventListener("click",()=>void loadTickets());
+  for(const n of document.querySelectorAll("[data-ticket-filter]"))n.addEventListener("click",()=>{
+    state.ticketFilter=n.dataset.ticketFilter;remember("ticket-filter",state.ticketFilter);
+    state.renderedTable="";renderTickets();
+  });
+  el("ticket-search").addEventListener("input",e=>{
+    state.ticketSearch=e.target.value;remember("ticket-search",state.ticketSearch);
+    state.renderedTable="";renderTickets();
+  });
+  function closeNotifications(){
+    el("notifications-panel").hidden=true;
+    el("notifications-toggle").setAttribute("aria-expanded","false");
+  }
+  el("notifications-toggle").addEventListener("click",()=>{
+    const willOpen=el("notifications-panel").hidden;
+    el("notifications-panel").hidden=!willOpen;
+    el("notifications-toggle").setAttribute("aria-expanded",String(willOpen));
+  });
+  el("notifications-close").addEventListener("click",()=>{closeNotifications();el("notifications-toggle").focus();});
+  document.addEventListener("click",event=>{
+    if(!event.target.closest(".notification-hub"))closeNotifications();
+  });
+  document.addEventListener("keydown",event=>{
+    if(event.key==="Escape"&&!el("notifications-panel").hidden){
+      closeNotifications();el("notifications-toggle").focus();
+    }
+  });
   el("reload-staff").addEventListener("click",()=>void loadStaff());
   el("reload-content").addEventListener("click",()=>void loadContent());
   el("reload-training").addEventListener("click",()=>void loadTraining());
