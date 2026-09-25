@@ -6,7 +6,7 @@ const get = path => readFileSync(new URL("../"+path,import.meta.url),"utf8");
 const html=get("index.html");
 const scriptPaths=[
   "assets/app.js","assets/alerts.js","assets/operations.js","assets/layout.js",
-  "assets/profile.js","assets/appearance.js","assets/overview.js"
+  "assets/profile.js","assets/appearance.js","assets/overview.js","assets/ticket-workflow.js"
 ];
 for (const path of scriptPaths) new Script(get(path),{filename:path});
 const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);
@@ -25,10 +25,10 @@ assert(get("supabase/ticket_receipts_and_audit_v6.sql").includes("ticket_audit")
 assert(get("supabase/admin_totp_authorization_v6.sql").includes("proxiti_mfa_ready"));
 assert(get("supabase/functions/proxiti-support/index.ts").includes('assurance !== "aal2"'));
 for (const match of html.matchAll(/<script[^>]+src="\.\/([^"]+)"[^>]*>/g))
-  assert(existsSync(new URL("../"+match[1],import.meta.url)),"Script local ausente: "+match[1]);
+  assert(existsSync(new URL("../"+match[1].split(/[?#]/,1)[0],import.meta.url)),"Script local ausente: "+match[1]);
 for (const link of html.matchAll(/<link[^>]+rel="stylesheet"[^>]+href="\.\/([^"]+)"[^>]*>/g))
   assert(existsSync(new URL("../"+link[1],import.meta.url)),"Estilo local ausente: "+link[1]);
-for (const path of ["assets/proxiti-ui.css","assets/interface.css","assets/overview-comfort.css","assets/support-desk.svg","assets/overview-art.svg"])
+for (const path of ["assets/proxiti-ui.css","assets/interface.css","assets/overview-comfort.css","assets/ticket-workflow.css","assets/support-desk.svg","assets/overview-art.svg"])
   assert(existsSync(new URL("../"+path,import.meta.url)),path+" ausente");
 assert(html.includes('id="theme-toggle-public"')&&html.includes('id="theme-toggle-panel"'),"Tema público/privado ausente");
 assert(!html.includes('id="palette-select"'),"Paletas antigas ainda presentes na interface");
@@ -57,5 +57,37 @@ assert(overviewJs.includes("localStorage.setItem(readingKey(userId)"),"Preferên
 assert(overviewJs.includes('el("overview-guide-tickets").hidden=!canTickets'),"Orientação ignora permissões");
 assert(overviewJs.includes('if(active)setGuide(false)'),"Modo de foco não recolhe o guia");
 
+// Fluxo técnico V7: contratos estáticos. Testes funcionais de duas contas continuam obrigatórios.
+for(const id of ["ticket-workflow","ticket-note-form","ticket-note-body","ticket-notes-list",
+ "ticket-tasks-start","ticket-tasks-create","ticket-tasks-list","ticket-file-form",
+ "ticket-file-input","ticket-files-list","ticket-report-form"]){
+ assert(html.includes('id="'+id+'"'),"Fluxo técnico sem #"+id);
+}
+assert(html.includes('src="./assets/ticket-workflow.js?v=1"'),"Script técnico não carregado");
+assert(html.includes('href="./assets/ticket-workflow.css?v=1"'),"Estilos técnicos não carregados");
+const techCss=get("assets/ticket-workflow.css");
+assert.equal((techCss.match(/{/g)||[]).length,(techCss.match(/}/g)||[]).length,"CSS técnico incompleto");
+const techJs=get("assets/ticket-workflow.js");
+for(const name of ["proxiti_add_ticket_note","proxiti_prepare_ticket_checklist","proxiti_update_ticket_task",
+ "proxiti_attach_ticket_file","proxiti-ticket-selected"]){
+ assert(techJs.includes(name),"Operação técnica ausente: "+name);
+}
+assert(techJs.includes('ticket.status!=="closed"'),"Histórico encerrado permite edição técnica");
+assert(techJs.includes('file.size>5242880'),"Anexos sem tamanho máximo");
+assert(techJs.includes('document.createElement(tag)'),"Relatório sem criação segura de DOM");
+const migration=get("supabase/ticket_workflow_v7.sql");
+for(const rule of ["create or replace function public.proxiti_ticket_access",
+ "create table if not exists public.ticket_internal_notes",
+ "create table if not exists public.ticket_tasks",
+ "create table if not exists public.ticket_attachments",
+ "values('proxiti-ticket-files','proxiti-ticket-files',false",
+ "revoke all on public.ticket_internal_notes from public,anon,authenticated",
+ "revoke all on public.ticket_tasks from public,anon,authenticated",
+ "revoke all on public.ticket_attachments from public,anon,authenticated"]){
+ assert(migration.includes(rule),"Permissão ou estrutura ausente: "+rule);
+}
+assert(get("assets/operations.js").includes('const unread=t=>t.status!=="closed"'),
+ "Histórico encerrado ainda aparece como pendência");
+assert(techCss.includes("@media(max-width:680px)"),"Ferramentas sem layout móvel");
 assert(get("assets/layout.js").includes('el("overview-home").hidden=!overview'),"Visão geral não é isolada");
 console.log("PROXITI: JS, IDs, inbox, MFA, temas, sidebar e Visão geral verificados.");
