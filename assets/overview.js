@@ -18,6 +18,8 @@ function setFocus(value,persist=false){
 }
 function syncAccess(allowed){
  canTickets=!!allowed.tickets;
+ el("overview-focus-toggle").hidden=!canTickets;
+ if(!canTickets)setFocus(false);
  el("overview-metrics-section").hidden=!canTickets;
  el("overview-recent-section").hidden=!canTickets;
  if(!canTickets){
