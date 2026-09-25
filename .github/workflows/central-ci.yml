@@ -1,0 +1,21 @@
+name: PROXITI | Verificação da Central
+on:
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "assets/**"
+      - "supabase/**"
+      - "tests/**"
+      - ".github/workflows/central-ci.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verificar integridade estática
+        run: node tests/central-integrity.mjs
