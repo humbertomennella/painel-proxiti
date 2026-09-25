@@ -221,7 +221,7 @@ html[data-theme] body.workspace-mode .ticket-audit-panel{border-color:var(--px-l
 html[data-theme] body.workspace-mode .ticket-audit-panel summary{color:var(--px-blue)}
 html[data-theme] body.workspace-mode .ticket-audit-list li{border-color:var(--px-line)}
 html[data-theme] body.workspace-mode .ticket-audit-list small{color:var(--px-muted)}
-@media(max-width:1130px){html[data-theme] body.workspace-mode .panel{--side-width:66px}}
+@media(min-width:931px) and (max-width:1130px){html[data-theme] body.workspace-mode .panel:not(.sidebar-collapsed){--side-width:232px}}
 @media(max-width:930px){
  html[data-theme] body.workspace-mode .panel,html[data-theme] body.workspace-mode .panel.sidebar-collapsed{display:block}
  html[data-theme] body.workspace-mode .app-sidebar{position:fixed;left:0;top:0;bottom:0;width:min(260px,calc(100vw - 44px));height:100dvh;min-height:0;transform:translateX(-110%);box-shadow:12px 0 45px rgba(0,0,0,.16);z-index:90;overflow-y:auto}
