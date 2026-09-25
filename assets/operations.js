@@ -619,6 +619,12 @@
   if(window.PROXITI_ACTIVE_SESSION)void start({detail:window.PROXITI_ACTIVE_SESSION});
   for(const tab of el("ops-tabs").querySelectorAll("[data-ops-view]"))
     tab.addEventListener("click",()=>showView(tab.dataset.opsView));
+  document.addEventListener("proxiti-overview-open-ticket",event=>{
+    const id=event.detail?.id;
+    if(typeof id!=="string"||!state.tickets.some(t=>t.id===id)||!can("tickets_view"))return;
+    window.PROXITI_OPEN_VIEW?.("tickets");
+    void openTicket(id);
+  });
   el("reload-tickets").addEventListener("click",()=>void loadTickets());
   el("browser-notifications").addEventListener("click",async()=>{
     if(!("Notification" in window)||Notification.permission!=="default")return;
