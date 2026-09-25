@@ -2,7 +2,7 @@
   "use strict";
   const el = id => document.getElementById(id);
   const state = { db:null, user:null, profile:null, tickets:[], staff:[], active:null,
-    channel:null, poll:null, heartbeat:null, currentView:"tickets", loading:false };
+    channel:null, poll:null, heartbeat:null, currentView:"tickets", loading:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false };
   const statusNames = {new:"Novo",triage:"Em triagem",in_progress:"Em atendimento",
     waiting_customer:"Aguardando cliente",resolved:"Resolvido",closed:"Encerrado"};
   const permNames = {tickets_view:"Consultar chamados",tickets_claim:"Assumir chamados",
@@ -34,8 +34,25 @@
   async function rpc(name,params){return query(state.db.rpc(name,params));}
   const shortDate = s=>s?new Date(s).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"}):"";
   const staffName = id=>state.staff.find(x=>x.id===id)?.display_name || (id?"Técnico designado":"Fila geral");
+  const prefKey=key=>"proxiti-work-v3-"+(state.user?.id||"guest")+"-"+key;
+  const remember=(key,value)=>{try{sessionStorage.setItem(prefKey(key),String(value));}catch{}};
+  const recalled=key=>{try{return sessionStorage.getItem(prefKey(key))}catch{return null}};
+  const sound=kind=>window.PROXITI_ALERTS?.play(kind);
+  async function checkNewMessages(){
+    if(!state.db||!can("chat")||!can("tickets_view")||state.messageCheckBusy)return;
+    state.messageCheckBusy=true;
+    try{
+      const rows=await query(state.db.from("support_messages").select("id,ticket_id,sender_kind,created_at")
+        .eq("sender_kind","customer").order("created_at",{ascending:false}).limit(100));
+      const ids=new Set(rows.map(m=>m.id));
+      if(state.messageIds&&rows.some(m=>!state.messageIds.has(m.id)))sound("message");
+      state.messageIds=ids;
+    }catch{/* falha de rede não reinicia a interface */}
+    finally{state.messageCheckBusy=false}
+  }
   function showView(view){
     state.currentView=view;
+    if(state.user)remember("view",view);
     for(const tab of el("ops-tabs").querySelectorAll("[data-ops-view]"))
       tab.classList.toggle("active",tab.dataset.opsView===view);
     for(const v of ["tickets","staff","content","training","tools"])el("ops-"+v).hidden=v!==view;
@@ -111,6 +128,9 @@
       state.tickets=await query(state.db.from("support_tickets")
         .select("id,reference,customer_name,customer_email,customer_phone,subject,description,status,source,assigned_to,created_at")
         .order("created_at",{ascending:false}).limit(100));
+      const ids=new Set(state.tickets.map(t=>t.id));
+      if(state.ticketIds&&state.tickets.some(t=>!state.ticketIds.has(t.id)))sound("ticket");
+      state.ticketIds=ids;
       const waiting=state.tickets.filter(t=>t.status==="new"||t.status==="triage").length;
       el("ticket-badge").textContent=waiting?String(waiting):"";
       const body=el("tickets-body");body.replaceChildren();
@@ -124,10 +144,19 @@
         }
         const td=elem("td");td.append(button("Abrir",()=>openTicket(t.id)));tr.append(td);body.append(tr);
       }
+      if(state.restoreTicketId&&!state.active){
+        const recovered=state.tickets.find(t=>t.id===state.restoreTicketId);
+        if(recovered){state.active=recovered;updateTicketHeading();void loadMessages();el("staff-reply").value=recalled("draft-"+recovered.id)||"";}
+        state.restoreTicketId=null;
+      }
       if(state.active){
         const found=state.tickets.find(t=>t.id===state.active.id);
         if(found){state.active=found;updateTicketHeading();}
-        else {state.active=null;el("ticket-detail").hidden=true;}
+        else {state.active=null;remember("ticket","");el("ticket-detail").hidden=true;}
+      }
+      if(state.restoreScroll!==null){
+        const y=state.restoreScroll;state.restoreScroll=null;
+        requestAnimationFrame(()=>window.scrollTo({top:y,behavior:"instant"}));
       }
     }catch(e){notice("Falha ao carregar chamados: "+e.message,true);}
     finally{state.loading=false;}
@@ -168,7 +197,9 @@
   }
   async function openTicket(id){
     const t=state.tickets.find(t=>t.id===id);if(!t)return;
-    state.active=t;updateTicketHeading();
+    if(state.active?.id&&state.active.id!==id)remember("draft-"+state.active.id,el("staff-reply").value);
+    state.active=t;remember("ticket",id);updateTicketHeading();
+    el("staff-reply").value=recalled("draft-"+id)||"";
     if(can("chat"))await loadMessages();
     el("ticket-detail").scrollIntoView({behavior:"smooth",block:"start"});
   }
@@ -259,29 +290,38 @@
     if(state.poll)clearInterval(state.poll);
     if(state.heartbeat)clearInterval(state.heartbeat);
     if(state.channel&&state.db)void state.db.removeChannel(state.channel);
-    Object.assign(state,{db:null,user:null,profile:null,tickets:[],staff:[],active:null,channel:null,poll:null,heartbeat:null,loading:false});
+    Object.assign(state,{db:null,user:null,profile:null,tickets:[],staff:[],active:null,channel:null,poll:null,heartbeat:null,loading:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false});
     el("operations").hidden=true;el("ticket-detail").hidden=true;notice("");
   }
   async function start(e){
     const {client,user,profile}=e.detail;
+    if(state.db===client&&state.user?.id===user.id){
+      state.profile=profile;updateNav();return;
+    }
     stop();state.db=client;state.user=user;state.profile=profile;
+    state.currentView=recalled("view")||"tickets";
+    state.restoreTicketId=recalled("ticket");
+    const y=Number(recalled("scroll"));
+    state.restoreScroll=Number.isFinite(y)&&y>0?y:null;
     if(isAdmin())await loadStaff();
-    updateNav();
+    updateNav();void checkNewMessages();
     if(!el("operations").hidden){
       if(can("chat")){
         const heartbeat=async()=>{if(!state.db||document.hidden)return;try{await rpc("proxiti_heartbeat",{});}catch{}};
         void heartbeat();state.heartbeat=setInterval(heartbeat,25000);
       }
       state.poll=setInterval(()=>{
-        if(document.hidden||!state.db)return;
+        if(!state.db)return;
         if(can("tickets_view"))void loadTickets();
         if(state.active&&can("chat"))void loadMessages();
+        void checkNewMessages();
       },6000);
       if(can("tickets_view")){
         state.channel=state.db.channel("proxiti-workspace-"+user.id)
           .on("postgres_changes",{event:"*",schema:"public",table:"support_tickets"},()=>void loadTickets())
           .on("postgres_changes",{event:"INSERT",schema:"public",table:"support_messages"},payload=>{
             if(state.active?.id===payload.new?.ticket_id)void loadMessages();
+            void checkNewMessages();
           }).subscribe(status=>{
             el("ops-live").textContent=status==="SUBSCRIBED"?"Atualizações em tempo real":"Atualização automática ativa";
           });
@@ -299,7 +339,17 @@
   el("reload-content").addEventListener("click",()=>void loadContent());
   el("reload-training").addEventListener("click",()=>void loadTraining());
   el("reload-tools").addEventListener("click",()=>void loadTools());
-  el("close-detail").addEventListener("click",()=>{state.active=null;el("ticket-detail").hidden=true;});
+  el("close-detail").addEventListener("click",()=>{state.active=null;remember("ticket","");el("ticket-detail").hidden=true;});
+  el("staff-reply").addEventListener("input",()=>{if(state.active)remember("draft-"+state.active.id,el("staff-reply").value)});
+  window.addEventListener("pagehide",()=>{if(state.user)remember("scroll",Math.round(window.scrollY))});
+  document.addEventListener("visibilitychange",()=>{
+    if(!document.hidden&&state.db){
+      if(can("tickets_view"))void loadTickets();
+      if(state.active&&can("chat"))void loadMessages();
+      void checkNewMessages();
+      if(can("chat"))void rpc("proxiti_heartbeat",{}).catch(()=>{});
+    }
+  });
   el("claim-ticket").addEventListener("click",async()=>{
     if(!state.active)return;
     try{
@@ -332,7 +382,7 @@
     send.disabled=true;
     try{
       await rpc("proxiti_staff_reply",{p_ticket:state.active.id,p_body:body});
-      field.value="";await loadMessages();notice("Mensagem enviada.");
+      field.value="";remember("draft-"+state.active.id,"");await loadMessages();notice("Mensagem enviada.");
     }catch(error){notice(error.message,true);}
     finally{send.disabled=false;}
   });
