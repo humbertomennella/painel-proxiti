@@ -24,6 +24,7 @@
 <script src="./assets/overview.js?v=20260925-2" defer></script>
 <script src="./assets/ticket-workflow.js?v=1" defer></script>
 <script src="./assets/ticket-extras.js?v=1" defer></script>
+<script src="./assets/technical-tools-core.js?v=1" defer></script>
 <script src="./assets/technical-tools.js?v=1" defer></script>
 </head>
 <body>
@@ -233,6 +234,25 @@
   </div>
   <div id="ops-tools" class="ops-view px-panel" hidden>
     <div class="ops-section-head"><h3>Ferramentas de trabalho</h3><button type="button" id="reload-tools" class="secondary">Atualizar ↻</button></div>
+    <section class="digital-toolkit" aria-labelledby="digital-toolkit-heading">
+      <div class="ops-section-head"><h3 id="digital-toolkit-heading">Ferramentas digitais locais</h3><span class="ops-muted">Sem envio de dados ao servidor.</span></div>
+      <div class="ticket-workflow-grid">
+        <form id="subnet-form" class="ticket-workflow-card ticket-workflow-form">
+          <h4>Calculadora IPv4 / CIDR</h4><p class="ops-muted">Rede, máscara, broadcast e faixa útil, incluindo /31 e /32.</p>
+          <label for="subnet-ip">IPv4</label><input id="subnet-ip" inputmode="decimal" placeholder="192.168.10.25" required>
+          <label for="subnet-cidr">Prefixo CIDR</label><input id="subnet-cidr" type="number" min="0" max="32" value="24" required>
+          <button type="submit" class="secondary">Calcular rede</button>
+          <output id="subnet-result" class="toolkit-result" aria-live="polite">Informe os valores para calcular.</output>
+        </form>
+        <form id="hash-form" class="ticket-workflow-card ticket-workflow-form">
+          <h4>SHA-256 de arquivo</h4><p class="ops-muted">Processamento local, sem upload. Compare apenas com um hash obtido de uma origem confiável.</p>
+          <label for="hash-file">Arquivo local (até 50 MB)</label><input id="hash-file" type="file" required>
+          <label for="hash-reference">Hash de referência (opcional)</label><input id="hash-reference" maxlength="64" spellcheck="false" autocomplete="off" placeholder="64 caracteres hexadecimais">
+          <button type="submit" class="secondary">Calcular SHA-256</button>
+          <output id="hash-result" class="toolkit-result" aria-live="polite">Nenhum arquivo processado.</output>
+        </form>
+      </div>
+    </section>
     <div class="ops-inline-search"><label for="tools-search">Localizar equipamento</label><input id="tools-search" type="search" placeholder="Buscar por nome, patrimônio ou responsável" autocomplete="off" maxlength="120"><p id="tools-search-status" role="status" aria-live="polite"></p></div>
     <form id="tool-form" class="ops-form" data-admin-only><label for="tool-name">Ferramenta ou equipamento</label><input id="tool-name" required maxlength="160"><label for="tool-serial">Identificação / patrimônio (opcional)</label><input id="tool-serial" maxlength="160"><label for="tool-assignee">Responsável</label><select id="tool-assignee"><option value="">Disponível / não atribuído</option></select><label for="tool-notes">Orientações de uso</label><textarea id="tool-notes" maxlength="2000" rows="2"></textarea><button type="submit" class="primary">Cadastrar ferramenta</button></form>
     <div id="tools-list" class="ops-list"></div>
