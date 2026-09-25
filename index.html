@@ -177,6 +177,13 @@
             <label for="ticket-report-advice">Testes e orientações ao cliente</label><textarea id="ticket-report-advice" maxlength="3000" rows="3" placeholder="Informe apenas o que foi verificado e autorizado."></textarea>
             <button type="submit" class="primary">Revisar e imprimir relatório</button>
           </form>
+          <div id="ticket-report-save-box" class="report-save-box">
+            <label class="ops-check"><input id="ticket-report-reviewed" type="checkbox"> Revisei o conteúdo e autorizo esta versão como final.</label>
+            <button id="ticket-report-save" type="button" class="secondary">Salvar versão no histórico</button>
+            <p class="ticket-workflow-help">Sem a confirmação, salva como rascunho. Nenhuma versão é enviada ao cliente automaticamente.</p>
+          </div>
+          <div class="ticket-workflow-card-head"><h5>Versões registradas</h5><span>Histórico privado</span></div>
+          <ol id="ticket-report-history" class="ticket-workflow-list"><li class="ticket-workflow-empty">Nenhuma versão salva.</li></ol>
         </details>
       </section>
       <div class="ops-conversation"><h4>Conversa do atendimento</h4><div id="staff-messages" class="ops-messages" aria-live="polite"></div>
