@@ -162,8 +162,33 @@ Deno.serve(async (req: Request) => {
         return json({ error: "Revise o nome, o e-mail e a descrição do atendimento." }, 400, origin);
       const network = (req.headers.get("cf-connecting-ip") || req.headers.get("x-real-ip") ||
         (req.headers.get("x-forwarded-for") || "").split(",")[0] || "unknown").slice(0,100);
-      if (!await limit("email:" + email, false, 5) || !await limit("ip:" + network, true, 12))
-        return json({ error: "Limite de solicitações atingido. Utilize o contato direto da PROXITI." }, 429, origin);
+      // Um e-mail pode precisar abrir vários chamados no mesmo dia; o limite de rede continua ativo.
+      // Diferenciamos o bloqueio diário do bloqueio horário e não incrementamos a cota de IP
+      // quando o e-mail já está no limite. Os identificadores seguem como HMAC no banco.
+      const dailyAllowed = await limit("email:" + email, false, 12);
+      if (!dailyAllowed) {
+        const now = new Date();
+        const reset = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+        const when = new Intl.DateTimeFormat("pt-BR", { timeZone:"America/Sao_Paulo",
+          day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit" }).format(reset);
+        return json({
+          code:"EMAIL_DAILY_LIMIT",
+          error:"Limite diário de novos chamados para este e-mail atingido. Você poderá abrir outro chamado a partir de " + when + " (horário de Brasília). Se já tiver uma conversa aberta, continue pelo histórico ou utilize o contato direto da PROXITI.",
+          retry_at:reset.toISOString()
+        }, 429, origin);
+      }
+      const networkAllowed = await limit("ip:" + network, true, 12);
+      if (!networkAllowed) {
+        const now = new Date();
+        const reset = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours() + 1));
+        const when = new Intl.DateTimeFormat("pt-BR", { timeZone:"America/Sao_Paulo",
+          day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit" }).format(reset);
+        return json({
+          code:"NETWORK_HOURLY_LIMIT",
+          error:"Muitas solicitações desta rede no período. Tente novamente a partir de " + when + " (horário de Brasília) ou continue um chamado já aberto.",
+          retry_at:reset.toISOString()
+        }, 429, origin);
+      }
       let assignedTo: string | null = null;
       if (source === "chat") {
         const staff = await onlineStaff();
