@@ -3,11 +3,12 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.0";
 const PROJECT_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const PUBLIC_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
-const ADMIN_PANEL = "https://humbertomennella.github.io/painel-proxiti/";
+const ADMIN_PANEL = Deno.env.get("PROXITI_PANEL_URL") || "https://humbertomennella.github.io/painel-proxiti/";
 const ORIGINS = new Set([
   "https://proxiti.com.br",
   "https://www.proxiti.com.br",
-  "https://humbertomennella.github.io"
+  "https://humbertomennella.github.io",
+  "https://central.proxiti.com.br"
 ]);
 const admin = createClient(PROJECT_URL, SERVICE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
 const json = (data: unknown, code = 200, origin = "") =>
@@ -87,6 +88,13 @@ Deno.serve(async (req: Request) => {
       const jwt = auth.replace(/^Bearer\s+/i, "");
       const { data: userData, error: userError } = await admin.auth.getUser(jwt);
       if (userError || !userData.user) return json({ error: "Sessão inválida." }, 401, origin);
+      let assurance = "aal1";
+      try {
+        const raw = jwt.split(".")[1] || "";
+        assurance = JSON.parse(atob(raw.replace(/-/g, "+").replace(/_/g, "/"))).aal || "aal1";
+      } catch { return json({ error: "Token inválido." }, 401, origin); }
+      if (assurance !== "aal2")
+        return json({ error: "Ative e confirme a verificação em duas etapas em Meu perfil antes de convidar técnicos." }, 403, origin);
       const { data: profile } = await admin.from("profiles").select("role,status")
         .eq("id",userData.user.id).maybeSingle();
       if (profile?.role !== "administrator" || profile?.status !== "active")
