@@ -128,3 +128,15 @@ html[data-theme] body.workspace-mode .ticket-workflow-report summary span{
  html[data-theme] body.workspace-mode .ticket-workflow button{min-height:47px}
 }
 @media(prefers-reduced-motion:reduce){.ticket-workflow *{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+/* Consulta em memória sobre os materiais e ferramentas já carregados. */
+html[data-theme] body.workspace-mode .ops-inline-search{display:grid;gap:7px;margin:15px 0 19px;max-width:620px}
+html[data-theme] body.workspace-mode .ops-inline-search label{color:var(--px-ink);font-size:.95rem;font-weight:740}
+html[data-theme] body.workspace-mode .ops-inline-search input{
+ width:100%;min-width:0;min-height:45px;padding:10px 13px;
+ border:1px solid var(--px-line-strong);border-radius:10px;
+ background:var(--px-surface);color:var(--px-ink);font:inherit;font-size:1rem
+}
+html[data-theme] body.workspace-mode .ops-inline-search input:focus-visible{outline:2px solid var(--px-blue);outline-offset:2px}
+html[data-theme] body.workspace-mode .ops-inline-search p{margin:0;min-height:20px;color:var(--px-muted);font-size:.84rem}
+html[data-theme] body.workspace-mode .ops-list-item[hidden]{display:none!important}
