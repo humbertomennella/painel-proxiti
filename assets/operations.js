@@ -380,6 +380,9 @@
       }
     }catch(e){notice("Erro ao consultar técnicos: "+e.message,true);}
   }
+  function announceTicket(){
+    document.dispatchEvent(new CustomEvent("proxiti-ticket-selected",{detail:{ticket:state.active}}));
+  }
   async function loadTickets(){
     if(!can("tickets_view")||state.loading)return;
     state.loading=true;
@@ -401,13 +404,13 @@
       void updatePresence();
       if(state.restoreTicketId&&!state.active){
         const recovered=state.tickets.find(t=>t.id===state.restoreTicketId);
-        if(recovered){state.active=recovered;updateTicketHeading();void loadMessages();el("staff-reply").value=recalled("draft-"+recovered.id)||"";}
+        if(recovered){state.active=recovered;updateTicketHeading();announceTicket();void loadMessages();el("staff-reply").value=recalled("draft-"+recovered.id)||"";}
         state.restoreTicketId=null;
       }
       if(state.active){
         const found=state.tickets.find(t=>t.id===state.active.id);
-        if(found){state.active=found;updateTicketHeading();}
-        else{state.active=null;remember("ticket","");el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;}
+        if(found){const changed=state.active.status!==found.status||state.active.assigned_to!==found.assigned_to;state.active=found;updateTicketHeading();if(changed)announceTicket();}
+        else{state.active=null;announceTicket();remember("ticket","");el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;}
       }
       updateInbox();renderTickets();
       if(state.restoreScroll!==null){
@@ -462,7 +465,7 @@
   async function openTicket(id){
     const t=state.tickets.find(t=>t.id===id);if(!t)return;
     if(state.active?.id&&state.active.id!==id)remember("draft-"+state.active.id,el("staff-reply").value);
-    state.active=t;remember("ticket",id);markTicketSeen(id);state.renderedThread="";updateTicketHeading();updateInbox();renderTickets();
+    state.active=t;remember("ticket",id);markTicketSeen(id);state.renderedThread="";updateTicketHeading();announceTicket();updateInbox();renderTickets();
     el("staff-reply").value=recalled("draft-"+id)||"";
     if(can("chat"))await loadMessages();
     else await rpc("proxiti_mark_ticket_read",{p_ticket:id}).then(()=>{markTicketSeen(id);void loadReadReceipts()}).catch(()=>{});
@@ -565,7 +568,7 @@
     el("ticket-list").replaceChildren();el("staff-messages").replaceChildren();
     el("staff-reply").value="";el("notifications-list").replaceChildren();
     el("overview-open").textContent="Chamados: atualizando…";
-    el("operations").hidden=true;el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;notice("");
+    el("operations").hidden=true;el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;notice("");announceTicket();
   }
   async function start(e){
     const {client,user,profile}=e.detail;
@@ -663,7 +666,7 @@
   el("reload-content").addEventListener("click",()=>void loadContent());
   el("reload-training").addEventListener("click",()=>void loadTraining());
   el("reload-tools").addEventListener("click",()=>void loadTools());
-  el("close-detail").addEventListener("click",()=>{state.active=null;remember("ticket","");el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;state.renderedTable="";renderTickets();});
+  el("close-detail").addEventListener("click",()=>{state.active=null;announceTicket();remember("ticket","");el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;state.renderedTable="";renderTickets();});
   el("staff-reply").addEventListener("input",()=>{if(state.active)remember("draft-"+state.active.id,el("staff-reply").value)});
   window.addEventListener("pagehide",()=>{if(state.user)remember("scroll",Math.round(window.scrollY))});
   document.addEventListener("visibilitychange",()=>{
