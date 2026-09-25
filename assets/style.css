@@ -84,3 +84,15 @@ body.workspace-mode [data-summary-view]:focus-visible{outline:2px solid var(--bl
 @media(max-width:930px){body.workspace-mode .panel,body.workspace-mode .panel.sidebar-collapsed{display:block}.app-sidebar{position:fixed;left:0;top:0;bottom:0;width:250px;max-width:calc(100vw - 48px);height:100dvh;transform:translateX(-110%);transition:transform .18s ease;box-shadow:12px 0 45px #0007}body.workspace-mode .panel.mobile-side-open .app-sidebar{transform:translateX(0)}.sidebar-toggle{display:none}.mobile-nav-toggle{display:inline-flex}.panel-main{max-width:none;padding:0 18px 40px}body.workspace-mode .panel-head{gap:14px}.panel-account-name{max-width:145px}}
 @media(max-width:600px){.auth-layout{min-height:0;grid-template-columns:1fr;padding:27px 0 38px;gap:20px}.intro h1{font-size:clamp(2.1rem,10vw,2.85rem)}.login-art{margin:15px 0 0}.login-art img{height:170px}.auth-layout .login-card{padding:20px}.panel-main{padding:0 12px 28px}body.workspace-mode .panel-head{padding:11px 0;min-height:75px;margin-bottom:14px;align-items:start}.panel-head .head-subtitle{display:none}.panel-account{gap:5px;flex-wrap:wrap;justify-content:flex-end}.panel-account-name{display:none}body.workspace-mode .panel-head .secondary{padding:7px 9px;font-size:.7rem;min-height:33px}body.workspace-mode .panel-head #welcome{font-size:1.32rem}body.workspace-mode .modules{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}body.workspace-mode .modules article{padding:12px;min-height:125px}body.workspace-mode .modules h3{margin:15px 0 7px}body.workspace-mode .ops-view{padding:12px}}
 @media(prefers-reduced-motion:reduce){.app-sidebar{transition:none!important}body.workspace-mode .modules article{transition:none!important}}
+
+/* mobile sidebar correction: mesmo recolhida no desktop, abre completa no celular. */
+.side-link{position:relative}
+@media(max-width:930px){
+ .panel.sidebar-collapsed .sidebar-brand .side-label,
+ .panel.sidebar-collapsed .side-link .side-label,
+ .panel.sidebar-collapsed .side-home .side-label{display:block}
+ .panel.sidebar-collapsed .sidebar-nav .side-link,
+ .panel.sidebar-collapsed .side-home{justify-content:flex-start;padding:9px 12px}
+ .panel.sidebar-collapsed .side-count{position:static;margin:0 0 0 auto;padding:1px 5px}
+ .panel.sidebar-collapsed .sidebar-top{justify-content:space-between;flex-wrap:nowrap}
+}
