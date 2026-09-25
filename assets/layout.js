@@ -26,6 +26,7 @@ function choose(view,scroll=false){
  const overview=view==="overview",profile=view==="profile";
  el("profile-section").hidden=!profile;
  document.querySelector(".section-heading").hidden=!overview;
+ document.querySelector(".overview-banner").hidden=!overview;
  el("workspace").querySelector(".modules").hidden=!overview;
  document.querySelector(".development").hidden=!overview;
  el("operations").hidden=overview||profile;
