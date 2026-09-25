@@ -1,56 +1,58 @@
-# PROXITI | Central Técnica
+# Central Técnica PROXITI
 
-Primeira entrega: login por e-mail e senha, recuperação de acesso e perfis autorizados no banco. Os módulos de chamados, cursos, apostilas e ferramentas ainda são prévias.
+Repositório público da interface privada da PROXITI. A autenticação, as regras de acesso e os dados operacionais ficam no projeto Supabase **Central Técnica PROXITI**; arquivos privados não são publicados no GitHub.
 
-## Estado da implantação
+**Painel:** https://humbertomennella.github.io/painel-proxiti/  
+**Site público:** https://proxiti.com.br/  
+**Atendimento e chat:** https://proxiti.com.br/atendimento/
 
-- **Supabase criado:** projeto **Central Técnica PROXITI**, na organização PROXITI, região São Paulo (`sa-east-1`), plano gratuito (custo informado de 0/mês).
-- **Banco preparado:** migração aplicada, tabela `public.profiles`, gatilho para novos usuários, RLS ativa, política que restringe a leitura ao próprio usuário e nenhuma concessão de escrita para `anon` ou `authenticated`.
-- **Frontend conectado:** `assets/config.js` contém somente a URL do projeto e sua chave **publishable** pública. Não contém chaves privadas.
-- **Ainda não concluído:** habilitar GitHub Pages, configurar URLs de redirecionamento, desabilitar cadastro público, criar conta administrativa pessoal e validar login real com essa conta.
+## Recursos implantados
 
-## Publicação no GitHub Pages
+- Login por Supabase Auth, recuperação de senha e acesso restrito a contas autorizadas.
+- Administração de técnicos: convite por e-mail, situação pendente/ativa/suspensa, nome e permissões individuais.
+- Fila de chamados: cliente abre no site; administrador visualiza todos; técnico autorizado visualiza seus chamados e a fila sem responsável, aceita chamados e atualiza a situação.
+- Chat integrado ao chamado: visitantes acompanham e respondem com uma chave aleatória guardada **somente no navegador**; a equipe responde pelo painel. O visitante recebe novas mensagens por atualização automática (~4 s); o painel recebe alterações em tempo real, com atualização periódica de reserva.
+- Presença: um técnico com acesso ao chat e painel visível envia sinal periódico. Quando disponível, pode receber uma conversa iniciada pelo site.
+- Conteúdo gerenciável: edição, publicação e remoção das personalizações de texto integradas do site (atualmente quatro blocos em `public.site_content`).
+- Academia: cadastro de materiais e upload privado de PDF/imagem até 10 MB; liberação apenas a parceiros com permissão.
+- Ferramentas: cadastro, alteração, atribuição a um técnico e exclusão do registro.
+- Proteção por RLS no banco; privilégios não dependem apenas de elementos ocultos no HTML.
 
-No repositório `humbertomennella/painel-proxiti`, acesse **Settings → Pages**. Em **Build and deployment**, selecione **Deploy from a branch**, branch `main`, pasta `/(root)` e salve. A URL prevista é:
+## O que foi testado
 
-`https://humbertomennella.github.io/painel-proxiti/`
+- Projeto e tabelas Supabase criados; políticas RLS e grants verificados.
+- Fluxo público de ticket criado com dados sintéticos, consulta da conversa, mensagem do visitante e bloqueio de chave inválida. O registro sintético foi excluído do banco após o teste.
+- API de disponibilidade, recusa de solicitação sem consentimento, recusa de convite sem autenticação, leitura pública do CMS e bloqueio anônimo da tabela de chamados.
+- Publicações GitHub Pages do painel e do site concluídas anteriormente com sucesso.
 
-Não configure o DNS de `painel.proxiti.com.br` até testar a URL inicial. O GitHub Pages não é uma área privada: o código do frontend é público, mesmo com o login.
+**Ainda requer testes manuais com contas reais:** convite por e-mail (entrega pode depender da configuração de SMTP), técnico secundário, mensagens entre dois navegadores, upload e acesso ao material privado, edição do CMS e estados de indisponibilidade. Não declare estes fluxos verificados até concluir os testes.
 
-## Configurações de autenticação que faltam
+## Operação do administrador
 
-No projeto [Central Técnica PROXITI do Supabase](https://supabase.com/dashboard/project/qbqfbrbbsvpftmtfhfab):
+1. Entre no painel e abra **Gestão PROXITI → Chamados** para atender, designar e responder. O contato direto por telefone/e-mail continua no site.
+2. Em **Técnicos e permissões**, convide uma pessoa; o perfil fica pendente até a aprovação. Permita somente os módulos necessários. Suspensão bloqueia o acesso a novos dados.
+3. Em **Conteúdo do site**, edite blocos por identificador. A exclusão da personalização restaura o texto estático original. O editor utiliza `textContent`, nunca HTML arbitrário.
+4. Em **Academia**, publique arquivos no bucket **privado** `proxiti-training`. Em **Ferramentas**, registre e atribua equipamentos.
 
-1. Em **Authentication → Providers → Email**, mantenha login por e-mail e senha, confirmação de e-mail e **desabilite novos cadastros públicos**. Não há formulário de cadastro no frontend, mas a opção do servidor também precisa ser desativada.
-2. Em **Authentication → URL Configuration**, defina **Site URL** como `https://humbertomennella.github.io/painel-proxiti/` e inclua exatamente a mesma URL em **Redirect URLs**. Isso permite que o e-mail de recuperação retorne para a página correta.
-3. Em **Authentication → Users**, crie **sua própria conta** com seu e-mail e uma senha exclusiva; não compartilhe senha nem dados de sessão comigo. A nova conta começa como técnica pendente.
-4. Depois de criar a conta, abra **SQL Editor** e execute **somente no console privado** o comando abaixo, substituindo `SEU_EMAIL_AQUI` pelo e-mail da conta:
+## Limite importante: controle do site
 
-```sql
-update public.profiles
-set role = 'administrator', status = 'active'
-where id = (
-  select id from auth.users where lower(email) = lower('SEU_EMAIL_AQUI')
-);
-```
+Este painel permite administrar **os dados operacionais, técnicos, arquivos autorizados e os blocos de conteúdo já vinculados**. **Ele ainda não edita todo o HTML, CSS, JavaScript, páginas estáticas, layouts, domínio ou checkout do GitHub.** Para controlar o código-fonte sem abrir o editor do GitHub, falta construir uma integração de publicação por servidor usando uma GitHub App autorizada exclusivamente no repositório da PROXITI, com permissão mínima, proteção de branch e trilha de auditoria. Nunca coloque token GitHub ou chave Supabase privada no navegador.
 
-Verifique se exatamente **uma** linha foi alterada. Nunca publique o seu e-mail administrativo ou a consulta preenchida no repositório.
+Os cursos completos com progresso/avaliações, portfólios públicos individuais e alterações arbitrárias do site também não estão implementados. Os materiais privados da Academia já têm upload e gestão.
 
-5. Acesse o painel pelo endereço do GitHub Pages e teste o login, logout e recuperação de senha. Depois crie um técnico de teste. Ele deve permanecer com `status='pending'` até a liberação administrativa.
+## Arquitetura
 
-**Nota:** o plugin de gerenciamento Supabase não oferece, nesta sessão, comandos para alterar a configuração Auth, criar usuários ou definir GitHub Pages. Essas etapas precisam ser confirmadas por você nas interfaces dos serviços. O projeto, a migração e a configuração pública do frontend já foram aplicados.
+- `index.html`, `assets/style.css`, `assets/app.js`: autenticação e interface.
+- `assets/operations.js`: chamados, chat da equipe, convites, CMS, Academia e Ferramentas.
+- `assets/config.js`: URL e **chave pública** do Supabase. Nunca coloque `service_role`, `sb_secret_` ou dados dos clientes no repositório.
+- `supabase/schema.sql`: perfis V1.
+- `supabase/operations_v2.sql` e `supabase/fix_public_cms_rls_v2.sql`: expansão aditiva e correção de RLS.
+- `supabase/functions/proxiti-support/index.ts`: rota Edge Function com tokens de conversa para o visitante, validação JWT para convites e limitação de solicitações.
+- `.github/workflows/integration-smoke.yml`: testes automáticos não destrutivos.
 
-## Segurança
+## Cuidados antes de ampliar a operação
 
-- Nenhuma chave secreta, senha, currículo ou dado de cliente deve entrar neste repositório **público**.
-- O navegador não tem permissão para promover um usuário, alterar `role`/`status` ou consultar perfis de outras contas; essas regras são implementadas no banco com RLS.
-- O Supabase Auth faz a verificação das credenciais. Não há autenticação fictícia nem senha armazenada no HTML.
-- Cada módulo futuro precisará de autorização no servidor, políticas RLS específicas e regras próprias para arquivos.
-- O plano gratuito pode pausar projetos inativos e tem limites de recursos. Faça um plano de backup antes de cadastrar clientes reais.
-
-## Arquivos
-
-- `index.html` e `assets/style.css`: interface responsiva.
-- `assets/app.js`: login, recuperação, sessão e verificação do perfil.
-- `assets/config.js`: URL e chave pública.
-- `supabase/schema.sql`: código da migração aplicada, mantido para revisão e reprodutibilidade.
+- A autenticação e os dados estão no Supabase Free; monitore limites, disponibilidade e backups. Defina política de retenção e um procedimento de exportação segura antes do uso em escala.
+- A Edge Function é pública **somente nas operações de visitante** e usa chave aleatória por conversa, validação de origem, honeypot e limite por identificador técnico. O limite não substitui proteção anti-bot dedicada, como Turnstile.
+- Revise o aviso de privacidade com os fluxos efetivamente oferecidos, habilite recursos de segurança de senha disponíveis no plano e teste recuperação de acesso.
+- Nenhum serviço começa automaticamente só porque o chamado foi aberto. Os técnicos precisam de autorização e as condições comerciais devem estar formalizadas.
