@@ -1,0 +1,41 @@
+name: PROXITI | Interface responsiva
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "assets/**"
+      - "tests/browser-smoke.mjs"
+      - ".github/workflows/browser-smoke.yml"
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "assets/**"
+      - "tests/browser-smoke.mjs"
+      - ".github/workflows/browser-smoke.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Instalar navegador de teste
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Inspecionar experiência móvel e desktop
+        run: node tests/browser-smoke.mjs
+      - name: Guardar capturas para revisão
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: proxiti-central-visual-smoke
+          path: artifacts/*.png
+          if-no-files-found: ignore
