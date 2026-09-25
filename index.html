@@ -81,7 +81,7 @@
     <div class="ops-table-scroll"><table class="ops-table"><caption class="sr-only">Chamados acessíveis à sua conta, com situação e responsáveis</caption><thead><tr><th>Nº</th><th>Cliente</th><th>Assunto</th><th>Situação</th><th>Responsável</th><th>Ação</th></tr></thead><tbody id="tickets-body"><tr><td colspan="6">Carregando…</td></tr></tbody></table></div>
     <p id="ticket-table-result" class="ticket-table-result" role="status" aria-live="polite"></p>
     <article id="ticket-detail" class="ops-detail" hidden>
-      <div class="ops-section-head"><div><span id="ticket-code" class="kicker">CHAMADO</span><h3 id="ticket-subject"></h3><p id="ticket-customer" class="ops-muted"></p></div><button type="button" class="secondary" id="close-detail">Fechar detalhes</button></div>
+      <div class="ops-section-head"><div><span id="ticket-code" class="kicker">CHAMADO</span><div class="ticket-detail-title"><h3 id="ticket-subject"></h3><span id="ticket-current-status" aria-live="polite"></span></div><p id="ticket-customer" class="ops-muted"></p></div><button type="button" class="secondary" id="close-detail">Fechar detalhes</button></div>
       <p id="ticket-description" class="ops-description"></p>
       <div class="ops-controls"><button type="button" id="claim-ticket" class="primary">Assumir atendimento</button>
       <label>Situação <select id="ticket-status"><option value="new">Novo</option><option value="triage">Em triagem</option><option value="in_progress">Em atendimento</option><option value="waiting_customer">Aguardando cliente</option><option value="resolved">Resolvido</option><option value="closed">Encerrado</option></select></label>
