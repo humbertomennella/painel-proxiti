@@ -1,11 +1,13 @@
 (() => {
 "use strict";
 const picker=document.getElementById("palette-select");
-const allowed=new Set(["grafite","noturno","petroleo","ardosia"]);
+const allowed=new Set(["grafite","marinho","carbono","areia"]);
 let currentUser=null;
 const storageKey=id=>"proxiti-palette-v1-"+id;
 function apply(name,save=false){
- const selected=allowed.has(name)?name:"grafite";
+ const legacy={noturno:"marinho",petroleo:"carbono",ardosia:"areia"};
+ const normalized=legacy[name]||name;
+ const selected=allowed.has(normalized)?normalized:"grafite";
  document.body.dataset.palette=selected;
  picker.value=selected;
  if(save&&currentUser){try{localStorage.setItem(storageKey(currentUser),selected)}catch{}}
