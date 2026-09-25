@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0c121d"><meta name="robots" content="noindex,nofollow">
+<meta name="description" content="Central Técnica PROXITI: acesso reservado para técnicos parceiros.">
+<title>Central Técnica | PROXITI</title>
+<link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./assets/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js" defer></script>
+<script src="./assets/config.js" defer></script>
+<script src="./assets/app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Ir para o conteúdo</a>
+<div class="wrap">
+<header class="header"><a href="https://proxiti.com.br/" class="logo"><span class="mark">P</span>PROXI<span class="blue">TI</span></a><span class="header-caption"><span class="dot"></span> Central Técnica <span class="faded">/ área privada</span></span></header>
+<main id="main">
+<section id="auth-screen" class="auth-layout" aria-labelledby="headline">
+<div class="intro"><p class="kicker">PROXITI / TÉCNICOS PARCEIROS</p><h1 id="headline">Sua operação técnica.<br><span>Em um único acesso.</span></h1><p>Este ambiente será destinado aos atendimentos, à capacitação e aos recursos disponibilizados aos técnicos parceiros da PROXITI. Começamos pelo acesso individual e pelas permissões.</p>
+<div class="preview"><div><b>01</b> Gestão de atendimentos <small>Próxima etapa</small></div><div><b>02</b> Cursos rápidos e apostilas <small>Próxima etapa</small></div><div><b>03</b> Ferramentas e portfólio <small>Próxima etapa</small></div></div></div>
+<div class="login-card"><div class="card-top"><span class="lock" aria-hidden="true">⌑</span><span>ACESSO RESTRITO</span></div>
+<div id="setup" class="message warning" hidden role="status">A autenticação ainda não foi configurada. Consulte o README do repositório e configure o Supabase para ativar o login.</div>
+<form id="login-form" novalidate><h2>Entrar na Central Técnica</h2><p class="sub">Utilize o e-mail autorizado pela PROXITI.</p><label for="email">E-mail</label><input id="email" type="email" required autocomplete="username" maxlength="254" placeholder="seuemail@exemplo.com">
+<label for="password">Senha</label><input id="password" type="password" required autocomplete="current-password" placeholder="Sua senha"><div class="form-links"><span>Somente membros autorizados</span><button type="button" id="forgot-link" class="link">Esqueci minha senha</button></div><button type="submit" class="primary" id="login-button">Acessar o painel <span aria-hidden="true">↗</span></button></form>
+<form id="forgot-form" hidden novalidate><h2>Recuperar o acesso</h2><p class="sub">Enviaremos instruções ao e-mail, se ele estiver cadastrado.</p><label for="forgot-email">E-mail</label><input id="forgot-email" type="email" required autocomplete="email" maxlength="254" placeholder="seuemail@exemplo.com"><button class="primary" type="submit" id="forgot-button">Enviar instruções ↗</button><button class="link back" type="button" data-back>← Voltar ao login</button></form>
+<form id="reset-form" hidden novalidate><h2>Definir nova senha</h2><p class="sub">Sua nova senha deve ter pelo menos 12 caracteres.</p><label for="new-password">Nova senha</label><input id="new-password" type="password" minlength="12" required autocomplete="new-password"><label for="confirm-password">Confirmar senha</label><input id="confirm-password" type="password" minlength="12" required autocomplete="new-password"><button class="primary" type="submit" id="reset-button">Salvar nova senha ↗</button></form>
+<p id="feedback" class="message" role="status" aria-live="polite" hidden></p><p class="card-foot">Identificação individual · Acesso autorizado pela PROXITI</p></div>
+</section>
+<section id="panel" class="panel" hidden aria-labelledby="panel-title"><div class="panel-head"><div><p class="kicker">PROXITI / ÁREA PRIVADA</p><h1 id="panel-title">Central Técnica<span class="blue">.</span></h1><p id="welcome">Verificando seu perfil…</p></div><button type="button" id="logout" class="secondary">Encerrar sessão ↗</button></div>
+<div id="blocked" class="blocked" hidden role="status"><strong id="blocked-title">Acesso pendente</strong><p id="blocked-text">Sua conta ainda não foi autorizada pela administração.</p></div>
+<div id="workspace" hidden><div class="identity"><div><small>ACESSO AUTORIZADO</small><strong id="person-name">Profissional PROXITI</strong><span id="person-email"></span></div><b id="person-role">Técnico parceiro</b></div><div class="section-heading"><div><p class="kicker">CENTRAL TÉCNICA</p><h2>Seu ambiente de trabalho</h2></div><span>ETAPA 01 / ACESSO</span></div>
+<div class="modules"><article><small>01 / SERVIÇOS</small><h3>Atendimentos</h3><p>Solicitações, aceite e acompanhamento de chamados.</p><span>Em desenvolvimento</span></article><article><small>02 / CAPACITAÇÃO</small><h3>Academia PROXITI</h3><p>Cursos rápidos, apostilas e materiais próprios.</p><span>Em desenvolvimento</span></article><article><small>03 / RECURSOS</small><h3>Ferramentas</h3><p>Equipamentos atribuídos e termos de utilização.</p><span>Em desenvolvimento</span></article><article><small>04 / PERFIL</small><h3>Portfólio</h3><p>Currículo, especialidades e canal profissional.</p><span>Em desenvolvimento</span></article></div><p class="development">Estes módulos são uma prévia da estrutura. Nenhum chamado, curso ou arquivo privado está disponível nesta versão.</p></div></section>
+</main><footer class="footer"><span>© PROXITI · Central Técnica</span><a href="https://proxiti.com.br/">Voltar ao site institucional ↗</a></footer>
+</div></body></html>
