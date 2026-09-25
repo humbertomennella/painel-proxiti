@@ -1,12 +1,13 @@
 import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
-import { Script } from "node:vm";
+import { Script, runInNewContext } from "node:vm";
 
 const get = path => readFileSync(new URL("../"+path,import.meta.url),"utf8");
 const html=get("index.html");
 const scriptPaths=[
   "assets/app.js","assets/alerts.js","assets/operations.js","assets/layout.js",
-  "assets/profile.js","assets/appearance.js","assets/overview.js","assets/ticket-workflow.js"
+  "assets/profile.js","assets/appearance.js","assets/overview.js","assets/ticket-workflow.js",
+  "assets/ticket-extras.js","assets/technical-tools-core.js","assets/technical-tools.js"
 ];
 for (const path of scriptPaths) new Script(get(path),{filename:path});
 const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);
@@ -28,7 +29,7 @@ for (const match of html.matchAll(/<script[^>]+src="\.\/([^"]+)"[^>]*>/g))
   assert(existsSync(new URL("../"+match[1].split(/[?#]/,1)[0],import.meta.url)),"Script local ausente: "+match[1]);
 for (const link of html.matchAll(/<link[^>]+rel="stylesheet"[^>]+href="\.\/([^"]+)"[^>]*>/g))
   assert(existsSync(new URL("../"+link[1],import.meta.url)),"Estilo local ausente: "+link[1]);
-for (const path of ["assets/proxiti-ui.css","assets/interface.css","assets/overview-comfort.css","assets/ticket-workflow.css","assets/support-desk.svg","assets/overview-art.svg"])
+for (const path of ["assets/proxiti-ui.css","assets/interface.css","assets/overview-comfort.css","assets/ticket-workflow.css","assets/operations-v8.css","assets/support-desk.svg","assets/overview-art.svg"])
   assert(existsSync(new URL("../"+path,import.meta.url)),path+" ausente");
 assert(html.includes('id="theme-toggle-public"')&&html.includes('id="theme-toggle-panel"'),"Tema público/privado ausente");
 assert(!html.includes('id="palette-select"'),"Paletas antigas ainda presentes na interface");
@@ -95,3 +96,44 @@ assert(get("assets/operations.js").includes("function filterOpsList("),"Busca lo
 assert(techCss.includes(".ops-list-item[hidden]"),"Busca não recolhe itens no CSS");
 assert(get("assets/layout.js").includes('el("overview-home").hidden=!overview'),"Visão geral não é isolada");
 console.log("PROXITI: JS, IDs, inbox, MFA, temas, sidebar e Visão geral verificados.");
+
+for(const id of ["ops-agenda","reload-agenda","agenda-filter","agenda-list","agenda-count",
+ "training-kind","training-body","training-category","training-category-filter","training-reference",
+ "training-cancel","ticket-device-form","ticket-device-summary","ticket-appointment-form",
+ "ticket-appointments-list","ticket-report-save","ticket-report-history","ticket-extras-feedback",
+ "subnet-form","subnet-result","hash-form","hash-result"]){
+ assert(html.includes('id="'+id+'"'),"Central V8 sem #"+id);
+}
+assert(html.includes('data-side-view="agenda"')&&html.includes('data-summary-view="agenda"'),
+ "Agenda sem acesso na navegação");
+assert(html.includes('src="./assets/technical-tools-core.js?v=1"'),"Core das ferramentas não carregado");
+assert(html.includes('src="./assets/ticket-extras.js?v=1"'),"Integração de compromissos não carregada");
+const cssV8=get("assets/operations-v8.css");
+assert.equal((cssV8.match(/{/g)||[]).length,(cssV8.match(/}/g)||[]).length,
+ "CSS V8 desbalanceado");
+assert(cssV8.includes(".academy-body")&&cssV8.includes(".digital-toolkit"),
+ "Academia ou ferramentas sem estilo");
+const v8=get("supabase/central_operations_v8.sql"),academy=get("supabase/academy_content_v8.sql");
+for(const rule of ["ticket_appointments","ticket_devices","ticket_reports",
+ "proxiti_schedule_appointment","proxiti_update_appointment","proxiti_save_ticket_device",
+ "proxiti_save_ticket_report","for select to authenticated using(public.proxiti_ticket_access"]){
+ assert(v8.includes(rule),"Schema V8 sem proteção "+rule);
+}
+assert.equal((academy.match(/insert into public.training_materials\(/g)||[]).length,10,
+ "Academia deve ter dez procedimentos completos");
+assert(academy.includes("on conflict(content_key) where content_key is not null do nothing"),
+ "Migração editorial precisa preservar edições existentes");
+const ctx={window:{}};
+runInNewContext(get("assets/technical-tools-core.js"),ctx);
+const calculator=ctx.window.PROXITI_TOOL_CORE.subnet;
+assert.equal(calculator("192.168.10.25",24).network,"192.168.10.0");
+assert.equal(calculator("192.168.10.25",24).mask,"255.255.255.0");
+assert.equal(calculator("192.168.10.25",24).hosts,254);
+assert.equal(calculator("10.0.0.3",31).first,"10.0.0.2");
+assert.equal(calculator("10.0.0.3",31).hosts,2);
+assert.equal(calculator("10.0.0.3",32).hosts,1);
+assert.equal(calculator("0.0.0.0",0).hosts,4294967294);
+assert.throws(()=>calculator("300.0.0.1",24));
+assert.throws(()=>calculator("10.0.0.1",33));
+assert.throws(()=>calculator("001.0.0.1",24));
+console.log("PROXITI V8: Academia, agenda, dispositivos, relatórios e calculadora IPv4 testados.");

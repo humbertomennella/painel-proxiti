@@ -1,0 +1,83 @@
+/* PROXITI V8: catálogo técnico, agenda e utilitários em ambos os temas. */
+#workspace [hidden]{display:none!important}
+html[data-theme] body.workspace-mode .academy-intro{
+ padding:15px 18px;margin:0 0 15px;border:1px solid var(--px-line);
+ border-radius:12px;background:var(--px-bg-muted)
+}
+html[data-theme] body.workspace-mode .academy-intro strong{font-size:1.05rem;line-height:1.4}
+html[data-theme] body.workspace-mode .academy-intro p{margin:7px 0 0;color:var(--px-muted);font-size:.96rem;line-height:1.55}
+.academy-filters{display:grid;grid-template-columns:minmax(0,1fr) minmax(190px,.36fr);gap:12px;align-items:end;margin:12px 0 20px}
+html[data-theme] body.workspace-mode .academy-filters>.ops-inline-search{margin:0;max-width:none}
+html[data-theme] body.workspace-mode .academy-filters>label{display:grid;gap:7px;color:var(--px-ink);font-size:.94rem;font-weight:740}
+html[data-theme] body.workspace-mode .academy-filters select,
+html[data-theme] body.workspace-mode .academy-editor select,
+html[data-theme] body.workspace-mode .academy-editor input,
+html[data-theme] body.workspace-mode .academy-editor textarea{
+ width:100%;max-width:100%;min-width:0;padding:10px 12px;
+ border:1px solid var(--px-line-strong);border-radius:10px;
+ background:var(--px-surface);color:var(--px-ink);font:inherit;font-size:.98rem
+}
+html[data-theme] body.workspace-mode .academy-filters select{min-height:45px}
+html[data-theme] body.workspace-mode .academy-editor{margin-bottom:24px;padding:21px;border:1px solid var(--px-line);border-radius:14px;background:var(--px-bg-muted)}
+html[data-theme] body.workspace-mode .academy-editor h4{margin:0;font-size:1.28rem}
+html[data-theme] body.workspace-mode .academy-editor>label{font-size:.94rem;font-weight:720}
+html[data-theme] body.workspace-mode .academy-editor #training-article-fields,
+html[data-theme] body.workspace-mode .academy-editor #training-file-fields{display:grid;gap:9px}
+html[data-theme] body.workspace-mode .academy-editor #training-body{min-height:290px;resize:vertical;font-size:.96rem;line-height:1.6}
+html[data-theme] body.workspace-mode .academy-entry{padding:18px;display:grid;gap:11px;border-radius:13px;min-width:0}
+html[data-theme] body.workspace-mode .academy-entry-head{display:flex;align-items:baseline;justify-content:space-between;gap:9px;flex-wrap:wrap}
+html[data-theme] body.workspace-mode .academy-entry-head strong{font-size:1.13rem;line-height:1.35}
+html[data-theme] body.workspace-mode .academy-entry .academy-meta{font-size:.83rem;color:var(--px-muted)}
+html[data-theme] body.workspace-mode .academy-article{border:1px solid var(--px-line);border-radius:10px;background:var(--px-surface);overflow:hidden}
+html[data-theme] body.workspace-mode .academy-article summary{
+ display:list-item;cursor:pointer;padding:13px 17px;font-weight:740;font-size:1rem;color:var(--px-blue)
+}
+html[data-theme] body.workspace-mode .academy-article summary:focus-visible,
+html[data-theme] body.workspace-mode .agenda-entry button:focus-visible{outline:3px solid var(--px-orange);outline-offset:2px}
+html[data-theme] body.workspace-mode .academy-body{padding:17px 20px 22px;line-height:1.72;border-top:1px solid var(--px-line);max-width:86ch}
+html[data-theme] body.workspace-mode .academy-body h5{margin:16px 0 8px;font-size:1.24rem;color:var(--px-ink)}
+html[data-theme] body.workspace-mode .academy-body h6{margin:16px 0 7px;font-size:1.08rem;color:var(--px-ink)}
+html[data-theme] body.workspace-mode .academy-body p{margin:7px 0;font-size:1rem;color:var(--px-text);overflow-wrap:anywhere}
+html[data-theme] body.workspace-mode .academy-body .academy-bullet{position:relative;padding-left:20px}
+html[data-theme] body.workspace-mode .academy-body .academy-bullet:before{content:"•";position:absolute;left:4px;color:var(--px-blue)}
+html[data-theme] body.workspace-mode .academy-reference{display:inline-block;margin-top:17px;color:var(--px-blue);font-weight:750;font-size:.95rem}
+html[data-theme] body.workspace-mode .academy-mark-read{justify-self:start}
+html[data-theme] body.workspace-mode .academy-mark-read[aria-pressed=true]{border-color:var(--px-blue);background:var(--px-bg-muted)}
+html[data-theme] body.workspace-mode .agenda-list{display:grid;gap:12px;min-width:0}
+html[data-theme] body.workspace-mode .agenda-entry{
+ display:grid;gap:8px;padding:17px 20px;border:1px solid var(--px-line);
+ border-radius:13px;background:var(--px-surface);min-width:0
+}
+html[data-theme] body.workspace-mode .agenda-entry strong{font-size:1.1rem;line-height:1.38}
+html[data-theme] body.workspace-mode .agenda-entry p{margin:0;color:var(--px-text);font-size:.98rem;line-height:1.55}
+html[data-theme] body.workspace-mode .agenda-entry small{color:var(--px-muted);font-size:.87rem}
+html[data-theme] body.workspace-mode .agenda-entry button{justify-self:start;min-height:42px}
+html[data-theme] body.workspace-mode .ticket-workflow-extras{align-items:start}
+html[data-theme] body.workspace-mode .report-save-box{display:grid;gap:12px;margin:18px 0;padding:16px;border:1px solid var(--px-line);border-radius:12px;background:var(--px-bg-muted)}
+html[data-theme] body.workspace-mode .report-save-box button{justify-self:start}
+html[data-theme] body.workspace-mode .report-save-box .ops-check{display:flex;gap:9px;align-items:start;line-height:1.5}
+html[data-theme] body.workspace-mode .report-save-box .ops-check input{width:19px;min-height:19px;margin-top:3px}
+html[data-theme] body.workspace-mode .digital-toolkit{margin:16px 0 23px;display:grid;gap:13px}
+html[data-theme] body.workspace-mode .digital-toolkit h4{margin:0;font-size:1.23rem;line-height:1.3}
+html[data-theme] body.workspace-mode .digital-toolkit .ticket-workflow-card{padding:20px}
+html[data-theme] body.workspace-mode .digital-toolkit label{display:block;font-weight:720;font-size:.95rem}
+html[data-theme] body.workspace-mode .digital-toolkit input{
+ display:block;width:100%;min-width:0;min-height:45px;
+ padding:10px 12px;border:1px solid var(--px-line-strong);border-radius:9px;
+ background:var(--px-surface);color:var(--px-ink);font:inherit;font-size:1rem
+}
+html[data-theme] body.workspace-mode .digital-toolkit .toolkit-result{
+ display:block;min-height:50px;white-space:pre-wrap;overflow-wrap:anywhere;
+ border:1px solid var(--px-line);padding:13px;border-radius:10px;
+ background:var(--px-bg-muted);color:var(--px-ink);font-size:.91rem;line-height:1.65;font-variant-numeric:tabular-nums
+}
+html[data-theme] body.workspace-mode .digital-toolkit button{min-height:45px}
+@media(max-width:860px){.academy-filters{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:680px){
+ html[data-theme] body.workspace-mode .academy-editor{padding:15px}
+ html[data-theme] body.workspace-mode .academy-entry{padding:14px}
+ html[data-theme] body.workspace-mode .academy-body{padding:13px 15px 19px}
+ html[data-theme] body.workspace-mode .digital-toolkit .ticket-workflow-card{padding:15px}
+ html[data-theme] body.workspace-mode .report-save-box button{width:100%}
+}
+@media(prefers-reduced-motion:reduce){.academy-article *,.agenda-list *,.digital-toolkit *{animation:none!important;transition:none!important}}

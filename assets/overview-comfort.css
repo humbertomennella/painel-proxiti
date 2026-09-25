@@ -353,3 +353,22 @@ html[data-theme] body.workspace-mode #overview-home.overview-reading-mode .modul
  html[data-theme] body.workspace-mode #overview-home .overview-view-controls{gap:8px}
  html[data-theme] body.workspace-mode #overview-home .overview-view-controls>button{font-size:.87rem;padding:8px 7px}
 }
+
+/* Tablet: permite que saudação e ações ocupem linhas próprias até 930px. */
+@media(min-width:761px) and (max-width:930px){
+ html[data-theme] body.workspace-mode .panel-head{
+  display:grid;grid-template-columns:minmax(0,1fr);align-items:start;gap:11px;
+  min-width:0;padding:12px 0 13px;margin-bottom:18px
+ }
+ html[data-theme] body.workspace-mode .panel-head-greeting{min-width:0;max-width:100%}
+ html[data-theme] body.workspace-mode .panel-account{
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-start;
+  width:100%;min-width:0;gap:8px
+ }
+ html[data-theme] body.workspace-mode .panel-account .profile-trigger{max-width:min(230px,100%)}
+ html[data-theme] body.workspace-mode .panel-account>button{flex:0 0 auto;max-width:100%}
+ html[data-theme] body.workspace-mode .panel-account .notification-hub{flex:0 0 auto;min-width:0}
+ html[data-theme] body.workspace-mode .panel-account .theme-switch-label{display:none}
+ html[data-theme] body.workspace-mode .panel-account .theme-switch{width:46px;min-width:46px;padding:8px}
+ html[data-theme] body.workspace-mode .panel-account .sound-toggle{max-width:150px}
+}
