@@ -5,7 +5,7 @@ const panel=el("panel"),sidebar=el("app-sidebar"),main=el("panel-main");
 const nav=[...sidebar.querySelectorAll("[data-side-view]")];
 let current="overview",ready=false,restoring=false;
 const key=()=> "proxiti-ui-"+(window.PROXITI_ACTIVE_SESSION?.user?.id||"guest");
-const read=()=>{try{return sessionStorage.getItem(key()+"-view")||"overview"}catch{return "overview"}};
+const read=()=>{try{if(sessionStorage.getItem("proxiti-force-overview")==="1"){sessionStorage.removeItem("proxiti-force-overview");return "overview";}return sessionStorage.getItem(key()+"-view")||"overview"}catch{return "overview"}};
 const save=view=>{try{sessionStorage.setItem(key()+"-view",view)}catch{}};
 function setCollapsed(value){
  panel.classList.toggle("sidebar-collapsed",value);
@@ -23,12 +23,13 @@ function choose(view,scroll=false){
  current=view;
  for(const n of nav){n.classList.toggle("selected",n.dataset.sideView===view);
    n.setAttribute("aria-current",n.dataset.sideView===view?"page":"false");}
- const overview=view==="overview";
+ const overview=view==="overview",profile=view==="profile";
+ el("profile-section").hidden=!profile;
  document.querySelector(".section-heading").hidden=!overview;
  el("workspace").querySelector(".modules").hidden=!overview;
  document.querySelector(".development").hidden=!overview;
- el("operations").hidden=overview;
- if(!overview){
+ el("operations").hidden=overview||profile;
+ if(!overview&&!profile){
    const tab=el("ops-tabs").querySelector('[data-ops-view="'+view+'"]');
    if(tab&&!tab.hidden)tab.click();
  }
@@ -40,7 +41,7 @@ function syncNav(){
  for(const n of nav){
   const view=n.dataset.sideView;
   const tab=el("ops-tabs").querySelector('[data-ops-view="'+view+'"]');
-  n.hidden=view!=="overview"&&(!tab||tab.hidden);
+  n.hidden=view!=="overview"&&view!=="profile"&&(!tab||tab.hidden);
  }
  const stored=read();
  choose(nav.find(n=>n.dataset.sideView===stored&&!n.hidden)?stored:"overview");
@@ -60,6 +61,8 @@ function activate(){
  requestAnimationFrame(syncNav);
 }
 nav.forEach(button=>button.addEventListener("click",()=>choose(button.dataset.sideView,true)));
+el("app-sidebar").querySelector(".sidebar-brand").addEventListener("click",e=>{if(ready){e.preventDefault();choose("overview",true);}});
+window.PROXITI_OPEN_VIEW=view=>choose(view,true);
 document.querySelectorAll("[data-summary-view]").forEach(card=>{
  const open=()=>choose(card.dataset.summaryView,true);
  card.addEventListener("click",open);
