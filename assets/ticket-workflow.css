@@ -1,0 +1,130 @@
+/* PROXITI · Fluxo técnico por chamado. Mesmos tokens dos temas institucionais. */
+html[data-theme] body.workspace-mode .ticket-workflow{
+ display:grid;gap:19px;margin:22px 0;padding:clamp(17px,1.8vw,27px);
+ min-width:0;border:1px solid var(--px-line);border-radius:17px;
+ background:var(--px-bg-muted);color:var(--px-ink);
+}
+.ticket-workflow[hidden],.ticket-workflow [hidden]{display:none!important}
+html[data-theme] body.workspace-mode .ticket-workflow-head{
+ display:flex;align-items:start;justify-content:space-between;gap:14px;flex-wrap:wrap
+}
+html[data-theme] body.workspace-mode .ticket-workflow-head .kicker{margin:0 0 6px;color:var(--px-blue);font-size:.76rem;letter-spacing:.075em}
+html[data-theme] body.workspace-mode .ticket-workflow-head h4{margin:0;font-size:clamp(1.4rem,1.8vw,1.8rem);line-height:1.25;letter-spacing:-.035em}
+html[data-theme] body.workspace-mode .ticket-workflow-head p:not(.kicker){
+ max-width:67ch;margin:8px 0 0;font-size:.95rem;line-height:1.6;color:var(--px-muted)
+}
+html[data-theme] body.workspace-mode .ticket-workflow-mode{
+ display:inline-flex;align-items:center;min-height:34px;padding:5px 10px;border:1px solid var(--px-line);
+ border-radius:8px;background:var(--px-surface);font-size:.83rem;font-weight:700;color:var(--px-muted)
+}
+.ticket-workflow-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;align-items:start}
+html[data-theme] body.workspace-mode .ticket-workflow-card{
+ min-width:0;display:grid;align-content:start;gap:13px;padding:clamp(16px,1.4vw,22px);
+ border:1px solid var(--px-line);border-radius:13px;background:var(--px-surface);box-shadow:none
+}
+html[data-theme] body.workspace-mode .ticket-workflow-card-head{
+ display:flex;align-items:baseline;justify-content:space-between;gap:6px 12px;flex-wrap:wrap
+}
+html[data-theme] body.workspace-mode .ticket-workflow-card-head h5{
+ margin:0;font-size:1.2rem;line-height:1.35;letter-spacing:-.025em;color:var(--px-ink)
+}
+html[data-theme] body.workspace-mode .ticket-workflow-card-head>span,
+html[data-theme] body.workspace-mode .ticket-workflow-help{
+ margin:0;color:var(--px-muted);font-size:.9rem;line-height:1.55
+}
+html[data-theme] body.workspace-mode .ticket-workflow-form{
+ display:grid;align-content:start;justify-items:stretch;gap:9px
+}
+html[data-theme] body.workspace-mode .ticket-workflow-form label,
+html[data-theme] body.workspace-mode .ticket-workflow-files-form label{
+ font-size:.95rem;font-weight:730;line-height:1.45;color:var(--px-ink)
+}
+html[data-theme] body.workspace-mode .ticket-workflow input,
+html[data-theme] body.workspace-mode .ticket-workflow select,
+html[data-theme] body.workspace-mode .ticket-workflow textarea{
+ display:block;width:100%;min-width:0;min-height:43px;padding:10px 11px;
+ border:1px solid var(--px-line-strong);border-radius:9px;background:var(--px-surface);
+ color:var(--px-ink);font:inherit;font-size:1rem;line-height:1.5
+}
+html[data-theme] body.workspace-mode .ticket-workflow input[type=file]{min-height:48px}
+html[data-theme] body.workspace-mode .ticket-workflow textarea{resize:vertical;min-height:94px}
+html[data-theme] body.workspace-mode .ticket-workflow input:focus-visible,
+html[data-theme] body.workspace-mode .ticket-workflow select:focus-visible,
+html[data-theme] body.workspace-mode .ticket-workflow textarea:focus-visible{
+ outline:2px solid var(--px-blue);outline-offset:2px
+}
+html[data-theme] body.workspace-mode .ticket-workflow button{
+ min-height:43px;padding:9px 13px;border-radius:9px;font-size:.94rem;
+ font-weight:740;line-height:1.38;white-space:normal
+}
+html[data-theme] body.workspace-mode .ticket-workflow button:focus-visible,
+html[data-theme] body.workspace-mode .ticket-workflow summary:focus-visible{
+ outline:3px solid var(--px-orange);outline-offset:3px
+}
+.ticket-workflow-list{margin:0;padding:0;list-style:none;display:grid;gap:9px;min-width:0}
+html[data-theme] body.workspace-mode .ticket-workflow-empty{
+ color:var(--px-muted);font-size:.95rem;line-height:1.55;padding:14px;
+ border:1px dashed var(--px-line-strong);border-radius:9px
+}
+html[data-theme] body.workspace-mode .ticket-workflow-entry,
+html[data-theme] body.workspace-mode .ticket-workflow-task,
+html[data-theme] body.workspace-mode .ticket-workflow-file{
+ min-width:0;padding:13px;border:1px solid var(--px-line);
+ border-radius:10px;background:var(--px-surface-soft)
+}
+html[data-theme] body.workspace-mode .ticket-workflow-entry small,
+html[data-theme] body.workspace-mode .ticket-workflow-file small,
+html[data-theme] body.workspace-mode .ticket-workflow-task-status{
+ display:block;font-size:.8rem;line-height:1.45;color:var(--px-muted)
+}
+html[data-theme] body.workspace-mode .ticket-workflow-entry p,
+html[data-theme] body.workspace-mode .ticket-workflow-task p{
+ margin:6px 0 0;color:var(--px-text);font-size:.97rem;line-height:1.6;
+ white-space:pre-wrap;overflow-wrap:anywhere
+}
+.ticket-workflow-task-title{display:flex;align-items:baseline;gap:10px;min-width:0}
+html[data-theme] body.workspace-mode .ticket-workflow-task-title strong{
+ font-size:.98rem;line-height:1.45;overflow-wrap:anywhere
+}
+html[data-theme] body.workspace-mode .ticket-workflow-step{
+ display:inline-grid;place-items:center;flex:none;width:31px;height:31px;
+ background:var(--px-bg-muted);border:1px solid var(--px-line-strong);border-radius:8px;
+ color:var(--px-blue);font-weight:800;font-size:.83rem
+}
+.ticket-workflow-task-controls{display:grid;grid-template-columns:minmax(140px,.65fr) minmax(0,1.35fr) auto;gap:8px;margin-top:10px}
+html[data-theme] body.workspace-mode .ticket-workflow-task-controls button{align-self:stretch;white-space:nowrap}
+.ticket-workflow-files-form{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px 12px}
+.ticket-workflow-files-form label{grid-column:1/-1}
+html[data-theme] body.workspace-mode .ticket-workflow-file{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap
+}
+.ticket-workflow-file-info{min-width:0;overflow-wrap:anywhere;display:grid;gap:5px}
+html[data-theme] body.workspace-mode .ticket-workflow-file-info strong{font-size:.98rem}
+html[data-theme] body.workspace-mode .ticket-workflow-feedback{
+ border:1px solid var(--px-line);border-radius:9px;padding:11px 13px;
+ background:var(--px-surface);color:var(--px-text);font-size:.94rem;line-height:1.5
+}
+html[data-theme] body.workspace-mode .ticket-workflow-feedback.error{
+ border-color:#bf6b64;background:var(--px-surface);color:var(--px-ink)
+}
+html[data-theme] body.workspace-mode .ticket-workflow-report{
+ padding:16px 18px;border:1px solid var(--px-line);border-radius:12px;
+ background:var(--px-surface)
+}
+html[data-theme] body.workspace-mode .ticket-workflow-report summary{
+ color:var(--px-ink);cursor:pointer;font-size:1.06rem;font-weight:760;line-height:1.45
+}
+html[data-theme] body.workspace-mode .ticket-workflow-report summary span{
+ display:block;margin-top:4px;color:var(--px-muted);font-size:.84rem;font-weight:500
+}
+.ticket-workflow-report .ticket-workflow-form{margin-top:17px}
+@media(max-width:1120px){.ticket-workflow-grid{grid-template-columns:1fr}}
+@media(max-width:680px){
+ html[data-theme] body.workspace-mode .ticket-workflow{margin:14px 0;padding:13px;gap:13px;border-radius:12px}
+ html[data-theme] body.workspace-mode .ticket-workflow-card{padding:15px}
+ .ticket-workflow-task-controls{grid-template-columns:minmax(0,1fr)}
+ .ticket-workflow-files-form{grid-template-columns:minmax(0,1fr)}
+ html[data-theme] body.workspace-mode .ticket-workflow-files-form button{width:100%}
+ html[data-theme] body.workspace-mode .ticket-workflow button{min-height:47px}
+}
+@media(prefers-reduced-motion:reduce){.ticket-workflow *{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
