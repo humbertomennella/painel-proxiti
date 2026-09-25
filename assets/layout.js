@@ -25,10 +25,7 @@ function choose(view,scroll=false){
    n.setAttribute("aria-current",n.dataset.sideView===view?"page":"false");}
  const overview=view==="overview",profile=view==="profile";
  el("profile-section").hidden=!profile;
- document.querySelector(".section-heading").hidden=!overview;
- document.querySelector(".overview-banner").hidden=!overview;
- el("workspace").querySelector(".modules").hidden=!overview;
- document.querySelector(".development").hidden=!overview;
+ el("overview-home").hidden=!overview;
  el("operations").hidden=overview||profile;
  if(!overview&&!profile){
    const tab=el("ops-tabs").querySelector('[data-ops-view="'+view+'"]');
@@ -48,6 +45,10 @@ function syncNav(){
  for(const card of document.querySelectorAll("[data-summary-view]")){
    const item=nav.find(n=>n.dataset.sideView===card.dataset.summaryView);
    card.hidden=!item||item.hidden;
+ }
+ for(const action of document.querySelectorAll("[data-overview-view]")){
+   const item=nav.find(n=>n.dataset.sideView===action.dataset.overviewView);
+   action.hidden=!item||item.hidden;
  }
  choose(nav.find(n=>n.dataset.sideView===stored&&!n.hidden)?stored:"overview");
 }
