@@ -505,18 +505,91 @@
     }
     el(statusId).textContent=entries.length?(visible+" de "+entries.length+" "+label):"";
   }
+  function renderAcademyBody(text,container){
+    for(const rawLine of String(text||"").split(/\r?\n/)){
+      const line=rawLine.trim();
+      if(!line)continue;
+      const heading=line.startsWith("# ")?1:line.startsWith("## ")?2:0;
+      const item=heading?elem(heading===1?"h5":"h6",line.slice(heading===1?2:3)):
+        elem("p",line.startsWith("- ")?line.slice(2):line);
+      if(!heading&&line.startsWith("- "))item.className="academy-bullet";
+      container.append(item);
+    }
+  }
+  function filterAcademy(){
+    const q=el("training-search").value.trim().toLocaleLowerCase("pt-BR");
+    const category=el("training-category-filter").value;
+    const entries=[...el("training-list").querySelectorAll(".ops-list-item")];
+    let count=0;
+    for(const item of entries){
+      const match=(!q||item.textContent.toLocaleLowerCase("pt-BR").includes(q))&&
+        (!category||item.dataset.category===category);
+      item.hidden=!match;if(match)count++;
+    }
+    el("training-search-status").textContent=entries.length?
+      count+" de "+entries.length+" materiais disponíveis para sua conta":"";
+  }
+  function trainingKind(){
+    const article=el("training-kind").value==="article";
+    el("training-article-fields").hidden=!article;
+    el("training-file-fields").hidden=article;
+    el("training-body").required=article;
+    el("training-file").required=!article&&!el("training-form").dataset.edit;
+  }
+  function resetTrainingForm(){
+    const form=el("training-form");form.reset();delete form.dataset.edit;
+    delete form.dataset.existingPath;
+    el("training-kind").disabled=false;
+    el("training-editor-title").textContent="Publicar material técnico";
+    el("training-save").textContent="Salvar material";
+    el("training-cancel").hidden=true;
+    trainingKind();
+  }
   async function loadTraining(){
     if(!can("training"))return;
     try{
       const data=await query(state.db.from("training_materials")
-        .select("id,title,description,storage_path,published,created_at")
-        .order("created_at",{ascending:false}).limit(100));
+        .select("id,title,description,storage_path,published,created_at,kind,category,body,reference_url,reviewed_at,updated_at,content_key")
+        .order("created_at",{ascending:false}).limit(120));
       const list=el("training-list");list.replaceChildren();
       if(!data.length)list.append(elem("p","Ainda não há materiais disponíveis.","ops-muted"));
       for(const item of data){
-        const entry=elem("article","","ops-list-item");
-        entry.append(elem("strong",item.title),elem("p",item.description||"Sem descrição"),
-          elem("span",item.published?"Disponível":"Rascunho","ops-badge"));
+        const entry=elem("article","","ops-list-item academy-entry");
+        entry.dataset.category=item.category||"Geral";
+        const head=elem("div","","academy-entry-head");
+        head.append(elem("strong",item.title),
+          elem("span",item.category||"Geral","ops-badge"));
+        entry.append(head,elem("p",item.description||"Sem descrição"),
+          elem("small",(item.kind==="article"?"Procedimento interno":"Arquivo privado")+
+            " · "+(item.reviewed_at?"Revisão: "+new Date(item.reviewed_at+"T12:00:00").toLocaleDateString("pt-BR"):"Revisão pendente"),
+            "academy-meta"));
+        if(item.kind==="article"&&item.body){
+          const details=elem("details","","academy-article");
+          const summary=elem("summary","Ler procedimento");
+          const body=elem("div","","academy-body");renderAcademyBody(item.body,body);
+          if(item.reference_url){
+            try{
+              const url=new URL(item.reference_url);
+              if(url.protocol==="https:"){
+                const a=elem("a","Consultar referência oficial ↗","academy-reference");
+                a.href=url.href;a.target="_blank";a.rel="noopener noreferrer";
+                body.append(a);
+              }
+            }catch{}
+          }
+          details.append(summary,body);entry.append(details);
+          const check=button("Marcar como consultado",()=>{
+            const k="proxiti-academy-read-v1-"+state.user.id+"-"+item.id;
+            try{const checked=localStorage.getItem(k)==="1";localStorage.setItem(k,checked?"0":"1");
+              check.textContent=checked?"Marcar como consultado":"Consultado neste navegador ✓";
+              check.setAttribute("aria-pressed",String(!checked));
+            }catch{notice("A preferência de leitura não pôde ser salva neste navegador.",true);}
+          },"secondary academy-mark-read");
+          const k="proxiti-academy-read-v1-"+state.user.id+"-"+item.id;
+          let seen=false;try{seen=localStorage.getItem(k)==="1"}catch{}
+          check.textContent=seen?"Consultado neste navegador ✓":"Marcar como consultado";
+          check.setAttribute("aria-pressed",String(seen));entry.append(check);
+        }
         const controls=elem("div","","ops-controls");
         if(item.storage_path){
           controls.append(button("Abrir arquivo privado",async()=>{
@@ -526,16 +599,39 @@
             window.open(link.signedUrl,"_blank","noopener,noreferrer");
           }));
         }
-        if(isAdmin())controls.append(button("Excluir material",async()=>{
-          if(!window.confirm("Excluir este material e seu arquivo privado?"))return;
-          if(item.storage_path)await query(state.db.storage.from("proxiti-training").remove([item.storage_path]));
-          await query(state.db.from("training_materials").delete().eq("id",item.id));
-          notice("Material excluído.");await loadTraining();
-        }));
+        if(isAdmin()){
+          controls.append(button("Editar",()=>{
+            const form=el("training-form");form.dataset.edit=item.id;
+            form.dataset.existingPath=item.storage_path||"";
+            el("training-kind").value=item.kind||"file";
+            el("training-kind").disabled=true;
+            el("training-category").value=item.category||"Geral";
+            el("training-title").value=item.title;
+            el("training-description").value=item.description||"";
+            el("training-reference").value=item.reference_url||"";
+            el("training-body").value=item.body||"";
+            el("training-published").checked=item.published;
+            el("training-editor-title").textContent="Editar material";
+            el("training-save").textContent="Salvar alterações";
+            el("training-cancel").hidden=false;trainingKind();
+            form.scrollIntoView({behavior:"smooth",block:"start"});
+            el("training-title").focus({preventScroll:true});
+          }));
+          controls.append(button("Excluir",async()=>{
+            if(!window.confirm("Excluir definitivamente este material? A exclusão não poderá ser desfeita pela Central."))return;
+            await query(state.db.from("training_materials").delete().eq("id",item.id));
+            if(item.storage_path){
+              const {error}=await state.db.storage.from("proxiti-training").remove([item.storage_path]);
+              if(error)notice("Registro excluído, mas o arquivo privado precisa de limpeza administrativa.",true);
+            }
+            if(el("training-form").dataset.edit===item.id)resetTrainingForm();
+            await loadTraining();
+          }));
+        }
         entry.append(controls);list.append(entry);
       }
-      filterOpsList("training-search","training-list","training-search-status","materiais");
-    }catch(e){notice("Falha ao carregar academia: "+e.message,true);}
+      filterAcademy();
+    }catch(e){notice("Falha ao carregar Academia: "+e.message,true);}
   }
   async function loadTools(){
     if(!can("resources"))return;
@@ -683,7 +779,11 @@
   el("reload-staff").addEventListener("click",()=>void loadStaff());
   el("reload-content").addEventListener("click",()=>void loadContent());
   el("reload-training").addEventListener("click",()=>void loadTraining());
-  el("training-search").addEventListener("input",()=>filterOpsList("training-search","training-list","training-search-status","materiais"));
+  el("training-search").addEventListener("input",filterAcademy);
+  el("training-category-filter").addEventListener("change",filterAcademy);
+  el("training-kind").addEventListener("change",trainingKind);
+  el("training-cancel").addEventListener("click",resetTrainingForm);
+  trainingKind();
   el("reload-tools").addEventListener("click",()=>void loadTools());
   el("tools-search").addEventListener("input",()=>filterOpsList("tools-search","tools-list","tools-search-status","ferramentas"));
   el("close-detail").addEventListener("click",()=>{state.active=null;announceTicket();remember("ticket","");el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;state.renderedTable="";renderTickets();});
@@ -777,25 +877,45 @@
   });
   el("training-form").addEventListener("submit",async e=>{
     e.preventDefault();if(!isAdmin())return;
-    const send=e.currentTarget.querySelector("button[type=submit]");send.disabled=true;
-    let path=null;
+    const form=e.currentTarget,send=el("training-save");send.disabled=true;
+    const editing=form.dataset.edit||"",kind=el("training-kind").value;
+    const body=el("training-body").value.trim();
+    const file=el("training-file").files?.[0];
+    let uploadedPath=null;
     try{
-      const file=el("training-file").files[0];
+      if(!["article","file"].includes(kind))throw new Error("Formato inválido.");
+      if(kind==="article"&&body.length<100)throw new Error("O procedimento precisa de pelo menos 100 caracteres.");
+      if(kind==="file"&&!editing&&!file)throw new Error("Selecione o arquivo que será publicado.");
+      if(editing&&file)throw new Error("Para substituir um arquivo privado, cadastre um novo material.");
+      const rawReference=el("training-reference").value.trim();
+      if(rawReference){
+        const url=new URL(rawReference);
+        if(url.protocol!=="https:"||!url.hostname.includes("."))
+          throw new Error("A referência precisa utilizar HTTPS.");
+      }
+      let path=editing?form.dataset.existingPath||null:null;
       if(file){
         const types={"application/pdf":".pdf","image/png":".png","image/jpeg":".jpg","image/webp":".webp"};
-        if(!types[file.type]||file.size>10485760)throw new Error("Arquivo não aceito. Use PDF ou imagem de até 10 MB.");
-        path=crypto.randomUUID()+types[file.type];
+        if(!types[file.type]||file.size<1||file.size>10485760)
+          throw new Error("Arquivo não aceito. Use PDF ou imagem de até 10 MB.");
+        uploadedPath=crypto.randomUUID()+types[file.type];path=uploadedPath;
         await query(state.db.storage.from("proxiti-training").upload(path,file,
           {cacheControl:"3600",upsert:false,contentType:file.type}));
       }
-      await query(state.db.from("training_materials").insert({
+      const data={
         title:el("training-title").value.trim(),description:el("training-description").value.trim(),
-        storage_path:path,published:el("training-published").checked
-      }));
-      e.currentTarget.reset();notice("Material cadastrado.");await loadTraining();
+        kind,category:el("training-category").value,body:kind==="article"?body:"",
+        reference_url:rawReference||null,storage_path:kind==="file"?path:null,
+        published:el("training-published").checked,
+        reviewed_at:new Date().toISOString().slice(0,10),updated_at:new Date().toISOString()
+      };
+      if(editing)await query(state.db.from("training_materials").update(data).eq("id",editing));
+      else await query(state.db.from("training_materials").insert(data));
+      resetTrainingForm();notice(editing?"Material atualizado.":"Material cadastrado.");
+      await loadTraining();
     }catch(error){
-      if(path)void state.db.storage.from("proxiti-training").remove([path]);
-      notice(error.message,true);
+      if(uploadedPath)try{await state.db.storage.from("proxiti-training").remove([uploadedPath]);}catch{}
+      notice(error.message||"Não foi possível salvar o material.",true);
     }finally{send.disabled=false;}
   });
   el("tool-form").addEventListener("submit",async e=>{
