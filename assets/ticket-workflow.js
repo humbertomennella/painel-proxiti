@@ -82,7 +82,7 @@
             await rpc("proxiti_update_ticket_task",{
               p_task:task.id,p_state:chooser.value,p_note:explanation.value.trim()
             });
-            note("Etapa salva.");await refresh("tasks",selected.id);
+            note("Etapa salva.");document.dispatchEvent(new CustomEvent("proxiti-ticket-activity",{detail:{id:task.ticket_id}}));await refresh("tasks",selected.id);
           }catch(error){note(error.message,true);}
           finally{save.disabled=false;}
         });
@@ -182,6 +182,7 @@
       await rpc("proxiti_add_ticket_note",{p_ticket:ticket.id,p_body:body});
       if(selected?.id===ticket.id){
         el("ticket-note-body").value="";note("Nota interna registrada.");
+        document.dispatchEvent(new CustomEvent("proxiti-ticket-activity",{detail:{id:ticket.id}}));
         await refresh("notes",ticket.id);
       }
     }catch(error){if(selected?.id===ticket.id)note(error.message,true);}
@@ -196,6 +197,7 @@
       });
       if(selected?.id===ticket.id){
         note(count?"Roteiro criado. Ajuste as etapas de acordo com o atendimento.":"O roteiro deste chamado já existe.");
+        if(count)document.dispatchEvent(new CustomEvent("proxiti-ticket-activity",{detail:{id:ticket.id}}));
         await refresh("tasks",ticket.id);
       }
     }catch(error){if(selected?.id===ticket.id)note(error.message,true);}
@@ -222,7 +224,8 @@
         p_ticket:ticket.id,p_path:path,p_name:file.name,p_mime:file.type,p_size:file.size
       });
       if(selected?.id===ticket.id){
-        form.reset();note("Anexo privado registrado.");await refresh("files",ticket.id);
+        form.reset();note("Anexo privado registrado.");
+        document.dispatchEvent(new CustomEvent("proxiti-ticket-activity",{detail:{id:ticket.id}}));await refresh("files",ticket.id);
       }
     }catch(error){
       if(uploaded)try{await database().storage.from(bucket).remove([path]);}catch{}
