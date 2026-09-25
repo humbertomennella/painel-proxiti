@@ -42,5 +42,20 @@ assert(interfaceCss.includes('html[data-theme="light"]')&&interfaceCss.includes(
 assert.equal((interfaceCss.match(/{/g)||[]).length,(interfaceCss.match(/}/g)||[]).length,"Chaves CSS desbalanceadas");
 assert(get("assets/operations.js").includes("function publishOverview()"),"Resumo de chamados não é publicado");
 assert(get("assets/overview.js").includes("proxiti-overview-updated"),"Painel inicial sem eventos operacionais");
+for(const id of ["overview-reading-toggle","overview-reading-label","overview-guide-toggle","overview-guide","overview-guide-tickets"]){
+ assert(html.includes('id="'+id+'"'),"Controle de conforto ausente: "+id);
+}
+assert(html.includes('aria-controls="overview-guide"'),"Guia sem vínculo acessível");
+assert(html.includes('aria-pressed="false" title="Ampliar o texto da visão geral"'),"Leitura sem estado acessível");
+const comfortCss=get("assets/overview-comfort.css");
+assert(comfortCss.includes("overview-reading-mode"),"Leitura ampliada sem estilo");
+assert(comfortCss.includes("overview-guide-grid"),"Guia contextual sem layout");
+assert(comfortCss.includes("grid-template-columns:1fr"),"Guia sem adaptação móvel");
+assert.equal((comfortCss.match(/{/g)||[]).length,(comfortCss.match(/}/g)||[]).length,"Chaves de conforto CSS desbalanceadas");
+const overviewJs=get("assets/overview.js");
+assert(overviewJs.includes("localStorage.setItem(readingKey(userId)"),"Preferência visual não é persistida por conta");
+assert(overviewJs.includes('el("overview-guide-tickets").hidden=!canTickets'),"Orientação ignora permissões");
+assert(overviewJs.includes('if(active)setGuide(false)'),"Modo de foco não recolhe o guia");
+
 assert(get("assets/layout.js").includes('el("overview-home").hidden=!overview'),"Visão geral não é isolada");
 console.log("PROXITI: JS, IDs, inbox, MFA, temas, sidebar e Visão geral verificados.");

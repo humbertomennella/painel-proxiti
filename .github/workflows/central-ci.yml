@@ -1,5 +1,13 @@
 name: PROXITI | Verificação da Central
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "assets/**"
+      - "supabase/**"
+      - "tests/**"
+      - ".github/workflows/central-ci.yml"
   push:
     branches: [main]
     paths:

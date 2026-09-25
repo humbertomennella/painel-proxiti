@@ -8,8 +8,26 @@ let userId=null,canTickets=false,lastSignature="",lastUpdated=0;
 const node=(tag,className,text)=>{const n=document.createElement(tag);if(className)n.className=className;if(text!==undefined)n.textContent=String(text);return n};
 const fallback=text=>{const p=node("p","overview-empty",text);el("overview-recent-list").replaceChildren(p)};
 const focusKey=id=>"proxiti-overview-focus-v1-"+id;
+const readingKey=id=>"proxiti-overview-reading-v1-"+id;
+function setGuide(open){
+ const active=!!open&&!root.classList.contains("overview-focus-mode");
+ const guide=el("overview-guide"),toggle=el("overview-guide-toggle");
+ guide.hidden=!active;
+ toggle.setAttribute("aria-expanded",String(active));
+ toggle.title=active?"Ocultar orientações de uso":"Mostrar orientações rápidas";
+}
+function setReading(value,persist=false){
+ const active=!!value;
+ root.classList.toggle("overview-reading-mode",active);
+ const toggle=el("overview-reading-toggle");
+ toggle.setAttribute("aria-pressed",String(active));
+ toggle.title=active?"Voltar ao tamanho de leitura padrão":"Ampliar o texto da visão geral";
+ el("overview-reading-label").textContent=active?"Leitura padrão":"Ampliar leitura";
+ if(persist&&userId){try{localStorage.setItem(readingKey(userId),String(active))}catch{}}
+}
 function setFocus(value,persist=false){
  const active=!!value;
+ if(active)setGuide(false);
  root.classList.toggle("overview-focus-mode",active);
  const toggle=el("overview-focus-toggle");toggle.setAttribute("aria-pressed",String(active));
  el("overview-focus-label").textContent=active?"Mostrar tudo":"Focar na fila";
@@ -18,6 +36,7 @@ function setFocus(value,persist=false){
 }
 function syncAccess(allowed){
  canTickets=!!allowed.tickets;
+ el("overview-guide-tickets").hidden=!canTickets;
  el("overview-focus-toggle").hidden=!canTickets;
  if(!canTickets)setFocus(false);
  el("overview-metrics-section").hidden=!canTickets;
@@ -101,6 +120,8 @@ function render(data){
 function reset(){
  userId=null;canTickets=false;lastSignature="";lastUpdated=0;
  setFocus(false);
+ setReading(false);
+ setGuide(false);
  for(const id of ["overview-kpi-unread","overview-kpi-open","overview-kpi-progress","overview-kpi-waiting"])el(id).textContent="—";
  el("overview-updated").textContent="Sincronizando…";el("overview-action-count").hidden=true;
  el("overview-guidance").textContent="Os atendimentos e recursos aparecem de acordo com suas permissões.";
@@ -116,6 +137,10 @@ document.addEventListener("proxiti-session-ready",event=>{
  let focused=false;
  try{focused=sessionStorage.getItem(focusKey(userId))==="true"}catch{}
  setFocus(focused);
+ let enlarged=false;
+ try{enlarged=localStorage.getItem(readingKey(userId))==="true"}catch{}
+ setReading(enlarged);
+ setGuide(false);
  const p=session.profile||{};
  syncAccess({tickets:p.status==="active"&&(p.role==="administrator"||p.permissions?.tickets_view===true)});
 });
@@ -139,11 +164,16 @@ for(const control of root.querySelectorAll("[data-overview-view]")){
  });
 }
 el("overview-focus-toggle").addEventListener("click",()=>setFocus(!root.classList.contains("overview-focus-mode"),true));
+el("overview-reading-toggle").addEventListener("click",()=>setReading(!root.classList.contains("overview-reading-mode"),true));
+el("overview-guide-toggle").addEventListener("click",()=>setGuide(el("overview-guide").hidden));
 if(window.PROXITI_ACTIVE_SESSION){
  const session=window.PROXITI_ACTIVE_SESSION;userId=session.user.id;
  const p=session.profile||{};
  syncAccess({tickets:p.status==="active"&&(p.role==="administrator"||p.permissions?.tickets_view===true)});
  let saved=false;try{saved=sessionStorage.getItem(focusKey(userId))==="true"}catch{}
  setFocus(saved);
+ let enlarged=false;try{enlarged=localStorage.getItem(readingKey(userId))==="true"}catch{}
+ setReading(enlarged);
+ setGuide(false);
 }
 })();
