@@ -50,6 +50,143 @@
         :(rows.length?"Você está online":"Disponibilidade em atualização");
     }catch{el("overview-online").textContent="Presença em atualização";}
   }
+
+  // Preferências locais por profissional: apenas IDs e horários de leitura.
+  const isOpen=t=>!["resolved","closed"].includes(t.status);
+  const seenKey=id=>"proxiti-inbox-seen-v1-"+state.user?.id+"-"+id;
+  const readKey=id=>"proxiti-inbox-read-v1-"+state.user?.id+"-"+id;
+  function seenTicket(id){
+    if(state.seenFallback.has(id))return true;
+    try{return localStorage.getItem(seenKey(id))==="1"}catch{return false;}
+  }
+  function markTicketSeen(id){
+    state.seenFallback.add(id);
+    try{localStorage.setItem(seenKey(id),"1")}catch{}
+  }
+  function lastRead(id){
+    if(state.readFallback.has(id))return state.readFallback.get(id);
+    try{return Number(localStorage.getItem(readKey(id))||0)||0}catch{return 0;}
+  }
+  function unreadMessages(id){
+    const timestamp=lastRead(id);
+    return state.messageRows.filter(m=>m.ticket_id===id&&Date.parse(m.created_at)>timestamp).length;
+  }
+  function markMessagesSeen(id,list){
+    if(document.hidden||el("operations").hidden||state.currentView!=="tickets"||el("ticket-detail").hidden)return;
+    const latest=Math.max(0,...list.filter(m=>m.sender_kind==="customer").map(m=>Date.parse(m.created_at)||0));
+    if(latest>lastRead(id)){
+      state.readFallback.set(id,latest);
+      try{localStorage.setItem(readKey(id),String(latest))}catch{}
+    }
+    markTicketSeen(id);updateInbox();renderTickets();
+  }
+  function toast(message){
+    const node=el("alert-toast");node.textContent=message;node.hidden=false;
+    if(state.toastTimer)clearTimeout(state.toastTimer);
+    state.toastTimer=setTimeout(()=>{node.hidden=true;state.toastTimer=null;},6500);
+  }
+  function statusPill(value){
+    const pill=elem("span","","ticket-status-pill status-"+value);
+    const dot=elem("span","","ticket-status-dot");dot.setAttribute("aria-hidden","true");
+    pill.append(dot,document.createTextNode(statusNames[value]||value));
+    return pill;
+  }
+  function updateInbox(){
+    if(!state.user)return;
+    const pending=[];
+    for(const t of state.tickets){
+      if(["new","triage"].includes(t.status)&&!seenTicket(t.id))
+        pending.push({id:t.id,time:Date.parse(t.created_at)||0,
+          label:"Chamado #"+t.reference+" ainda não visualizado",detail:t.subject,kind:"ticket"});
+      const unread=unreadMessages(t.id);
+      if(unread&&t.status!=="closed"){
+        const latest=state.messageRows.find(m=>m.ticket_id===t.id);
+        pending.push({id:t.id,time:Date.parse(latest?.created_at)||0,
+          label:unread+" "+(unread===1?"mensagem não lida":"mensagens não lidas")+" · #"+t.reference,
+          detail:"Resposta do cliente pendente",kind:"message"});
+      }
+    }
+    pending.sort((a,b)=>b.time-a.time);
+    const count=pending.length;
+    for(const id of ["notifications-count","ticket-badge"]){
+      const node=el(id);node.textContent=count>99?"99+":String(count);node.hidden=!count;
+    }
+    const area=el("notifications-list");area.replaceChildren();
+    if(!pending.length)area.append(elem("p","Tudo em dia. Nenhum chamado ou mensagem sem leitura.","notifications-empty"));
+    for(const item of pending.slice(0,12)){
+      const entry=button(item.label,async()=>{
+        el("notifications-panel").hidden=true;
+        el("notifications-toggle").setAttribute("aria-expanded","false");
+        window.PROXITI_OPEN_VIEW?.("tickets");
+        await openTicket(item.id);
+      },"notification-item");
+      entry.append(elem("span",item.kind==="message"?"Mensagem":"Chamado","notification-kind "+item.kind),
+        elem("strong",item.label),elem("small",item.detail));
+      area.append(entry);
+    }
+    el("notifications-toggle").setAttribute("aria-label",count?count+" pendências, abrir notificações":"Abrir notificações");
+  }
+  function updateMetrics(){
+    const count=condition=>state.tickets.filter(condition).length;
+    el("ticket-metric-open").textContent=String(count(t=>["new","triage"].includes(t.status)));
+    el("ticket-metric-progress").textContent=String(count(t=>t.status==="in_progress"));
+    el("ticket-metric-waiting").textContent=String(count(t=>t.status==="waiting_customer"));
+    el("ticket-metric-resolved").textContent=String(count(t=>t.status==="resolved"));
+    el("ticket-metric-closed").textContent=String(count(t=>t.status==="closed"));
+    el("ticket-filter-all-count").textContent=String(state.tickets.length);
+    el("ticket-filter-unread-count").textContent=String(state.tickets.filter(t=>
+      (!seenTicket(t.id)&&["new","triage"].includes(t.status))||unreadMessages(t.id)>0).length);
+    for(const node of document.querySelectorAll("[data-ticket-filter]")){
+      const active=node.dataset.ticketFilter===state.ticketFilter;
+      node.classList.toggle("active",active);node.setAttribute("aria-pressed",String(active));
+    }
+  }
+  function renderTickets(){
+    if(!state.user)return;
+    updateMetrics();
+    const filter=state.ticketFilter,search=state.ticketSearch.trim().toLocaleLowerCase("pt-BR");
+    const rows=state.tickets.filter(t=>{
+      const unread=(!seenTicket(t.id)&&["new","triage"].includes(t.status))||unreadMessages(t.id)>0;
+      if(filter==="unread"&&!unread)return false;
+      if(filter==="open"&&!["new","triage"].includes(t.status))return false;
+      if(!["all","unread","open"].includes(filter)&&t.status!==filter)return false;
+      if(search&&!String(t.reference).includes(search)&&
+        !t.customer_name.toLocaleLowerCase("pt-BR").includes(search)&&
+        !t.subject.toLocaleLowerCase("pt-BR").includes(search))return false;
+      return true;
+    });
+    const signature=JSON.stringify([filter,search,rows.map(t=>[
+      t.id,t.status,t.assigned_to,t.customer_name,t.subject,seenTicket(t.id),unreadMessages(t.id)
+    ])]);
+    if(signature===state.renderedTable)return;
+    state.renderedTable=signature;
+    const body=el("tickets-body");body.replaceChildren();
+    if(!rows.length){
+      const tr=elem("tr"),td=elem("td",
+        state.tickets.length?"Nenhum chamado corresponde aos filtros.":"A fila está vazia. Novos chamados aparecerão aqui.","ticket-empty");
+      td.colSpan=6;tr.append(td);body.append(tr);
+    }
+    for(const t of rows){
+      const unread=unreadMessages(t.id),isNew=!seenTicket(t.id)&&["new","triage"].includes(t.status);
+      const tr=elem("tr","","ticket-row"+(unread||isNew?" ticket-row-unread":""));
+      tr.dataset.status=t.status;if(state.active?.id===t.id)tr.classList.add("ticket-row-active");
+      const ref=elem("td");ref.append(elem("strong","#"+t.reference,"ticket-reference"),
+        elem("small",shortDate(t.created_at),"ticket-secondary"));tr.append(ref);
+      const client=elem("td");client.append(elem("strong",t.customer_name,"ticket-customer"),
+        elem("small",t.source==="chat"?"Chat":"Formulário","ticket-secondary"));tr.append(client);
+      const subject=elem("td");subject.append(elem("strong",t.subject,"ticket-subject"));
+      if(unread)subject.append(elem("span",unread+" "+(unread===1?"mensagem não lida":"mensagens não lidas"),"ticket-unread-label"));
+      else if(isNew)subject.append(elem("span","Novo chamado","ticket-unread-label"));
+      tr.append(subject);
+      const status=elem("td");status.append(statusPill(t.status));tr.append(status);
+      tr.append(elem("td",staffName(t.assigned_to)));
+      const action=elem("td");action.append(button("Abrir →",()=>openTicket(t.id),"ticket-open-button"));tr.append(action);
+      body.append(tr);
+    }
+    el("ticket-table-result").textContent=rows.length+" "+(rows.length===1?"chamado exibido":"chamados exibidos")+
+      (state.tickets.length!==rows.length?" de "+state.tickets.length:"");
+  }
+
   async function checkNewMessages(){
     if(!state.db||!can("chat")||!can("tickets_view")||state.messageCheckBusy)return;
     state.messageCheckBusy=true;
