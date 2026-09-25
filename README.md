@@ -66,3 +66,18 @@ A migração aditiva `supabase/ticket_workflow_v7.sql` foi aplicada ao projeto C
 
 **Limites:** o relatório é gerado para revisão no navegador e não é enviado automaticamente; conteúdo real da Academia, segundo técnico, agenda e histórico consolidado de equipamentos exigem implantação operacional específica. A validação com duas contas reais ainda não foi realizada. Consulte [o fluxo, a matriz de acesso e o roteiro de testes](docs/fluxo-tecnico-v7.md).
 
+
+## Central V8 · Módulos preparados e materiais entregues
+
+- **Visão geral:** indicadores de pendências acionáveis, tema claro/escuro, acessibilidade móvel e atalhos para chamados, Agenda, Academia, Ferramentas e perfil.
+- **Chamados:** notas internas, checklists, anexos privados, equipamento por atendimento, agendamentos vinculados, relatórios versionados e histórico de auditoria.
+- **Agenda:** compromissos reais com estados planejado, confirmado, concluído ou cancelado. O sistema não confirma horário nem envia convite sem ação humana.
+- **Academia:** dez procedimentos originais publicados em seis áreas, com pesquisa, filtro, revisão editorial e opção de impressão/salvamento em PDF pelo navegador.
+- **Ferramentas:** inventário e calculadora IPv4/CIDR, verificação SHA-256 local, sem transmitir arquivo ao Supabase.
+- **Técnicos, conteúdo e perfil:** continuam respeitando os níveis de permissão e o MFA administrativo existente.
+
+As migrações `supabase/central_operations_v8.sql` e `supabase/academy_content_v8.sql` foram aplicadas ao banco. O conteúdo editorial usa chaves estáveis e a seed não sobrescreve revisões futuras. Todas as tabelas operacionais novas têm acesso restrito e não são graváveis diretamente pelo navegador.
+
+**Verificações:** `node tests/central-integrity.mjs` e `node tests/browser-smoke.mjs` (Chromium; cinco larguras) são exigidos na revisão. Os testes do navegador exercitam a geometria sem autenticação; ensaios com duas contas reais e fluxos de cliente continuam necessários antes de ampliar equipe. Não criar chamados fictícios em produção para preencher os painéis.
+
+Veja o [manual operacional da V8](docs/entrega-operacional-v8.md), o [fluxo privado V7](docs/fluxo-tecnico-v7.md) e a [implantação do domínio opcional](docs/implantacao-operacional.md).
