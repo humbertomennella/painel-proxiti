@@ -2,7 +2,7 @@
   "use strict";
   const el = id => document.getElementById(id);
   const state = { db:null, user:null, profile:null, tickets:[], staff:[], active:null,
-    channel:null, poll:null, heartbeat:null, currentView:"tickets", loading:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),toastTimer:null };
+    channel:null, poll:null, heartbeat:null, currentView:"tickets", loading:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),readReceipts:new Map(),receiptsReady:false,readFetch:null,readSaving:new Set(),toastTimer:null };
   const statusNames = {new:"Aberto",triage:"Em triagem",in_progress:"Em atendimento",
     waiting_customer:"Aguardando cliente",resolved:"Resolvido",closed:"Encerrado"};
   const permNames = {tickets_view:"Consultar chamados",tickets_claim:"Assumir chamados",
@@ -51,13 +51,31 @@
     }catch{el("overview-online").textContent="Presença em atualização";}
   }
 
-  // Preferências locais por profissional: apenas IDs e horários de leitura.
+  // Leituras persistidas no Supabase; armazenamento local serve só antes da primeira sincronização.
   const isOpen=t=>!["resolved","closed"].includes(t.status);
   const seenKey=id=>"proxiti-inbox-seen-v1-"+state.user?.id+"-"+id;
   const readKey=id=>"proxiti-inbox-read-v1-"+state.user?.id+"-"+id;
+  async function loadReadReceipts(){
+    if(!state.db||!state.user)return;
+    if(state.readFetch)return state.readFetch;
+    const uid=state.user.id;
+    state.readFetch=(async()=>{
+      try{
+        const rows=await query(state.db.from("ticket_read_receipts")
+          .select("ticket_id,first_seen_at,last_read_customer_at").eq("staff_id",uid).limit(250));
+        if(state.user?.id!==uid)return;
+        state.readReceipts=new Map(rows.map(row=>[row.ticket_id,row]));
+        state.receiptsReady=true;
+      }catch(error){
+        if(!state.receiptsReady)el("ops-live").textContent="Leitura entre dispositivos temporariamente indisponível";
+      }finally{state.readFetch=null}
+    })();
+    return state.readFetch;
+  }
   function seenTicket(id){
     if(state.seenFallback.has(id))return true;
-    try{return localStorage.getItem(seenKey(id))==="1"}catch{return false;}
+    if(state.receiptsReady)return state.readReceipts.has(id);
+    try{return localStorage.getItem(seenKey(id))==="1"}catch{return false}
   }
   function markTicketSeen(id){
     state.seenFallback.add(id);
@@ -65,26 +83,87 @@
   }
   function lastRead(id){
     if(state.readFallback.has(id))return state.readFallback.get(id);
-    try{return Number(localStorage.getItem(readKey(id))||0)||0}catch{return 0;}
+    if(state.receiptsReady){
+      const date=state.readReceipts.get(id)?.last_read_customer_at;
+      return date?Date.parse(date)||0:0;
+    }
+    try{return Number(localStorage.getItem(readKey(id))||0)||0}catch{return 0}
   }
   function unreadMessages(id){
     const timestamp=lastRead(id);
     return state.messageRows.filter(m=>m.ticket_id===id&&Date.parse(m.created_at)>timestamp).length;
   }
-  function markMessagesSeen(id,list){
-    if(document.hidden||el("operations").hidden||state.currentView!=="tickets"||el("ticket-detail").hidden)return;
+  async function markMessagesSeen(id,list){
+    if(document.hidden||el("operations").hidden||state.currentView!=="tickets"||
+       el("ticket-detail").hidden||state.active?.id!==id||state.readSaving.has(id))return;
     const latest=Math.max(0,...list.filter(m=>m.sender_kind==="customer").map(m=>Date.parse(m.created_at)||0));
-    if(latest>lastRead(id)){
-      state.readFallback.set(id,latest);
-      try{localStorage.setItem(readKey(id),String(latest))}catch{}
-    }
-    markTicketSeen(id);updateInbox();renderTickets();
+    if(state.receiptsReady&&state.readReceipts.has(id)&&latest<=lastRead(id))return;
+    state.readSaving.add(id);
+    try{
+      await rpc("proxiti_mark_ticket_read",{p_ticket:id});
+      state.readReceipts.set(id,{ticket_id:id,first_seen_at:new Date().toISOString(),
+        last_read_customer_at:latest?new Date(latest).toISOString():null});
+      state.receiptsReady=true;markTicketSeen(id);updateInbox();renderTickets();
+    }catch{/* A marca de leitura só é sincronizada depois da confirmação do banco. */}
+    finally{state.readSaving.delete(id)}
   }
+
   function toast(message){
     const node=el("alert-toast");node.textContent=message;node.hidden=false;
     if(state.toastTimer)clearTimeout(state.toastTimer);
     state.toastTimer=setTimeout(()=>{node.hidden=true;state.toastTimer=null;},6500);
   }
+  function browserNotice(kind,ticketId){
+    if(!document.hidden||!("Notification" in window)||Notification.permission!=="granted")return;
+    try{
+      const n=new Notification("Central Técnica PROXITI",{
+        body:kind==="ticket"?"Um novo chamado chegou à Central.":"Você recebeu uma mensagem de cliente.",
+        tag:"proxiti-"+kind+"-"+ticketId,icon:new URL("./assets/favicon.svg",location.href).href
+      });
+      n.onclick=()=>{
+        window.focus();n.close();
+        window.PROXITI_OPEN_VIEW?.("tickets");
+        if(ticketId)void openTicket(ticketId);
+      };
+    }catch{/* Notificações também podem ser bloqueadas pelo sistema operacional. */}
+  }
+  function browserPermissionLabel(){
+    const control=el("browser-notifications"),hint=el("browser-notification-hint");
+    if(!("Notification" in window)){
+      control.disabled=true;control.textContent="Não disponível";hint.textContent="Este navegador não oferece notificações.";
+    }else if(Notification.permission==="granted"){
+      control.disabled=true;control.textContent="Notificações autorizadas";hint.textContent="Avisos aparecem enquanto a Central estiver aberta, mesmo em segundo plano.";
+    }else if(Notification.permission==="denied"){
+      control.disabled=true;control.textContent="Bloqueado pelo navegador";hint.textContent="Libere a permissão nas configurações do site.";
+    }else{
+      control.disabled=false;control.textContent="Ativar notificações do navegador";hint.textContent="Ative para receber avisos ao trabalhar em outra aba.";
+    }
+  }
+  async function loadAudit(ticketId){
+    if(!state.db||!ticketId)return;
+    const list=el("ticket-audit-list");list.replaceChildren(elem("li","Consultando histórico…"));
+    try{
+      const events=await query(state.db.from("ticket_audit")
+        .select("id,action,actor_id,previous_value,next_value,created_at")
+        .eq("ticket_id",ticketId).order("created_at",{ascending:false}).limit(35));
+      if(state.active?.id!==ticketId)return;
+      list.replaceChildren();
+      if(!events.length)list.append(elem("li","Nenhuma movimentação registrada desde a ativação do histórico."));
+      const names={created:"Solicitação registrada",claimed:"Atendimento assumido",assigned:"Responsável designado",
+        unassigned:"Retornado à fila",status_changed:"Situação alterada",staff_replied:"Equipe respondeu",
+        customer_replied:"Cliente enviou mensagem"};
+      for(const event of events){
+        const item=elem("li");
+        const actor=event.actor_id?staffName(event.actor_id):"Sistema / cliente";
+        item.append(elem("strong",names[event.action]||"Movimentação"),elem("small",
+          shortDate(event.created_at)+" · "+actor+
+          (event.action==="status_changed"?" · "+(statusNames[event.previous_value]||event.previous_value||"")+
+            " → "+(statusNames[event.next_value]||event.next_value||""):"")));
+        list.append(item);
+      }
+    }catch{list.replaceChildren(elem("li","O histórico está temporariamente indisponível."))}
+  }
+
   function statusPill(value){
     const pill=elem("span","","ticket-status-pill status-"+value);
     const dot=elem("span","","ticket-status-dot");dot.setAttribute("aria-hidden","true");
@@ -156,37 +235,30 @@
       return true;
     });
     const signature=JSON.stringify([filter,search,rows.map(t=>[
-      t.id,t.status,t.assigned_to,t.customer_name,t.subject,seenTicket(t.id),unreadMessages(t.id)
+      t.id,t.status,t.assigned_to,t.customer_name,t.subject,seenTicket(t.id),unreadMessages(t.id),state.active?.id
     ])]);
     if(signature===state.renderedTable)return;
     state.renderedTable=signature;
-    const body=el("tickets-body");body.replaceChildren();
-    if(!rows.length){
-      const tr=elem("tr"),td=elem("td",
-        state.tickets.length?"Nenhum chamado corresponde aos filtros.":"A fila está vazia. Novos chamados aparecerão aqui.","ticket-empty");
-      td.colSpan=6;tr.append(td);body.append(tr);
-    }
+    const list=el("ticket-list");list.replaceChildren();
+    if(!rows.length)list.append(elem("p",state.tickets.length?
+      "Nenhum chamado corresponde aos filtros.":"A fila está vazia. Novos chamados aparecerão aqui.","ticket-list-empty"));
     for(const t of rows){
-      const unread=unreadMessages(t.id),isNew=!seenTicket(t.id)&&["new","triage"].includes(t.status);
-      const tr=elem("tr","","ticket-row"+(unread||isNew?" ticket-row-unread":""));
-      tr.dataset.status=t.status;if(state.active?.id===t.id)tr.classList.add("ticket-row-active");
-      const ref=elem("td");ref.append(elem("strong","#"+t.reference,"ticket-reference"),
-        elem("small",shortDate(t.created_at),"ticket-secondary"));tr.append(ref);
-      const client=elem("td");client.append(elem("strong",t.customer_name,"ticket-customer"),
-        elem("small",t.source==="chat"?"Chat":"Formulário","ticket-secondary"));tr.append(client);
-      const subject=elem("td");subject.append(elem("strong",t.subject,"ticket-subject"));
-      if(unread)subject.append(elem("span",unread+" "+(unread===1?"mensagem não lida":"mensagens não lidas"),"ticket-unread-label"));
-      else if(isNew)subject.append(elem("span","Novo chamado","ticket-unread-label"));
-      tr.append(subject);
-      const status=elem("td");status.append(statusPill(t.status));tr.append(status);
-      tr.append(elem("td",staffName(t.assigned_to)));
-      const action=elem("td");action.append(button("Abrir →",()=>openTicket(t.id),"ticket-open-button"));tr.append(action);
-      body.append(tr);
+      const unread=unreadMessages(t.id),fresh=!seenTicket(t.id)&&["new","triage"].includes(t.status);
+      const item=elem("div","","ticket-inbox-item");item.setAttribute("role","listitem");
+      const card=button("Abrir chamado #"+t.reference,()=>openTicket(t.id),
+        "ticket-inbox-card"+(unread||fresh?" has-unread":"")+(state.active?.id===t.id?" selected":""));
+      card.setAttribute("aria-label","Chamado "+t.reference+", "+t.subject+", "+statusNames[t.status]);
+      if(state.active?.id===t.id)card.setAttribute("aria-current","true");
+      const top=elem("span","","ticket-inbox-top");
+      top.append(elem("strong","#"+t.reference+" · "+t.customer_name),elem("small",shortDate(t.created_at)));
+      const subject=elem("span",t.subject,"ticket-inbox-subject");
+      const foot=elem("span","","ticket-inbox-foot");
+      foot.append(statusPill(t.status),elem("small",staffName(t.assigned_to)));
+      if(unread||fresh)foot.append(elem("span",unread?unread+" não lida"+(unread===1?"":"s"):"Novo","ticket-inbox-unread"));
+      card.replaceChildren(top,subject,foot);item.append(card);list.append(item);
     }
-    el("ticket-table-result").textContent=rows.length+" "+(rows.length===1?"chamado exibido":"chamados exibidos")+
-      (state.tickets.length!==rows.length?" de "+state.tickets.length:"");
+    el("ticket-table-result").textContent=rows.length+" de "+state.tickets.length;
   }
-
   async function checkNewMessages(){
     if(!state.db||!can("chat")||!can("tickets_view")||state.messageCheckBusy)return;
     state.messageCheckBusy=true;
@@ -201,6 +273,7 @@
       if(changed.length){
         sound("message");
         toast(changed.length===1?"Nova mensagem de cliente recebida.":changed.length+" novas mensagens de clientes.");
+        browserNotice("message",changed[0]?.ticket_id);
       }
       updateInbox();renderTickets();
     }catch{/* indisponibilidade temporária não reinicia a interface */}
@@ -294,12 +367,14 @@
       state.tickets=await query(state.db.from("support_tickets")
         .select("id,reference,customer_name,customer_email,customer_phone,subject,description,status,source,assigned_to,created_at")
         .order("created_at",{ascending:false}).limit(100));
+      await loadReadReceipts();
       const ids=new Set(state.tickets.map(t=>t.id));
       const newArrivals=state.ticketIds?state.tickets.filter(t=>!state.ticketIds.has(t.id)):[];
       state.ticketIds=ids;
       if(newArrivals.length){
         sound("ticket");
         toast(newArrivals.length===1?"Novo chamado recebido na Central Técnica.":newArrivals.length+" novos chamados recebidos.");
+        browserNotice("ticket",newArrivals[0]?.id);
       }
       const active=state.tickets.filter(isOpen).length;
       el("overview-open").textContent=active===1?"1 chamado ativo":active+" chamados ativos";
@@ -312,7 +387,7 @@
       if(state.active){
         const found=state.tickets.find(t=>t.id===state.active.id);
         if(found){state.active=found;updateTicketHeading();}
-        else{state.active=null;remember("ticket","");el("ticket-detail").hidden=true;}
+        else{state.active=null;remember("ticket","");el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;}
       }
       updateInbox();renderTickets();
       if(state.restoreScroll!==null){
@@ -325,6 +400,7 @@
   function updateTicketHeading(){
     const t=state.active;if(!t)return;
     el("ticket-detail").hidden=false;
+    el("ticket-empty-state").hidden=true;
     el("ticket-detail").dataset.status=t.status;
     el("ticket-code").textContent="CHAMADO #"+t.reference+" · "+shortDate(t.created_at);
     el("ticket-subject").textContent=t.subject;
@@ -360,7 +436,7 @@
         if(nearBottom)box.scrollTop=box.scrollHeight;
         state.renderedThread=signature;
       }
-      markMessagesSeen(t.id,list);
+      await markMessagesSeen(t.id,list);
     }catch(e){notice("Falha ao consultar conversa: "+e.message,true);}
   }
   async function openTicket(id){
@@ -369,7 +445,10 @@
     state.active=t;remember("ticket",id);markTicketSeen(id);state.renderedThread="";updateTicketHeading();updateInbox();renderTickets();
     el("staff-reply").value=recalled("draft-"+id)||"";
     if(can("chat"))await loadMessages();
-    el("ticket-detail").scrollIntoView({behavior:"smooth",block:"start"});
+    else await rpc("proxiti_mark_ticket_read",{p_ticket:id}).then(()=>{markTicketSeen(id);void loadReadReceipts()}).catch(()=>{});
+    void loadAudit(id);
+    if(window.matchMedia("(max-width: 900px)").matches)
+      el("ticket-detail").scrollIntoView({behavior:"smooth",block:"start"});
   }
   async function loadContent(){
     if(!isAdmin())return;
@@ -459,14 +538,14 @@
     if(state.heartbeat)clearInterval(state.heartbeat);
     if(state.channel&&state.db)void state.db.removeChannel(state.channel);
     if(state.toastTimer)clearTimeout(state.toastTimer);
-    Object.assign(state,{db:null,user:null,profile:null,tickets:[],staff:[],active:null,channel:null,poll:null,heartbeat:null,loading:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),toastTimer:null});
+    Object.assign(state,{db:null,user:null,profile:null,tickets:[],staff:[],active:null,channel:null,poll:null,heartbeat:null,loading:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),readReceipts:new Map(),receiptsReady:false,readFetch:null,readSaving:new Set(),toastTimer:null});
     el("alert-toast").hidden=true;el("notifications-panel").hidden=true;
     el("notifications-toggle").setAttribute("aria-expanded","false");
     el("notifications-count").hidden=true;el("ticket-badge").hidden=true;
-    el("tickets-body").replaceChildren();el("staff-messages").replaceChildren();
+    el("ticket-list").replaceChildren();el("staff-messages").replaceChildren();
     el("staff-reply").value="";el("notifications-list").replaceChildren();
     el("overview-open").textContent="Chamados: atualizando…";
-    el("operations").hidden=true;el("ticket-detail").hidden=true;notice("");
+    el("operations").hidden=true;el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;notice("");
   }
   async function start(e){
     const {client,user,profile}=e.detail;
@@ -522,6 +601,12 @@
   for(const tab of el("ops-tabs").querySelectorAll("[data-ops-view]"))
     tab.addEventListener("click",()=>showView(tab.dataset.opsView));
   el("reload-tickets").addEventListener("click",()=>void loadTickets());
+  el("browser-notifications").addEventListener("click",async()=>{
+    if(!("Notification" in window)||Notification.permission!=="default")return;
+    try{await Notification.requestPermission()}catch{}
+    browserPermissionLabel();
+  });
+  browserPermissionLabel();
   for(const n of document.querySelectorAll("[data-ticket-filter]"))n.addEventListener("click",()=>{
     state.ticketFilter=n.dataset.ticketFilter;remember("ticket-filter",state.ticketFilter);
     state.renderedTable="";renderTickets();
@@ -552,7 +637,7 @@
   el("reload-content").addEventListener("click",()=>void loadContent());
   el("reload-training").addEventListener("click",()=>void loadTraining());
   el("reload-tools").addEventListener("click",()=>void loadTools());
-  el("close-detail").addEventListener("click",()=>{state.active=null;remember("ticket","");el("ticket-detail").hidden=true;});
+  el("close-detail").addEventListener("click",()=>{state.active=null;remember("ticket","");el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;state.renderedTable="";renderTickets();});
   el("staff-reply").addEventListener("input",()=>{if(state.active)remember("draft-"+state.active.id,el("staff-reply").value)});
   window.addEventListener("pagehide",()=>{if(state.user)remember("scroll",Math.round(window.scrollY))});
   document.addEventListener("visibilitychange",()=>{

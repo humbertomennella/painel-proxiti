@@ -408,3 +408,55 @@ body.workspace-mode .notification-trigger{display:inline-flex;align-items:center
 @media(prefers-reduced-motion:reduce){
  .ticket-metric,.ticket-row,.notification-item,.alert-toast,.status-new .ticket-status-dot{animation:none!important;transition:none!important;transform:none!important}
 }
+
+
+/* PROXITI V6: atendimento em duas colunas, sem navegar para fora da fila. */
+body.workspace-mode #ops-tickets{padding:20px}
+.ticket-workspace{display:grid;grid-template-columns:minmax(315px,.82fr) minmax(0,1.18fr);gap:13px;align-items:start;margin-top:17px;min-width:0}
+.ticket-list-pane,.ticket-detail-pane{min-width:0;border:1px solid var(--theme-border);border-radius:13px;background:var(--theme-deep)}
+.ticket-list-pane{overflow:hidden}
+.ticket-list-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid var(--theme-border)}
+.ticket-list-head strong{font-size:.84rem;color:var(--theme-text)}
+.ticket-list-head .ticket-table-result{font-size:.7rem;margin:0;white-space:nowrap}
+.ticket-list{display:grid;align-content:start;max-height:min(75vh,840px);min-height:230px;overflow-y:auto;overscroll-behavior:contain}
+.ticket-inbox-item{border-bottom:1px solid var(--theme-border);min-width:0}
+.ticket-inbox-item:last-child{border-bottom:0}
+body.workspace-mode .ticket-inbox-card{display:grid;gap:9px;text-align:left;width:100%;min-width:0;padding:14px 15px;
+ border:0;border-left:3px solid transparent;border-radius:0;background:transparent;color:var(--theme-text);
+ transition:background-color .14s ease,border-color .14s ease}
+body.workspace-mode .ticket-inbox-card:hover,body.workspace-mode .ticket-inbox-card:focus-visible{background:var(--theme-hover)}
+body.workspace-mode .ticket-inbox-card.selected{background:var(--theme-panel);border-left-color:var(--theme-accent)}
+body.workspace-mode .ticket-inbox-card.has-unread:not(.selected){border-left-color:var(--theme-marker)}
+.ticket-inbox-top,.ticket-inbox-foot{display:flex;justify-content:space-between;align-items:center;gap:7px;min-width:0}
+.ticket-inbox-top strong{font-size:.82rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ticket-inbox-top small,.ticket-inbox-foot small{font-size:.67rem;color:var(--theme-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ticket-inbox-subject{display:block;font-size:.83rem;font-weight:700;line-height:1.45;overflow-wrap:anywhere}
+.ticket-inbox-foot{flex-wrap:wrap;justify-content:flex-start}
+.ticket-inbox-foot .ticket-status-pill{padding:4px 8px;min-height:24px;font-size:.65rem}
+.ticket-inbox-foot small{margin-left:auto}
+.ticket-inbox-unread{display:inline-flex;padding:3px 6px;color:#ffdbb8;border-radius:5px;background:#f3a36b18;font-size:.65rem;font-weight:800}
+.ticket-list-empty{font-size:.81rem;line-height:1.6;padding:30px 17px;text-align:center;color:var(--theme-muted)}
+.ticket-detail-pane{position:relative;max-height:min(88vh,1080px);min-height:380px;overflow:auto;overscroll-behavior:contain}
+.ticket-detail-pane .ops-detail{margin:0!important;border:0!important;border-radius:12px;background:transparent!important;box-shadow:none;padding:18px}
+.ticket-detail-pane .ops-detail .ops-section-head{align-items:flex-start}
+.ticket-detail-pane .ops-detail .ops-section-head>.secondary{font-size:.74rem}
+.ticket-detail-pane .ops-controls{gap:9px}
+.ticket-detail-pane .ops-conversation{margin-top:16px;padding-top:15px}
+.ticket-detail-pane .ops-messages{min-height:160px;max-height:285px}
+.ticket-empty-state{min-height:350px;display:grid;place-content:center;justify-items:center;text-align:center;gap:10px;padding:35px 22px}
+.ticket-empty-state h3{font-size:1.1rem;letter-spacing:-.04em;margin:0}
+.ticket-empty-state p{font-size:.83rem;line-height:1.6;color:var(--theme-muted);max-width:40ch;margin:0}
+.ticket-empty-mark{display:grid;place-items:center;width:54px;height:54px;margin-bottom:5px;border-radius:15px;
+ background:var(--theme-panel);border:1px solid var(--theme-border);font-size:1.5rem;color:var(--theme-marker)}
+.ticket-audit-panel{margin-top:18px;padding-top:13px;border-top:1px solid var(--theme-border)}
+.ticket-audit-panel summary{cursor:pointer;font-size:.77rem;font-weight:800;color:var(--theme-accent)}
+.ticket-audit-list{display:grid;gap:10px;margin:12px 0 0;padding:0;list-style:none}
+.ticket-audit-list li{display:grid;gap:3px;padding-left:11px;border-left:2px solid var(--theme-border);font-size:.76rem}
+.ticket-audit-list small{font-size:.68rem;color:var(--theme-muted)}
+.notification-browser{display:grid;gap:6px;padding:12px 14px;border-top:1px solid var(--theme-border)}
+.notification-browser .secondary{font-size:.75rem;min-height:35px}
+.notification-browser small{font-size:.68rem;color:var(--theme-muted);line-height:1.45}
+@media(max-width:1250px){.ticket-workspace{grid-template-columns:minmax(275px,.8fr) minmax(0,1.2fr)}}
+@media(max-width:1020px){.ticket-workspace{grid-template-columns:1fr}.ticket-list{max-height:340px}.ticket-detail-pane{max-height:none;min-height:260px}}
+@media(max-width:700px){body.workspace-mode #ops-tickets{padding:15px}.ticket-workspace{gap:11px}.ticket-detail-pane .ops-detail{padding:14px}.ticket-inbox-top{flex-wrap:wrap}.ticket-inbox-foot small{margin-left:0}}
+@media(prefers-reduced-motion:reduce){body.workspace-mode .ticket-inbox-card{transition:none}}
