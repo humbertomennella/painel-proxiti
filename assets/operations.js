@@ -153,7 +153,7 @@
         unassigned:"Retornado à fila",status_changed:"Situação alterada",staff_replied:"Equipe respondeu",
         customer_replied:"Cliente enviou mensagem",note_added:"Nota técnica registrada",
         checklist_created:"Roteiro técnico criado",checklist_updated:"Etapa técnica atualizada",
-        attachment_added:"Anexo privado incluído"};
+        attachment_added:"Anexo privado incluído",appointment_created:"Compromisso planejado",appointment_updated:"Agenda atualizada",device_updated:"Equipamento identificado",report_saved:"Relatório registrado"};
       for(const event of events){
         const item=elem("li");
         const actor=event.actor_id?staffName(event.actor_id):"Sistema / cliente";
@@ -307,25 +307,27 @@
       staff:["Equipe e permissões","Convites, aprovações e acesso individual."],
       content:["Conteúdo do site","Textos publicados e personalizações autorizadas."],
       training:["Academia PROXITI","Materiais técnicos e capacitação privada."],
+      agenda:["Agenda","Retornos, visitas e horários planejados por chamado."],
       tools:["Ferramentas","Inventário e equipamentos atribuídos."]};
     el("ops-heading").textContent=names[view]?.[0]||"Operação";
     el("ops-description").textContent=names[view]?.[1]||"";
     if(state.user)remember("view",view);
     for(const tab of el("ops-tabs").querySelectorAll("[data-ops-view]"))
       tab.classList.toggle("active",tab.dataset.opsView===view);
-    for(const v of ["tickets","staff","content","training","tools"])el("ops-"+v).hidden=v!==view;
+    for(const v of ["tickets","staff","content","agenda","training","tools"])el("ops-"+v).hidden=v!==view;
     notice("");
     if(view==="tickets")void loadTickets();
     if(view==="staff"&&isAdmin())void loadStaff();
     if(view==="content"&&isAdmin())void loadContent();
     if(view==="training"&&can("training"))void loadTraining();
+    if(view==="agenda"&&can("tickets_view"))document.dispatchEvent(new Event("proxiti-agenda-refresh"));
     if(view==="tools"&&can("resources"))void loadTools();
     document.dispatchEvent(new CustomEvent("proxiti-view-changed",{detail:{view}}));
   }
   function updateNav(){
     for(const node of document.querySelectorAll("#operations [data-admin-only]"))
       node.hidden=!isAdmin();
-    const allowed = {tickets:can("tickets_view"),staff:isAdmin(),content:isAdmin(),
+    const allowed = {tickets:can("tickets_view"),agenda:can("tickets_view"),staff:isAdmin(),content:isAdmin(),
       training:can("training"),tools:can("resources")};
     for(const tab of el("ops-tabs").querySelectorAll("[data-ops-view]"))
       tab.hidden=!allowed[tab.dataset.opsView];
