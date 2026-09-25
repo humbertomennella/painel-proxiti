@@ -11,7 +11,7 @@ function setCollapsed(value){
  panel.classList.toggle("sidebar-collapsed",value);
  el("sidebar-toggle").setAttribute("aria-expanded",String(!value));
  el("sidebar-toggle").setAttribute("aria-label",value?"Expandir menu":"Recolher menu");
- try{localStorage.setItem("proxiti-sidebar-collapsed",value?"1":"0")}catch{}
+
 }
 function closeMobile(){
  panel.classList.remove("mobile-side-open");
@@ -45,10 +45,14 @@ function syncNav(){
   n.hidden=view!=="overview"&&view!=="profile"&&(!tab||tab.hidden);
  }
  const stored=read();
+ for(const card of document.querySelectorAll("[data-summary-view]")){
+   const item=nav.find(n=>n.dataset.sideView===card.dataset.summaryView);
+   card.hidden=!item||item.hidden;
+ }
  choose(nav.find(n=>n.dataset.sideView===stored&&!n.hidden)?stored:"overview");
 }
 function reset(){
- ready=false;panel.classList.remove("mobile-side-open");
+ ready=false;clearTimeout(hoverTimer);hideTooltip();panel.classList.remove("mobile-side-open");
  sidebar.hidden=true;document.body.classList.remove("workspace-mode");
 }
 function activate(){
@@ -56,12 +60,48 @@ function activate(){
  sidebar.hidden=false;document.body.classList.add("workspace-mode");
  if(!ready){
   ready=true;
-  let collapsed=false;try{collapsed=localStorage.getItem("proxiti-sidebar-collapsed")==="1"}catch{}
-  setCollapsed(collapsed);
+  setCollapsed(true);
  }
  requestAnimationFrame(syncNav);
 }
 nav.forEach(button=>button.addEventListener("click",()=>choose(button.dataset.sideView,true)));
+
+const tooltip=document.createElement("div");
+tooltip.className="sidebar-tooltip";tooltip.hidden=true;tooltip.setAttribute("aria-hidden","true");
+document.body.append(tooltip);
+let hoverTimer=null;
+const desktopHover=()=>window.matchMedia("(min-width:931px) and (hover:hover) and (pointer:fine)").matches;
+function hideTooltip(){tooltip.hidden=true}
+function showTooltip(node){
+ if(!desktopHover()||!panel.classList.contains("sidebar-collapsed"))return;
+ const value=node.getAttribute("aria-label")||node.getAttribute("title")||"";
+ if(!value)return;
+ const rect=node.getBoundingClientRect();
+ tooltip.textContent=value;tooltip.style.left=Math.min(rect.right+13,window.innerWidth-215)+"px";
+ tooltip.style.top=Math.max(8,Math.min(rect.top+4,window.innerHeight-50))+"px";tooltip.hidden=false;
+}
+sidebar.addEventListener("pointerenter",()=>{
+ if(!ready||!desktopHover())return;
+ clearTimeout(hoverTimer);
+ hoverTimer=setTimeout(()=>{hideTooltip();setCollapsed(false)},220);
+});
+sidebar.addEventListener("pointerleave",()=>{
+ clearTimeout(hoverTimer);hideTooltip();
+ if(ready&&desktopHover())setCollapsed(true);
+});
+for(const node of [...nav,sidebar.querySelector(".sidebar-brand"),sidebar.querySelector(".side-home")]){
+ node.addEventListener("pointerenter",()=>showTooltip(node));
+ node.addEventListener("pointerleave",hideTooltip);
+}
+sidebar.addEventListener("focusin",()=>{
+ if(ready&&window.innerWidth>930){clearTimeout(hoverTimer);hideTooltip();setCollapsed(false);}
+});
+sidebar.addEventListener("focusout",event=>{
+ if(ready&&window.innerWidth>930&&!sidebar.contains(event.relatedTarget)&&!sidebar.matches(":hover"))
+   setCollapsed(true);
+});
+window.addEventListener("resize",()=>{hideTooltip();if(ready&&window.innerWidth>930)setCollapsed(true)});
+
 el("app-sidebar").querySelector(".sidebar-brand").addEventListener("click",e=>{if(ready){e.preventDefault();choose("overview",true);}});
 window.PROXITI_OPEN_VIEW=view=>choose(view,true);
 document.querySelectorAll("[data-summary-view]").forEach(card=>{
