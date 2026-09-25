@@ -460,3 +460,12 @@ body.workspace-mode .ticket-inbox-card.has-unread:not(.selected){border-left-col
 @media(max-width:1020px){.ticket-workspace{grid-template-columns:1fr}.ticket-list{max-height:340px}.ticket-detail-pane{max-height:none;min-height:260px}}
 @media(max-width:700px){body.workspace-mode #ops-tickets{padding:15px}.ticket-workspace{gap:11px}.ticket-detail-pane .ops-detail{padding:14px}.ticket-inbox-top{flex-wrap:wrap}.ticket-inbox-foot small{margin-left:0}}
 @media(prefers-reduced-motion:reduce){body.workspace-mode .ticket-inbox-card{transition:none}}
+
+/* Verificação TOTP: QR e chave só aparecem ao titular durante a configuração. */
+#profile-mfa-card .secondary{min-height:42px;width:max-content;max-width:100%}
+#profile-mfa-enrollment{display:grid;gap:12px;margin-top:10px}
+#profile-mfa-enrollment[hidden]{display:none}
+#profile-mfa-qr{width:190px;height:190px;background:#fff;border-radius:10px;padding:8px}
+#profile-mfa-secret{display:block;overflow-wrap:anywhere;user-select:all;padding:11px;border:1px solid var(--theme-border);background:var(--theme-deep);border-radius:8px;font-size:.82rem}
+#profile-mfa-verify-form{display:grid;gap:10px}
+#mfa-form input{text-align:center;letter-spacing:.28em;font-variant-numeric:tabular-nums}

@@ -1,8 +1,8 @@
 (() => {
   "use strict";
   const el = id => document.getElementById(id);
-  const forms = {login:el("login-form"),forgot:el("forgot-form"),reset:el("reset-form")};
-  const buttons = ["login-button","forgot-button","reset-button"].map(el);
+  const forms = {login:el("login-form"),forgot:el("forgot-form"),reset:el("reset-form"),mfa:el("mfa-form")};
+  const buttons = ["login-button","forgot-button","reset-button","mfa-button"].map(el);
   const auth = el("auth-screen"), panel = el("panel"), feedback = el("feedback");
   let client = null, busy = false, generation = 0;
   let activeUserId = null, lastProfileKey = null;
@@ -49,6 +49,13 @@
       if(!data){blocked("Perfil não cadastrado.","A conta existe, mas não há um perfil PROXITI vinculado.");return;}
       if(data.status!=="active"){blocked(data.status==="suspended"?"Acesso suspenso.":"Acesso pendente.",data.status==="suspended"?"Seu acesso foi suspenso pela administração.":"A administração precisa autorizar sua conta antes do uso.");return;}
       if(!["administrator","technician"].includes(data.role)){blocked("Permissões inválidas.","Contate a administração da PROXITI.");return;}
+      const {data:aal,error:aalError}=await client.auth.mfa.getAuthenticatorAssuranceLevel();
+      if(current!==generation||recovering)return;
+      if(aalError)throw aalError;
+      if(aal?.nextLevel==="aal2"&&aal?.currentLevel!=="aal2"){
+        showAuth("mfa");message("Confirme o código do aplicativo para liberar a Central.");
+        return;
+      }
       const fingerprint=JSON.stringify([data.role,data.status,data.permissions,data.display_name,data.avatar_path]);
       const previous=lastProfileKey;
       activeUserId=session.user.id;lastProfileKey=fingerprint;
@@ -68,6 +75,28 @@
       if (notifySession) document.dispatchEvent(new CustomEvent("proxiti-session-ready",{detail:window.PROXITI_ACTIVE_SESSION}));
     }catch{if(current===generation && !sameSession)blocked("Erro de conexão.","Não foi possível verificar seu perfil agora.");}
   }
+  el("mfa-form").addEventListener("submit",async event=>{
+    event.preventDefault();if(!client||busy)return;
+    const code=el("mfa-login-code").value.replace(/\s/g,"");
+    if(!/^\d{6}$/.test(code)){message("Informe os seis dígitos do aplicativo.","error");return;}
+    setBusy(true);message("Verificando o segundo fator…");
+    try{
+      const {data:factors,error:factorError}=await client.auth.mfa.listFactors();
+      if(factorError)throw factorError;
+      const factor=factors?.totp?.find(f=>f.status==="verified")||factors?.totp?.[0];
+      if(!factor)throw new Error("Fator não encontrado. Consulte a administração.");
+      const {error}=await client.auth.mfa.challengeAndVerify({factorId:factor.id,code});
+      if(error)throw error;
+      el("mfa-login-code").value="";
+      const {data:{session}}=await client.auth.getSession();
+      await refresh(session);
+    }catch(error){message(error.message||"Código inválido. Tente novamente.","error");}
+    finally{setBusy(false);}
+  });
+  el("mfa-back").addEventListener("click",async()=>{
+    try{await client?.auth.signOut()}catch{}
+    showAuth("login");
+  });
   el("forgot-link").addEventListener("click",()=>view("forgot"));
   el("forgot-form").querySelector("[data-back]").addEventListener("click",()=>view("login"));
   forms.login.addEventListener("submit",async event=>{

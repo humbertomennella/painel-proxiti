@@ -2,7 +2,7 @@
 "use strict";
 const el=id=>document.getElementById(id);
 const initial="./assets/favicon.svg";
-let db=null,user=null,avatarPath=null,previewUrl=null,serial=0;
+let db=null,user=null,avatarPath=null,previewUrl=null,serial=0,mfaFactor=null;
 const msg=(s,failed=false)=>{const n=el("profile-feedback");n.hidden=!s;n.textContent=s;n.className="message"+(failed?" error":s?" success":"");};
 const namePart=s=>String(s||"").trim().split(/[.\s_-]+/).filter(Boolean)[0]||"Profissional";
 function greeting(name){
@@ -33,6 +33,8 @@ function stop(){
  if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}
  el("profile-name-form").reset();el("profile-avatar-form").reset();el("profile-password-form").reset();
  el("avatar-top").src=initial;el("profile-avatar-preview").src=initial;msg("");
+ mfaFactor=null;el("profile-mfa-enrollment").hidden=true;el("profile-mfa-qr").removeAttribute("src");
+ el("profile-mfa-secret").textContent="";el("profile-mfa-verify-form").reset();el("profile-mfa-status").textContent="";
 }
 async function start(e){
  const {client,user:person,profile}=e.detail;
@@ -43,11 +45,60 @@ async function start(e){
  db=client;user=person;avatarPath=profile.avatar_path||null;
  applyName(profile.display_name||person.email?.split("@")[0]||"Profissional");
  await showAvatar(avatarPath);
+ await refreshMFA();
+}
+async function refreshMFA(){
+ if(!db||!user)return;
+ const {data,error}=await db.auth.mfa.listFactors();
+ if(error){el("profile-mfa-status").textContent="Não foi possível consultar o segundo fator.";return;}
+ const enabled=(data?.totp||[]).some(f=>f.status==="verified");
+ el("profile-mfa-status").textContent=enabled?
+   "Verificação em duas etapas ativa. Um código será solicitado nos próximos acessos.":
+   "Proteção adicional ainda não ativada.";
+ el("profile-mfa-start").hidden=enabled;
+ if(enabled){el("profile-mfa-enrollment").hidden=true;mfaFactor=null;}
 }
 document.addEventListener("proxiti-session-ready",e=>{void start(e);});
 document.addEventListener("proxiti-session-ended",stop);
 if(window.PROXITI_ACTIVE_SESSION)void start({detail:window.PROXITI_ACTIVE_SESSION});
 el("open-profile").addEventListener("click",()=>window.PROXITI_OPEN_VIEW?.("profile"));
+el("profile-mfa-start").addEventListener("click",async()=>{
+ if(!db||!user)return;
+ const btn=el("profile-mfa-start");btn.disabled=true;
+ try{
+   const {data,error}=await db.auth.mfa.enroll({factorType:"totp",friendlyName:"Central Técnica PROXITI"});
+   if(error)throw error;
+   mfaFactor=data.id;
+   const qr=String(data.totp?.qr_code||"");
+   if(qr.startsWith("data:image/svg+xml"))el("profile-mfa-qr").src=qr;
+   else el("profile-mfa-qr").removeAttribute("src");
+   el("profile-mfa-secret").textContent=data.totp?.secret||"";
+   el("profile-mfa-enrollment").hidden=false;
+   el("profile-mfa-status").textContent="Escaneie o QR Code no aplicativo e confirme o código.";
+ }catch(error){msg(error.message||"Não foi possível preparar a verificação.",true);}
+ finally{btn.disabled=false;}
+});
+el("profile-mfa-verify-form").addEventListener("submit",async e=>{
+ e.preventDefault();if(!db||!mfaFactor)return;
+ const code=el("profile-mfa-code").value.replace(/\s/g,"");
+ if(!/^\d{6}$/.test(code)){msg("Informe os seis dígitos do aplicativo.",true);return;}
+ const button=e.currentTarget.querySelector('button[type="submit"]');button.disabled=true;
+ try{
+   const {error}=await db.auth.mfa.challengeAndVerify({factorId:mfaFactor,code});
+   if(error)throw error;
+   mfaFactor=null;el("profile-mfa-verify-form").reset();
+   el("profile-mfa-qr").removeAttribute("src");el("profile-mfa-secret").textContent="";
+   el("profile-mfa-enrollment").hidden=true;
+   await refreshMFA();msg("Verificação em duas etapas ativada. O código será solicitado nos próximos logins.");
+ }catch(error){msg(error.message||"Código não validado. Confira e tente novamente.",true);}
+ finally{button.disabled=false;}
+});
+el("profile-mfa-cancel").addEventListener("click",()=>{
+ mfaFactor=null;el("profile-mfa-secret").textContent="";
+ el("profile-mfa-qr").removeAttribute("src");el("profile-mfa-enrollment").hidden=true;
+ el("profile-mfa-verify-form").reset();
+ el("profile-mfa-status").textContent="Configuração não confirmada. Nenhum fator foi ativado.";
+});
 el("profile-name-form").addEventListener("submit",async e=>{
  e.preventDefault();if(!db||!user)return;
  const button=e.currentTarget.querySelector('button[type="submit"]'),value=el("profile-name-input").value.trim();
