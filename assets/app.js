@@ -5,7 +5,7 @@
   const buttons = ["login-button","forgot-button","reset-button"].map(el);
   const auth = el("auth-screen"), panel = el("panel"), feedback = el("feedback");
   let client = null, busy = false, generation = 0;
-  let recovering = new URLSearchParams(location.hash.replace(/^#/,"")).get("type") === "recovery";
+  let recovering = ["recovery","invite"].includes(new URLSearchParams(location.hash.replace(/^#/,"")).get("type"));
   function message(value="",kind="") {
     feedback.textContent=value; feedback.className="message"+(kind?" "+kind:""); feedback.hidden=!value;
   }
@@ -17,9 +17,11 @@
     busy=value; buttons.forEach(button=>button.disabled=value||!client);
   }
   function showAuth(name="login") {
+    document.dispatchEvent(new Event("proxiti-session-ended"));
     panel.hidden=true;auth.hidden=false;view(name);
   }
   function blocked(title,description) {
+    document.dispatchEvent(new Event("proxiti-session-ended"));
     auth.hidden=true;panel.hidden=false;el("blocked").hidden=false;el("workspace").hidden=true;
     el("blocked-title").textContent=title;el("blocked-text").textContent=description;
     el("welcome").textContent="Identidade verificada. Os recursos permanecem restritos até a liberação.";
@@ -30,7 +32,7 @@
     if(!session?.user){showAuth();return;}
     blocked("Verificando suas permissões…","Consultando seu perfil autorizado.");
     try {
-      const {data,error}=await client.from("profiles").select("display_name,role,status").eq("id",session.user.id).maybeSingle();
+      const {data,error}=await client.from("profiles").select("display_name,role,status,permissions").eq("id",session.user.id).maybeSingle();
       if(current!==generation||recovering)return;
       if(error){blocked("Não foi possível validar o acesso.","Revise a configuração do banco ou tente novamente.");return;}
       if(!data){blocked("Perfil não cadastrado.","A conta existe, mas não há um perfil PROXITI vinculado.");return;}
@@ -41,6 +43,7 @@
       el("person-name").textContent=data.display_name||"Profissional PROXITI";
       el("person-email").textContent=session.user.email||"";
       el("person-role").textContent=role;el("welcome").textContent="Bem-vindo à sua área privada · "+role;
+      document.dispatchEvent(new CustomEvent("proxiti-session-ready",{detail:{client,user:session.user,profile:data}}));
     }catch{if(current===generation)blocked("Erro de conexão.","Não foi possível verificar seu perfil agora.");}
   }
   el("forgot-link").addEventListener("click",()=>view("forgot"));

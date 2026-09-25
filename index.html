@@ -10,6 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js" defer></script>
 <script src="./assets/config.js" defer></script>
 <script src="./assets/app.js" defer></script>
+<script src="./assets/operations.js" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Ir para o conteúdo</a>
@@ -30,6 +31,55 @@
 <section id="panel" class="panel" hidden aria-labelledby="panel-title"><div class="panel-head"><div><p class="kicker">PROXITI / ÁREA PRIVADA</p><h1 id="panel-title">Central Técnica<span class="blue">.</span></h1><p id="welcome">Verificando seu perfil…</p></div><button type="button" id="logout" class="secondary">Encerrar sessão ↗</button></div>
 <div id="blocked" class="blocked" hidden role="status"><strong id="blocked-title">Acesso pendente</strong><p id="blocked-text">Sua conta ainda não foi autorizada pela administração.</p></div>
 <div id="workspace" hidden><div class="identity"><div><small>ACESSO AUTORIZADO</small><strong id="person-name">Profissional PROXITI</strong><span id="person-email"></span></div><b id="person-role">Técnico parceiro</b></div><div class="section-heading"><div><p class="kicker">CENTRAL TÉCNICA</p><h2>Seu ambiente de trabalho</h2></div><span>ETAPA 01 / ACESSO</span></div>
-<div class="modules"><article><small>01 / SERVIÇOS</small><h3>Atendimentos</h3><p>Solicitações, aceite e acompanhamento de chamados.</p><span>Em desenvolvimento</span></article><article><small>02 / CAPACITAÇÃO</small><h3>Academia PROXITI</h3><p>Cursos rápidos, apostilas e materiais próprios.</p><span>Em desenvolvimento</span></article><article><small>03 / RECURSOS</small><h3>Ferramentas</h3><p>Equipamentos atribuídos e termos de utilização.</p><span>Em desenvolvimento</span></article><article><small>04 / PERFIL</small><h3>Portfólio</h3><p>Currículo, especialidades e canal profissional.</p><span>Em desenvolvimento</span></article></div><p class="development">Estes módulos são uma prévia da estrutura. Nenhum chamado, curso ou arquivo privado está disponível nesta versão.</p></div></section>
+<div class="modules"><article><small>01 / SERVIÇOS</small><h3>Atendimentos</h3><p>Solicitações, aceite e acompanhamento de chamados.</p><span>Disponível conforme permissões</span></article><article><small>02 / CAPACITAÇÃO</small><h3>Academia PROXITI</h3><p>Cursos rápidos, apostilas e materiais próprios.</p><span>Disponível conforme permissões</span></article><article><small>03 / RECURSOS</small><h3>Ferramentas</h3><p>Equipamentos atribuídos e termos de utilização.</p><span>Disponível conforme permissões</span></article><article><small>04 / PERFIL</small><h3>Portfólio</h3><p>Currículo, especialidades e canal profissional.</p><span>Em desenvolvimento</span></article></div><p class="development">Atendimentos, conversas, materiais e ferramentas ficam disponíveis conforme suas permissões. O portfólio e outras funções estão sendo integrados.</p>
+<section id="operations" class="ops" hidden aria-label="Gestão da Central Técnica">
+  <div class="ops-title"><div><p class="kicker">OPERAÇÃO EM TEMPO REAL</p><h2>Gestão PROXITI</h2></div><span id="ops-live" class="ops-live">Aguardando conexão…</span></div>
+  <nav class="ops-tabs" id="ops-tabs" aria-label="Módulos do painel">
+    <button type="button" class="active" data-ops-view="tickets">Chamados <span id="ticket-badge"></span></button>
+    <button type="button" data-ops-view="staff" data-admin-only>Técnicos e permissões</button>
+    <button type="button" data-ops-view="content" data-admin-only>Conteúdo do site</button>
+    <button type="button" data-ops-view="training">Academia</button>
+    <button type="button" data-ops-view="tools">Ferramentas</button>
+  </nav>
+  <p id="ops-message" class="message" role="status" aria-live="polite" hidden></p>
+  <div id="ops-tickets" class="ops-view">
+    <div class="ops-section-head"><h3>Fila de atendimentos</h3><button type="button" id="reload-tickets" class="secondary">Atualizar ↻</button></div>
+    <p class="ops-muted">Os chamados sem responsável ficam disponíveis aos técnicos autorizados. Para atender, aceite o chamado.</p>
+    <div class="ops-table-scroll"><table class="ops-table"><thead><tr><th>Nº</th><th>Cliente</th><th>Assunto</th><th>Situação</th><th>Responsável</th><th></th></tr></thead><tbody id="tickets-body"><tr><td colspan="6">Carregando…</td></tr></tbody></table></div>
+    <article id="ticket-detail" class="ops-detail" hidden>
+      <div class="ops-section-head"><div><span id="ticket-code" class="kicker">CHAMADO</span><h3 id="ticket-subject"></h3><p id="ticket-customer" class="ops-muted"></p></div><button type="button" class="secondary" id="close-detail">Fechar detalhes</button></div>
+      <p id="ticket-description" class="ops-description"></p>
+      <div class="ops-controls"><button type="button" id="claim-ticket" class="primary">Assumir atendimento</button>
+      <label>Situação <select id="ticket-status"><option value="new">Novo</option><option value="triage">Em triagem</option><option value="in_progress">Em atendimento</option><option value="waiting_customer">Aguardando cliente</option><option value="resolved">Resolvido</option><option value="closed">Encerrado</option></select></label>
+      <button type="button" id="save-status" class="secondary">Salvar situação</button>
+      <label id="assign-group" data-admin-only>Designar técnico <select id="ticket-assignee"></select></label>
+      <button type="button" id="save-assignee" class="secondary" data-admin-only>Designar</button></div>
+      <div class="ops-conversation"><h4>Conversa do atendimento</h4><div id="staff-messages" class="ops-messages" aria-live="polite"></div>
+      <form id="staff-reply-form"><label for="staff-reply">Responder ao cliente</label><textarea id="staff-reply" maxlength="2000" rows="3" required placeholder="Escreva sua mensagem para o cliente. Não solicite senhas."></textarea><button type="submit" class="primary">Enviar resposta ↗</button></form></div>
+    </article>
+  </div>
+  <div id="ops-staff" class="ops-view" hidden data-admin-only>
+    <div class="ops-section-head"><h3>Técnicos e acessos</h3><button type="button" id="reload-staff" class="secondary">Atualizar ↻</button></div>
+    <form id="invite-form" class="ops-inline-form"><label for="invite-email">Convidar técnico por e-mail</label><input id="invite-email" type="email" autocomplete="off" maxlength="254" placeholder="tecnico@exemplo.com" required><button type="submit" class="primary">Enviar convite ↗</button></form>
+    <p class="ops-muted">Novos convidados começam com acesso pendente. A liberação e as permissões são definidas individualmente pelo administrador.</p>
+    <div id="staff-list" class="ops-list"></div>
+  </div>
+  <div id="ops-content" class="ops-view" hidden data-admin-only>
+    <div class="ops-section-head"><h3>Conteúdo do site</h3><button type="button" id="reload-content" class="secondary">Atualizar ↻</button></div>
+    <p class="ops-muted">Edite os textos ligados ao site pelo identificador. A exclusão remove a personalização e restaura o texto estático do site. Arquivos-fonte, checkout e código continuam protegidos no GitHub.</p>
+    <form id="content-form" class="ops-form"><label for="content-key">Identificador do bloco</label><input id="content-key" required pattern="[a-z0-9][a-z0-9._-]{2,100}" maxlength="100" placeholder="home.contact.intro"><label for="content-label">Nome interno</label><input id="content-label" required maxlength="160"><label for="content-value">Texto publicado</label><textarea id="content-value" maxlength="3000" rows="4" required></textarea><label class="ops-check"><input id="content-published" type="checkbox" checked> Publicar no site</label><div class="ops-controls"><button type="submit" class="primary">Salvar conteúdo</button><button type="button" id="content-delete" class="secondary">Excluir personalização</button></div></form>
+    <div id="content-list" class="ops-list"></div>
+  </div>
+  <div id="ops-training" class="ops-view" hidden>
+    <div class="ops-section-head"><h3>Academia PROXITI</h3><button type="button" id="reload-training" class="secondary">Atualizar ↻</button></div>
+    <form id="training-form" class="ops-form" data-admin-only><label for="training-title">Título do material</label><input id="training-title" maxlength="160" minlength="3" required><label for="training-description">Descrição</label><textarea id="training-description" maxlength="2000" rows="2"></textarea><label for="training-file">Arquivo privado (PDF ou imagem, até 10 MB)</label><input id="training-file" type="file" accept="application/pdf,image/png,image/jpeg,image/webp"><label class="ops-check"><input id="training-published" type="checkbox"> Disponibilizar aos técnicos com permissão</label><button type="submit" class="primary">Adicionar material</button></form>
+    <div id="training-list" class="ops-list"></div>
+  </div>
+  <div id="ops-tools" class="ops-view" hidden>
+    <div class="ops-section-head"><h3>Ferramentas de trabalho</h3><button type="button" id="reload-tools" class="secondary">Atualizar ↻</button></div>
+    <form id="tool-form" class="ops-form" data-admin-only><label for="tool-name">Ferramenta ou equipamento</label><input id="tool-name" required maxlength="160"><label for="tool-serial">Identificação / patrimônio (opcional)</label><input id="tool-serial" maxlength="160"><label for="tool-assignee">Responsável</label><select id="tool-assignee"><option value="">Disponível / não atribuído</option></select><label for="tool-notes">Orientações de uso</label><textarea id="tool-notes" maxlength="2000" rows="2"></textarea><button type="submit" class="primary">Cadastrar ferramenta</button></form>
+    <div id="tools-list" class="ops-list"></div>
+  </div>
+</section></div></section>
 </main><footer class="footer"><span>© PROXITI · Central Técnica</span><a href="https://proxiti.com.br/">Voltar ao site institucional ↗</a></footer>
 </div></body></html>
