@@ -62,6 +62,7 @@
     if(view==="content"&&isAdmin())void loadContent();
     if(view==="training"&&can("training"))void loadTraining();
     if(view==="tools"&&can("resources"))void loadTools();
+    document.dispatchEvent(new CustomEvent("proxiti-view-changed",{detail:{view}}));
   }
   function updateNav(){
     for(const node of document.querySelectorAll("#operations [data-admin-only]"))
@@ -73,6 +74,7 @@
     const first=Object.keys(allowed).find(key=>allowed[key]);
     el("operations").hidden=!first;
     if(first)showView(allowed[state.currentView]?state.currentView:first);
+    document.dispatchEvent(new CustomEvent("proxiti-navigation-updated",{detail:{allowed}}));
   }
   async function loadStaff(){
     if(!isAdmin())return;
@@ -305,7 +307,7 @@
     state.restoreScroll=Number.isFinite(y)&&y>0?y:null;
     if(isAdmin())await loadStaff();
     updateNav();void checkNewMessages();
-    if(!el("operations").hidden){
+    if(can("tickets_view")||can("chat")||can("training")||can("resources")){
       if(can("chat")){
         const heartbeat=async()=>{if(!state.db||document.hidden)return;try{await rpc("proxiti_heartbeat",{});}catch{}};
         void heartbeat();state.heartbeat=setInterval(heartbeat,25000);
