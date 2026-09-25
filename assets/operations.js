@@ -38,6 +38,18 @@
   const remember=(key,value)=>{try{sessionStorage.setItem(prefKey(key),String(value));}catch{}};
   const recalled=key=>{try{return sessionStorage.getItem(prefKey(key))}catch{return null}};
   const sound=kind=>window.PROXITI_ALERTS?.play(kind);
+  let presenceCheckedAt=0;
+  async function updatePresence(){
+    if(!state.db||Date.now()-presenceCheckedAt<20000)return;
+    presenceCheckedAt=Date.now();
+    try{
+      const rows=await query(state.db.from("staff_presence").select("staff_id")
+        .gte("last_seen",new Date(Date.now()-60000).toISOString()).limit(50));
+      el("overview-online").textContent=isAdmin()
+        ?(rows.length===1?"1 profissional online":rows.length+" profissionais online")
+        :(rows.length?"Você está online":"Disponibilidade em atualização");
+    }catch{el("overview-online").textContent="Presença em atualização";}
+  }
   async function checkNewMessages(){
     if(!state.db||!can("chat")||!can("tickets_view")||state.messageCheckBusy)return;
     state.messageCheckBusy=true;
@@ -134,6 +146,9 @@
       if(state.ticketIds&&state.tickets.some(t=>!state.ticketIds.has(t.id)))sound("ticket");
       state.ticketIds=ids;
       const waiting=state.tickets.filter(t=>t.status==="new"||t.status==="triage").length;
+      const active=state.tickets.filter(t=>!["resolved","closed"].includes(t.status)).length;
+      el("overview-open").textContent=active===1?"1 chamado ativo":active+" chamados ativos";
+      void updatePresence();
       el("ticket-badge").textContent=waiting?String(waiting):"";
       const body=el("tickets-body");body.replaceChildren();
       if(!state.tickets.length){
@@ -300,7 +315,7 @@
     if(state.db===client&&state.user?.id===user.id){
       state.profile=profile;updateNav();return;
     }
-    stop();state.db=client;state.user=user;state.profile=profile;
+    stop();state.db=client;state.user=user;state.profile=profile;presenceCheckedAt=0;
     state.currentView=recalled("view")||"tickets";
     state.restoreTicketId=recalled("ticket");
     const y=Number(recalled("scroll"));
@@ -316,7 +331,7 @@
         if(!state.db)return;
         if(can("tickets_view"))void loadTickets();
         if(state.active&&can("chat"))void loadMessages();
-        void checkNewMessages();
+        void checkNewMessages();void updatePresence();
       },6000);
       if(can("tickets_view")){
         state.channel=state.db.channel("proxiti-workspace-"+user.id)
@@ -332,6 +347,13 @@
   }
   document.addEventListener("proxiti-session-ready",e=>{void start(e);});
   document.addEventListener("proxiti-session-ended",stop);
+  document.addEventListener("proxiti-profile-updated",e=>{
+    if(!state.user||!e.detail)return;
+    if(state.profile)state.profile.display_name=e.detail.display_name;
+    const mine=state.staff.find(p=>p.id===state.user.id);
+    if(mine)mine.display_name=e.detail.display_name;
+    if(state.currentView==="tickets"&&can("tickets_view"))void loadTickets();
+  });
   // Recupera o contexto se o SDK autenticou antes de este script terminar de carregar.
   if(window.PROXITI_ACTIVE_SESSION)void start({detail:window.PROXITI_ACTIVE_SESSION});
   for(const tab of el("ops-tabs").querySelectorAll("[data-ops-view]"))
