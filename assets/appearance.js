@@ -1,34 +1,26 @@
 (() => {
 "use strict";
-const picker=document.getElementById("palette-select");
-const allowed=new Set(["grafite","marinho","carbono","areia"]);
-let currentUser=null;
-const storageKey=id=>"proxiti-palette-v1-"+id;
-function apply(name,save=false){
- const legacy={noturno:"marinho",petroleo:"carbono",ardosia:"areia"};
- const normalized=legacy[name]||name;
- const selected=allowed.has(normalized)?normalized:"grafite";
- document.body.dataset.palette=selected;
- picker.value=selected;
- if(save&&currentUser){try{localStorage.setItem(storageKey(currentUser),selected)}catch{}}
+const root=document.documentElement,key="proxiti-theme-v3";
+const buttons=[document.getElementById("theme-toggle-public"),document.getElementById("theme-toggle-panel")].filter(Boolean);
+let current="light";
+try{const saved=localStorage.getItem(key);if(saved==="dark"||saved==="light")current=saved}catch{}
+function apply(value,persist=false){
+ current=value==="dark"?"dark":"light";
+ root.dataset.theme=current;
+ const meta=document.querySelector('meta[name="theme-color"]');
+ if(meta)meta.content=current==="dark"?"#0b1220":"#f6f7f9";
+ for(const button of buttons){
+  button.setAttribute("aria-label",current==="dark"?"Ativar tema claro":"Ativar tema escuro");
+  button.setAttribute("aria-pressed",String(current==="dark"));
+  button.title=current==="dark"?"Ativar tema claro":"Ativar tema escuro";
+  const label=button.querySelector(".theme-switch-label");
+  if(label)label.textContent=current==="dark"?"Tema escuro":"Tema claro";
+ }
+ if(persist){try{localStorage.setItem(key,current)}catch{}}
 }
-document.addEventListener("proxiti-session-ready",e=>{
- const id=e.detail?.user?.id;
- if(!id)return;
- if(id===currentUser)return;
- currentUser=id;
- let preferred="grafite";
- try{preferred=localStorage.getItem(storageKey(id))||preferred}catch{}
- apply(preferred);
+buttons.forEach(button=>button.addEventListener("click",()=>apply(current==="dark"?"light":"dark",true)));
+window.addEventListener("storage",event=>{
+ if(event.key===key&&(event.newValue==="dark"||event.newValue==="light"))apply(event.newValue);
 });
-document.addEventListener("proxiti-session-ended",()=>{
- currentUser=null;
- delete document.body.dataset.palette;
-});
-picker.addEventListener("change",()=>apply(picker.value,true));
-if(window.PROXITI_ACTIVE_SESSION){
- currentUser=window.PROXITI_ACTIVE_SESSION.user.id;
- let preferred="grafite";try{preferred=localStorage.getItem(storageKey(currentUser))||preferred}catch{}
- apply(preferred);
-}
+apply(current);
 })();
