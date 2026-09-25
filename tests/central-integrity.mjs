@@ -6,7 +6,7 @@ const get = path => readFileSync(new URL("../"+path,import.meta.url),"utf8");
 const html=get("index.html");
 const scriptPaths=[
   "assets/app.js","assets/alerts.js","assets/operations.js","assets/layout.js",
-  "assets/profile.js","assets/appearance.js"
+  "assets/profile.js","assets/appearance.js","assets/overview.js"
 ];
 for (const path of scriptPaths) new Script(get(path),{filename:path});
 const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);
@@ -16,7 +16,7 @@ for (const path of scriptPaths){
   const refs=[...src.matchAll(/\bel\(["']([^"']+)["']\s*\)/g)].map(x=>x[1]);
   for(const id of refs)assert(ids.includes(id),path+": elemento #"+id+" não existe");
 }
-for(const id of ["ticket-workspace","ticket-list","ticket-detail","ticket-audit-list","browser-notifications","mfa-form","profile-mfa-start"])
+for(const id of ["ticket-workspace","ticket-list","ticket-detail","ticket-audit-list","browser-notifications","mfa-form","profile-mfa-start","overview-home","overview-focus-toggle","overview-kpi-unread","overview-recent-list"])
   assert(html.includes('id="'+id+'"')||id==="ticket-workspace"&&html.includes('class="ticket-workspace"'),id+" ausente");
 assert(get("assets/operations.js").includes("proxiti_mark_ticket_read"));
 assert(get("assets/app.js").includes("getAuthenticatorAssuranceLevel"));
@@ -28,7 +28,7 @@ for (const match of html.matchAll(/<script[^>]+src="\.\/([^"]+)"[^>]*>/g))
   assert(existsSync(new URL("../"+match[1],import.meta.url)),"Script local ausente: "+match[1]);
 for (const link of html.matchAll(/<link[^>]+rel="stylesheet"[^>]+href="\.\/([^"]+)"[^>]*>/g))
   assert(existsSync(new URL("../"+link[1],import.meta.url)),"Estilo local ausente: "+link[1]);
-for (const path of ["assets/proxiti-ui.css","assets/interface.css","assets/support-desk.svg","assets/overview-art.svg"])
+for (const path of ["assets/proxiti-ui.css","assets/interface.css","assets/overview-comfort.css","assets/support-desk.svg","assets/overview-art.svg"])
   assert(existsSync(new URL("../"+path,import.meta.url)),path+" ausente");
 assert(html.includes('id="theme-toggle-public"')&&html.includes('id="theme-toggle-panel"'),"Tema público/privado ausente");
 assert(!html.includes('id="palette-select"'),"Paletas antigas ainda presentes na interface");
@@ -40,4 +40,7 @@ assert(get("assets/alerts.js").includes("tone([650,480]"),"Som de desativação 
 const interfaceCss=get("assets/interface.css");
 assert(interfaceCss.includes('html[data-theme="light"]')&&interfaceCss.includes('html[data-theme="dark"]'),"Temas incompletos");
 assert.equal((interfaceCss.match(/{/g)||[]).length,(interfaceCss.match(/}/g)||[]).length,"Chaves CSS desbalanceadas");
-console.log("PROXITI: sintaxe JS, IDs, inbox, MFA, framework, temas e sidebar verificados.");
+assert(get("assets/operations.js").includes("function publishOverview()"),"Resumo de chamados não é publicado");
+assert(get("assets/overview.js").includes("proxiti-overview-updated"),"Painel inicial sem eventos operacionais");
+assert(get("assets/layout.js").includes('el("overview-home").hidden=!overview'),"Visão geral não é isolada");
+console.log("PROXITI: JS, IDs, inbox, MFA, temas, sidebar e Visão geral verificados.");
