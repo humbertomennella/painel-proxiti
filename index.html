@@ -166,11 +166,13 @@
   </div>
   <div id="ops-training" class="ops-view px-panel" hidden>
     <div class="ops-section-head"><h3>Academia PROXITI</h3><button type="button" id="reload-training" class="secondary">Atualizar ↻</button></div>
+    <div class="ops-inline-search"><label for="training-search">Encontrar material técnico</label><input id="training-search" type="search" placeholder="Buscar por título ou descrição" autocomplete="off" maxlength="120"><p id="training-search-status" role="status" aria-live="polite"></p></div>
     <form id="training-form" class="ops-form" data-admin-only><label for="training-title">Título do material</label><input id="training-title" maxlength="160" minlength="3" required><label for="training-description">Descrição</label><textarea id="training-description" maxlength="2000" rows="2"></textarea><label for="training-file">Arquivo privado (PDF ou imagem, até 10 MB)</label><input id="training-file" type="file" accept="application/pdf,image/png,image/jpeg,image/webp"><label class="ops-check"><input id="training-published" type="checkbox"> Disponibilizar aos técnicos com permissão</label><button type="submit" class="primary">Adicionar material</button></form>
     <div id="training-list" class="ops-list"></div>
   </div>
   <div id="ops-tools" class="ops-view px-panel" hidden>
     <div class="ops-section-head"><h3>Ferramentas de trabalho</h3><button type="button" id="reload-tools" class="secondary">Atualizar ↻</button></div>
+    <div class="ops-inline-search"><label for="tools-search">Localizar equipamento</label><input id="tools-search" type="search" placeholder="Buscar por nome, patrimônio ou responsável" autocomplete="off" maxlength="120"><p id="tools-search-status" role="status" aria-live="polite"></p></div>
     <form id="tool-form" class="ops-form" data-admin-only><label for="tool-name">Ferramenta ou equipamento</label><input id="tool-name" required maxlength="160"><label for="tool-serial">Identificação / patrimônio (opcional)</label><input id="tool-serial" maxlength="160"><label for="tool-assignee">Responsável</label><select id="tool-assignee"><option value="">Disponível / não atribuído</option></select><label for="tool-notes">Orientações de uso</label><textarea id="tool-notes" maxlength="2000" rows="2"></textarea><button type="submit" class="primary">Cadastrar ferramenta</button></form>
     <div id="tools-list" class="ops-list"></div>
   </div>
