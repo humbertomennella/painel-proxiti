@@ -573,7 +573,7 @@
             try{
               const url=new URL(item.reference_url);
               if(url.protocol==="https:"){
-                const a=elem("a","Consultar referência oficial ↗","academy-reference");
+                const a=elem("a","Abrir referência técnica ↗","academy-reference");
                 a.href=url.href;a.target="_blank";a.rel="noopener noreferrer";
                 body.append(a);
               }
@@ -591,6 +591,29 @@
           let seen=false;try{seen=localStorage.getItem(k)==="1"}catch{}
           check.textContent=seen?"Consultado neste navegador ✓":"Marcar como consultado";
           check.setAttribute("aria-pressed",String(seen));entry.append(check);
+          entry.append(button("Imprimir / Salvar PDF",()=>{
+            const popup=window.open("","_blank");
+            if(!popup)throw new Error("Permita a abertura da janela de impressão neste navegador.");
+            const doc=popup.document;
+            doc.title="PROXITI · "+item.title;
+            const css=doc.createElement("style");
+            css.textContent="body{font:16px/1.63 system-ui,Arial,sans-serif;color:#172237;max-width:780px;margin:35px auto;padding:0 24px}h1{font-size:28px;line-height:1.3}h5{font-size:21px;margin:26px 0 7px}h6{font-size:17px;margin:18px 0 6px}p{margin:7px 0;white-space:pre-wrap}small{color:#58667c}.academy-bullet{padding-left:18px;position:relative}.academy-bullet:before{content:'•';position:absolute;left:3px}button{margin:20px 0;padding:12px 17px;background:#2f6df6;color:#fff;border:0;border-radius:9px}@media print{button{display:none}body{margin:0;max-width:none}}";
+            doc.head.append(css);
+            const h1=doc.createElement("h1");h1.textContent=item.title;doc.body.append(h1);
+            const meta=doc.createElement("small");
+            meta.textContent="PROXITI · "+(item.category||"Geral")+
+              (item.reviewed_at?" · revisão em "+new Date(item.reviewed_at+"T12:00:00").toLocaleDateString("pt-BR"):"");
+            doc.body.append(meta);
+            renderAcademyBody(item.body,doc.body);
+            if(item.reference_url){
+              try{const ref=new URL(item.reference_url);if(ref.protocol==="https:"){
+                const p=doc.createElement("p");p.textContent="Referência técnica: "+ref.href;doc.body.append(p);
+              }}catch{}
+            }
+            const print=doc.createElement("button");print.type="button";print.textContent="Imprimir / Salvar como PDF";
+            print.addEventListener("click",()=>popup.print());doc.body.append(print);
+            popup.opener=null;popup.focus();
+          },"secondary academy-print"));
         }
         const controls=elem("div","","ops-controls");
         if(item.storage_path){
