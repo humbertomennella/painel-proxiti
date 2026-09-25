@@ -134,3 +134,10 @@ html[data-theme] body.workspace-mode .overview-help strong{color:var(--px-ink)}
  html[data-theme] body.workspace-mode #overview-home *:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
  html[data-theme] body.workspace-mode #overview-home .overview-metric:hover,
  html[data-theme] body.workspace-mode #overview-home .modules article:hover{transform:none!important}}
+/* Os ícones ficam numa coluna própria; títulos e descrições nunca se sobrepõem. */
+html[data-theme] body.workspace-mode #overview-home .modules article{grid-template-columns:minmax(0,1fr) auto;column-gap:12px}
+html[data-theme] body.workspace-mode #overview-home .modules article .module-emblem{grid-column:2;grid-row:1/span 2}
+html[data-theme] body.workspace-mode #overview-home .modules article small{grid-column:1;grid-row:1}
+html[data-theme] body.workspace-mode #overview-home .modules article h4{grid-column:1;grid-row:2}
+html[data-theme] body.workspace-mode #overview-home .modules article p,
+html[data-theme] body.workspace-mode #overview-home .modules article>span:last-child{grid-column:1/-1}
