@@ -48,6 +48,7 @@
 <button type="button" data-side-view="tickets" class="side-link" title="Chamados" aria-label="Chamados"><span class="side-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><span class="side-label">Chamados</span><span id="side-ticket-badge" class="side-count" aria-label="Novos chamados"></span></button>
 <button type="button" data-side-view="staff" class="side-link" title="Técnicos" aria-label="Técnicos"><span class="side-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 8a3 3 0 0 1 0 6M17 17a5 5 0 0 1 4 4"/></svg></span><span class="side-label">Técnicos</span></button>
 <button type="button" data-side-view="content" class="side-link" title="Conteúdo do site" aria-label="Conteúdo do site"><span class="side-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><span class="side-label">Conteúdo do site</span></button>
+<button type="button" data-side-view="agenda" class="side-link" title="Agenda" aria-label="Agenda"><span class="side-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 15h3"/></svg></span><span class="side-label">Agenda</span></button>
 <button type="button" data-side-view="training" class="side-link" title="Academia" aria-label="Academia"><span class="side-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5zM6 11v6c4 3 8 3 12 0v-6M22 9v7"/></svg></span><span class="side-label">Academia</span></button>
 <button type="button" data-side-view="tools" class="side-link" title="Ferramentas" aria-label="Ferramentas"><span class="side-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 7a5 5 0 0 0-7 7L3 18l3 3 4-4a5 5 0 0 0 7-7l-4 4-3-3z"/></svg></span><span class="side-label">Ferramentas</span></button>
 <button type="button" data-side-view="profile" class="side-link" title="Meu perfil" aria-label="Meu perfil"><span class="side-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M4 20a8 8 0 0 1 16 0"/></svg></span><span class="side-label">Meu perfil</span></button></nav>
@@ -76,6 +77,7 @@
     <button type="button" class="active" data-ops-view="tickets">Chamados <span id="ticket-badge"></span></button>
     <button type="button" data-ops-view="staff" data-admin-only>Técnicos e permissões</button>
     <button type="button" data-ops-view="content" data-admin-only>Conteúdo do site</button>
+    <button type="button" data-ops-view="agenda">Agenda</button>
     <button type="button" data-ops-view="training">Academia</button>
     <button type="button" data-ops-view="tools">Ferramentas</button>
   </nav>
@@ -166,6 +168,12 @@
     <p class="ops-muted">Edite os textos ligados ao site pelo identificador. A exclusão remove a personalização e restaura o texto estático do site. Arquivos-fonte, checkout e código continuam protegidos no GitHub.</p>
     <form id="content-form" class="ops-form"><label for="content-key">Identificador do bloco</label><input id="content-key" required pattern="[a-z0-9][a-z0-9._-]{2,100}" maxlength="100" placeholder="home.contact.intro"><label for="content-label">Nome interno</label><input id="content-label" required maxlength="160"><label for="content-value">Texto publicado</label><textarea id="content-value" maxlength="3000" rows="4" required></textarea><label class="ops-check"><input id="content-published" type="checkbox" checked> Publicar no site</label><div class="ops-controls"><button type="submit" class="primary">Salvar conteúdo</button><button type="button" id="content-delete" class="secondary">Excluir personalização</button></div></form>
     <div id="content-list" class="ops-list"></div>
+  </div>
+  <div id="ops-agenda" class="ops-view px-panel" hidden>
+    <div class="ops-section-head"><h3>Agenda de atendimentos</h3><button type="button" id="reload-agenda" class="secondary">Atualizar ↻</button></div>
+    <p class="ops-muted">Compromissos vinculados aos chamados acessíveis. Planejar não envia convite: confirme com o cliente antes de marcar o horário.</p>
+    <div class="ops-inline-search"><label for="agenda-filter">Visualização</label><select id="agenda-filter"><option value="upcoming">Próximos compromissos</option><option value="all">Todos os agendamentos acessíveis</option></select><p id="agenda-count" role="status" aria-live="polite"></p></div>
+    <div id="agenda-list" class="agenda-list" aria-live="polite"><p class="ops-muted">Carregando sua agenda…</p></div>
   </div>
   <div id="ops-training" class="ops-view px-panel" hidden>
     <div class="ops-section-head"><h3>Academia PROXITI</h3><button type="button" id="reload-training" class="secondary">Atualizar ↻</button></div>
