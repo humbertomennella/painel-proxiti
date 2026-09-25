@@ -49,10 +49,16 @@ try{
      const icon=document.querySelector("#overview-guide-toggle svg").getBoundingClientRect();
      return {scrollWidth:document.documentElement.scrollWidth,viewport:window.innerWidth,
        buttons,icon:{width:icon.width,height:icon.height},
-       title:rect("overview-heading"),banner:rect("overview-banner-title")};
+       title:rect("overview-heading"),banner:rect("overview-banner-title"),
+       offenders:[...document.querySelectorAll("body *")].map(el=>({
+         element:el.tagName.toLowerCase()+(el.id?"#"+el.id:"")+
+           (typeof el.className==="string"?"."+el.className.trim().split(/\\s+/).join("."):""),
+         right:Math.round(el.getBoundingClientRect().right),
+         width:Math.round(el.getBoundingClientRect().width)
+       })).filter(x=>x.right>window.innerWidth+2&&x.width>1).slice(0,16)};
    });
    assert(v.scrollWidth<=v.viewport+2,
-     width+"px: rolagem horizontal ("+v.scrollWidth+">"+v.viewport+")");
+     width+"px: rolagem horizontal ("+v.scrollWidth+">"+v.viewport+"). Excedentes: "+JSON.stringify(v.offenders));
    for(const [id,r]of Object.entries(v.buttons)){
      assert(r.width>=44&&r.height>=44,width+"px: alvo muito pequeno "+id);
      assert(r.left>=-1&&r.right<=width+1,width+"px: botão fora da tela "+id);
