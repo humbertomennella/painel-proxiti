@@ -381,6 +381,7 @@
     }catch(e){notice("Erro ao consultar técnicos: "+e.message,true);}
   }
   function announceTicket(){
+    window.PROXITI_ACTIVE_TICKET=state.active;
     document.dispatchEvent(new CustomEvent("proxiti-ticket-selected",{detail:{ticket:state.active}}));
   }
   async function loadTickets(){
