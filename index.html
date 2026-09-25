@@ -131,6 +131,33 @@
             <ol id="ticket-tasks-list" class="ticket-workflow-list" aria-label="Etapas do atendimento"><li class="ticket-workflow-empty">Escolha um roteiro depois de assumir o chamado.</li></ol>
           </section>
         </div>
+        <div class="ticket-workflow-grid ticket-workflow-extras">
+          <section class="ticket-workflow-card" aria-labelledby="ticket-device-heading">
+            <div class="ticket-workflow-card-head"><h5 id="ticket-device-heading">Equipamento do chamado</h5><span>Identificação mínima</span></div>
+            <form id="ticket-device-form" class="ticket-workflow-form">
+              <label for="ticket-device-category">Categoria</label><select id="ticket-device-category"><option value="desktop">Desktop</option><option value="notebook">Notebook</option><option value="router">Roteador</option><option value="network">Equipamento de rede</option><option value="printer">Impressora</option><option value="server">Servidor</option><option value="other">Outro</option></select>
+              <label for="ticket-device-brand">Fabricante</label><input id="ticket-device-brand" maxlength="90" autocomplete="off">
+              <label for="ticket-device-model">Modelo</label><input id="ticket-device-model" maxlength="110" autocomplete="off">
+              <label for="ticket-device-os">Sistema / firmware</label><input id="ticket-device-os" maxlength="110" autocomplete="off">
+              <label for="ticket-device-ref">Referência patrimonial autorizada</label><input id="ticket-device-ref" maxlength="80" autocomplete="off" placeholder="Não registre dados pessoais">
+              <label for="ticket-device-observations">Observações necessárias ao serviço</label><textarea id="ticket-device-observations" maxlength="1000" rows="2"></textarea>
+              <button type="submit" class="secondary">Salvar identificação</button>
+            </form>
+            <p id="ticket-device-summary" class="ticket-workflow-help" role="status">Nenhum equipamento identificado.</p>
+          </section>
+          <section class="ticket-workflow-card" aria-labelledby="ticket-appointments-heading">
+            <div class="ticket-workflow-card-head"><h5 id="ticket-appointments-heading">Retorno e visita</h5><span>Vinculado ao chamado</span></div>
+            <form id="ticket-appointment-form" class="ticket-workflow-form">
+              <label for="ticket-appointment-title">Finalidade</label><input id="ticket-appointment-title" maxlength="140" minlength="5" placeholder="Ex.: retorno de diagnóstico" required>
+              <label for="ticket-appointment-start">Data e horário local</label><input id="ticket-appointment-start" type="datetime-local" required>
+              <label for="ticket-appointment-duration">Duração prevista (minutos)</label><input id="ticket-appointment-duration" type="number" value="60" min="15" max="480" step="15" required>
+              <label for="ticket-appointment-mode">Modalidade</label><select id="ticket-appointment-mode"><option value="remote">Remoto</option><option value="on_site">Presencial</option><option value="phone">Ligação</option></select>
+              <label for="ticket-appointment-details">Detalhes privados (sem senhas)</label><textarea id="ticket-appointment-details" maxlength="500" rows="2"></textarea>
+              <button type="submit" class="secondary">Planejar horário</button>
+            </form>
+            <ul id="ticket-appointments-list" class="ticket-workflow-list"><li class="ticket-workflow-empty">Nenhum compromisso registrado.</li></ul>
+          </section>
+        </div>
         <section class="ticket-workflow-card ticket-workflow-files" aria-labelledby="ticket-files-heading">
           <div class="ticket-workflow-card-head"><h5 id="ticket-files-heading">Evidências e anexos</h5><span>Armazenamento privado</span></div>
           <p class="ticket-workflow-help">Somente PDF, PNG, JPG ou WebP, até 5 MB por arquivo. Evite dados pessoais que não sejam necessários ao serviço.</p>
