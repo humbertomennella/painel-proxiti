@@ -141,3 +141,142 @@ html[data-theme] body.workspace-mode #overview-home .modules article small{grid-
 html[data-theme] body.workspace-mode #overview-home .modules article h4{grid-column:1;grid-row:2}
 html[data-theme] body.workspace-mode #overview-home .modules article p,
 html[data-theme] body.workspace-mode #overview-home .modules article>span:last-child{grid-column:1/-1}
+
+/* 2026-09-25 · Visão geral em escala confortável, sem alterar as demais telas. */
+html[data-theme] body.workspace-mode .panel-head #welcome{font-size:clamp(1.7rem,2.15vw,2.2rem)}
+html[data-theme] body.workspace-mode .panel-head .kicker{font-size:.82rem;letter-spacing:.065em}
+html[data-theme] body.workspace-mode .panel-head .head-subtitle{font-size:1rem!important;line-height:1.55}
+html[data-theme] body.workspace-mode #overview-home{
+  --overview-gap:clamp(19px,1.65vw,28px);
+  width:100%;max-width:none;min-height:calc(100dvh - 118px);
+  font-size:1.0625rem;line-height:1.6
+}
+html[data-theme] body.workspace-mode #overview-home .kicker{
+  font-size:.875rem;letter-spacing:.06em;line-height:1.45
+}
+html[data-theme] body.workspace-mode #overview-home .section-heading h2{
+  font-size:clamp(2rem,2.75vw,2.65rem);line-height:1.15
+}
+html[data-theme] body.workspace-mode #overview-home .overview-section-heading{align-items:center}
+.overview-view-controls{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap;min-width:0}
+html[data-theme] body.workspace-mode #overview-home .overview-focus-toggle,
+html[data-theme] body.workspace-mode #overview-home .overview-comfort-toggle{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  min-height:46px;padding:10px 14px;border:1px solid var(--px-line-strong);
+  border-radius:11px;background:var(--px-surface);color:var(--px-text);
+  font-size:.94rem;font-weight:740;line-height:1.35;
+  transition:border-color .16s ease,background-color .16s ease,color .16s ease
+}
+html[data-theme] body.workspace-mode #overview-home .overview-comfort-toggle:hover,
+html[data-theme] body.workspace-mode #overview-home .overview-comfort-toggle[aria-pressed="true"],
+html[data-theme] body.workspace-mode #overview-home .overview-comfort-toggle[aria-expanded="true"]{
+  border-color:var(--px-blue);background:var(--px-bg-muted);color:var(--px-ink)
+}
+.overview-comfort-toggle svg{width:18px;height:18px;flex:none}
+.overview-reading-icon{font-size:1.05em;font-weight:850;letter-spacing:-.035em}
+html[data-theme] body.workspace-mode #overview-home .overview-banner{
+  min-height:235px;border-radius:20px;
+  background:linear-gradient(130deg,var(--px-surface) 0%,var(--px-surface) 54%,var(--px-surface-soft) 100%)
+}
+html[data-theme] body.workspace-mode #overview-home .overview-banner-copy h3{
+  font-size:clamp(1.9rem,2.6vw,2.75rem);line-height:1.13;max-width:25ch
+}
+html[data-theme] body.workspace-mode #overview-home .overview-banner-copy p:not(.kicker){
+  font-size:1.08rem;line-height:1.62;max-width:65ch
+}
+html[data-theme] body.workspace-mode #overview-home .overview-hero-actions .px-button{
+  min-height:48px;font-size:1rem
+}
+html[data-theme] body.workspace-mode #overview-home .overview-status-kicker{font-size:.88rem;letter-spacing:.055em}
+html[data-theme] body.workspace-mode #overview-home .overview-hero-status strong{font-size:clamp(1.35rem,1.65vw,1.6rem)}
+html[data-theme] body.workspace-mode #overview-home .overview-hero-status p{font-size:1rem;line-height:1.6}
+html[data-theme] body.workspace-mode #overview-home .overview-hero-status .overview-quick span{font-size:.9rem;min-height:34px}
+html[data-theme] body.workspace-mode #overview-home .overview-group-heading h3{font-size:clamp(1.45rem,1.8vw,1.8rem)}
+html[data-theme] body.workspace-mode #overview-home .overview-group-heading>span{font-size:.875rem}
+html[data-theme] body.workspace-mode #overview-home .overview-metric{min-height:200px;gap:13px}
+html[data-theme] body.workspace-mode #overview-home .overview-metric-label{font-size:1rem;line-height:1.5}
+html[data-theme] body.workspace-mode #overview-home .overview-metric-value{font-size:clamp(2.85rem,3.5vw,4.2rem)}
+html[data-theme] body.workspace-mode #overview-home .overview-metric-description{font-size:.98rem;line-height:1.53}
+html[data-theme] body.workspace-mode #overview-home .overview-metric-link{font-size:.94rem}
+html[data-theme] body.workspace-mode #overview-home .overview-data-note{font-size:.88rem;line-height:1.55}
+html[data-theme] body.workspace-mode #overview-home .overview-next-text{font-size:1.02rem;line-height:1.6}
+html[data-theme] body.workspace-mode #overview-home .overview-inline-link{font-size:.96rem;min-height:44px}
+html[data-theme] body.workspace-mode #overview-home .overview-recent-item{min-height:89px;padding:16px}
+html[data-theme] body.workspace-mode #overview-home .overview-recent-item strong{font-size:1.03rem;line-height:1.55}
+html[data-theme] body.workspace-mode #overview-home .overview-recent-item small,
+html[data-theme] body.workspace-mode #overview-home .overview-recent-ref{font-size:.9rem}
+html[data-theme] body.workspace-mode #overview-home .overview-recent-status{font-size:.86rem;white-space:normal;text-align:right}
+html[data-theme] body.workspace-mode #overview-home .overview-empty{font-size:1rem}
+html[data-theme] body.workspace-mode #overview-home .modules article{min-height:160px;padding:20px}
+html[data-theme] body.workspace-mode #overview-home .modules article small{font-size:.83rem;letter-spacing:.045em}
+html[data-theme] body.workspace-mode #overview-home .modules article h4{font-size:1.22rem;overflow-wrap:anywhere}
+html[data-theme] body.workspace-mode #overview-home .modules article p{font-size:.98rem;line-height:1.55}
+html[data-theme] body.workspace-mode #overview-home .modules article>span:last-child{font-size:.94rem}
+html[data-theme] body.workspace-mode #overview-home .overview-help p{font-size:.97rem;line-height:1.65}
+html[data-theme] body.workspace-mode #overview-home .overview-help-icon{width:43px;height:43px}
+html[data-theme] body.workspace-mode #overview-home .overview-recent,
+html[data-theme] body.workspace-mode #overview-home .overview-resources{padding:clamp(21px,2vw,33px)}
+
+html[data-theme] body.workspace-mode #overview-home .overview-guide{
+  padding:clamp(18px,1.8vw,26px);border:1px solid var(--px-line);
+  border-radius:16px;background:var(--px-bg-muted)
+}
+.overview-guide-heading{display:flex;align-items:end;justify-content:space-between;gap:13px 20px;flex-wrap:wrap;margin-bottom:17px}
+html[data-theme] body.workspace-mode #overview-home .overview-guide-heading .kicker{margin:0 0 4px}
+html[data-theme] body.workspace-mode #overview-home .overview-guide-heading h3{margin:0;font-size:1.43rem;line-height:1.3;letter-spacing:-.03em}
+html[data-theme] body.workspace-mode #overview-home .overview-guide-heading>p{max-width:47ch;margin:0;color:var(--px-muted);font-size:.95rem;line-height:1.55}
+.overview-guide-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+html[data-theme] body.workspace-mode #overview-home .overview-guide-grid article{
+  min-width:0;padding:18px;border:1px solid var(--px-line);
+  border-radius:12px;background:var(--px-surface)
+}
+html[data-theme] body.workspace-mode #overview-home .overview-guide-step{
+  display:inline-flex;align-items:center;justify-content:center;min-width:32px;
+  height:32px;padding:0 8px;border:1px solid var(--px-line-strong);
+  border-radius:9px;background:var(--px-surface-soft);color:var(--px-blue);
+  font-size:.88rem;font-weight:820;font-variant-numeric:tabular-nums
+}
+html[data-theme] body.workspace-mode #overview-home .overview-guide-grid h4{
+  margin:11px 0 6px;font-size:1.13rem;line-height:1.4;letter-spacing:-.02em
+}
+html[data-theme] body.workspace-mode #overview-home .overview-guide-grid p{
+  margin:0;color:var(--px-muted);font-size:.98rem;line-height:1.62
+}
+.overview-home.overview-focus-mode .overview-guide{display:none!important}
+
+/* A leitura ampliada é voluntária, limitada à visão geral e salva por conta. */
+html[data-theme] body.workspace-mode #overview-home.overview-reading-mode{font-size:1.2rem;--overview-gap:clamp(23px,2vw,34px)}
+html[data-theme] body.workspace-mode #overview-home.overview-reading-mode .kicker{font-size:.98rem}
+html[data-theme] body.workspace-mode #overview-home.overview-reading-mode .overview-banner-copy p:not(.kicker),
+html[data-theme] body.workspace-mode #overview-home.overview-reading-mode .overview-hero-status p,
+html[data-theme] body.workspace-mode #overview-home.overview-reading-mode .overview-next-text,
+html[data-theme] body.workspace-mode #overview-home.overview-reading-mode .overview-help p,
+html[data-theme] body.workspace-mode #overview-home.overview-reading-mode .overview-guide-grid p{font-size:1.2rem}
+html[data-theme] body.workspace-mode #overview-home.overview-reading-mode .overview-metric-label,
+html[data-theme] body.workspace-mode #overview-home.overview-reading-mode .overview-metric-description,
+html[data-theme] body.workspace-mode #overview-home.overview-reading-mode .overview-recent-item strong,
+html[data-theme] body.workspace-mode #overview-home.overview-reading-mode .modules article p,
+html[data-theme] body.workspace-mode #overview-home.overview-reading-mode .overview-guide-grid h4{font-size:1.14rem}
+html[data-theme] body.workspace-mode #overview-home.overview-reading-mode .overview-comfort-toggle,
+html[data-theme] body.workspace-mode #overview-home.overview-reading-mode .overview-focus-toggle,
+html[data-theme] body.workspace-mode #overview-home.overview-reading-mode .overview-inline-link,
+html[data-theme] body.workspace-mode #overview-home.overview-reading-mode .overview-metric-link{font-size:1.08rem}
+html[data-theme] body.workspace-mode #overview-home.overview-reading-mode .overview-metric{min-height:225px}
+html[data-theme] body.workspace-mode #overview-home.overview-reading-mode .modules article{min-height:182px}
+
+@media(max-width:1140px){.overview-guide-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){
+ html[data-theme] body.workspace-mode #overview-home .overview-section-heading{align-items:flex-start;flex-wrap:wrap}
+ .overview-view-controls{justify-content:flex-start;width:100%}
+ .overview-guide-grid{grid-template-columns:1fr}
+ html[data-theme] body.workspace-mode #overview-home .overview-banner{min-height:0}
+ html[data-theme] body.workspace-mode #overview-home .overview-metric{min-height:185px}
+ html[data-theme] body.workspace-mode #overview-home .overview-recent-item{grid-template-columns:minmax(0,1fr)}
+ html[data-theme] body.workspace-mode #overview-home .overview-recent-status{justify-self:start;text-align:left}
+}
+@media(max-width:420px){
+ .overview-view-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ html[data-theme] body.workspace-mode #overview-home .overview-view-controls button{width:100%;white-space:normal}
+ html[data-theme] body.workspace-mode #overview-home .overview-view-controls #overview-focus-toggle{grid-column:1/-1}
+ html[data-theme] body.workspace-mode #overview-home .overview-metric{min-height:165px}
+}
