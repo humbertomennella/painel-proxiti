@@ -495,6 +495,16 @@
       }
     }catch(e){notice("Falha ao carregar conteúdos: "+e.message,true);}
   }
+  function filterOpsList(inputId,listId,statusId,label){
+    const q=el(inputId).value.trim().toLocaleLowerCase("pt-BR");
+    const entries=[...el(listId).querySelectorAll(".ops-list-item")];
+    let visible=0;
+    for(const item of entries){
+      const matches=!q||item.textContent.toLocaleLowerCase("pt-BR").includes(q);
+      item.hidden=!matches;if(matches)visible++;
+    }
+    el(statusId).textContent=entries.length?(visible+" de "+entries.length+" "+label):"";
+  }
   async function loadTraining(){
     if(!can("training"))return;
     try{
@@ -524,6 +534,7 @@
         }));
         entry.append(controls);list.append(entry);
       }
+      filterOpsList("training-search","training-list","training-search-status","materiais");
     }catch(e){notice("Falha ao carregar academia: "+e.message,true);}
   }
   async function loadTools(){
@@ -557,6 +568,7 @@
         }
         list.append(entry);
       }
+      filterOpsList("tools-search","tools-list","tools-search-status","ferramentas");
     }catch(e){notice("Falha ao carregar ferramentas: "+e.message,true);}
   }
   function stop(){
@@ -671,7 +683,9 @@
   el("reload-staff").addEventListener("click",()=>void loadStaff());
   el("reload-content").addEventListener("click",()=>void loadContent());
   el("reload-training").addEventListener("click",()=>void loadTraining());
+  el("training-search").addEventListener("input",()=>filterOpsList("training-search","training-list","training-search-status","materiais"));
   el("reload-tools").addEventListener("click",()=>void loadTools());
+  el("tools-search").addEventListener("input",()=>filterOpsList("tools-search","tools-list","tools-search-status","ferramentas"));
   el("close-detail").addEventListener("click",()=>{state.active=null;announceTicket();remember("ticket","");el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;state.renderedTable="";renderTickets();});
   el("staff-reply").addEventListener("input",()=>{if(state.active)remember("draft-"+state.active.id,el("staff-reply").value)});
   window.addEventListener("pagehide",()=>{if(state.user)remember("scroll",Math.round(window.scrollY))});
