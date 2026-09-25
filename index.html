@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="./assets/interface.css">
 <link rel="stylesheet" href="./assets/overview-comfort.css?v=20260925-2">
 <link rel="stylesheet" href="./assets/ticket-workflow.css?v=1">
+<link rel="stylesheet" href="./assets/operations-v8.css?v=1">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js" defer></script>
 <script src="./assets/config.js" defer></script>
 <script src="./assets/app.js" defer></script>
@@ -22,6 +23,8 @@
 <script src="./assets/appearance.js" defer></script>
 <script src="./assets/overview.js?v=20260925-2" defer></script>
 <script src="./assets/ticket-workflow.js?v=1" defer></script>
+<script src="./assets/ticket-extras.js?v=1" defer></script>
+<script src="./assets/technical-tools.js?v=1" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Ir para o conteúdo</a>
@@ -166,8 +169,24 @@
   </div>
   <div id="ops-training" class="ops-view px-panel" hidden>
     <div class="ops-section-head"><h3>Academia PROXITI</h3><button type="button" id="reload-training" class="secondary">Atualizar ↻</button></div>
-    <div class="ops-inline-search"><label for="training-search">Encontrar material técnico</label><input id="training-search" type="search" placeholder="Buscar por título ou descrição" autocomplete="off" maxlength="120"><p id="training-search-status" role="status" aria-live="polite"></p></div>
-    <form id="training-form" class="ops-form" data-admin-only><label for="training-title">Título do material</label><input id="training-title" maxlength="160" minlength="3" required><label for="training-description">Descrição</label><textarea id="training-description" maxlength="2000" rows="2"></textarea><label for="training-file">Arquivo privado (PDF ou imagem, até 10 MB)</label><input id="training-file" type="file" accept="application/pdf,image/png,image/jpeg,image/webp"><label class="ops-check"><input id="training-published" type="checkbox"> Disponibilizar aos técnicos com permissão</label><button type="submit" class="primary">Adicionar material</button></form>
+    <div class="academy-intro"><strong>Procedimentos para consultar durante o atendimento.</strong><p>Os materiais são internos, versionados e não substituem autorização do cliente nem julgamento técnico. Não há certificados automáticos.</p></div>
+    <div class="academy-filters">
+      <div class="ops-inline-search"><label for="training-search">Pesquisar na Academia</label><input id="training-search" type="search" placeholder="Título, tema ou conteúdo" autocomplete="off" maxlength="120"><p id="training-search-status" role="status" aria-live="polite"></p></div>
+      <label for="training-category-filter">Especialidade <select id="training-category-filter"><option value="">Todas as áreas</option><option>Atendimento</option><option>Computadores</option><option>Redes</option><option>Backup</option><option>Segurança</option><option>Infraestrutura</option><option>Geral</option></select></label>
+    </div>
+    <form id="training-form" class="ops-form academy-editor" data-admin-only>
+      <h4 id="training-editor-title">Publicar material técnico</h4>
+      <p class="ops-muted">O material só fica disponível aos técnicos quando você habilita a publicação.</p>
+      <label for="training-kind">Formato</label><select id="training-kind"><option value="article">Artigo / procedimento interno</option><option value="file">PDF ou imagem em armazenamento privado</option></select>
+      <label for="training-category">Especialidade</label><select id="training-category"><option>Atendimento</option><option>Computadores</option><option>Redes</option><option>Backup</option><option>Segurança</option><option>Infraestrutura</option><option>Geral</option></select>
+      <label for="training-title">Título</label><input id="training-title" maxlength="160" minlength="3" required>
+      <label for="training-description">Descrição curta</label><textarea id="training-description" maxlength="2000" rows="2"></textarea>
+      <label for="training-reference">Referência oficial HTTPS (opcional)</label><input id="training-reference" type="url" maxlength="500" placeholder="https://...">
+      <div id="training-article-fields"><label for="training-body">Conteúdo do procedimento (máx. 16 mil caracteres)</label><textarea id="training-body" maxlength="16000" rows="13" placeholder="# Título&#10;## Etapa&#10;- Orientação objetiva."></textarea><p class="ops-muted">Use # e ## para títulos e - para etapas. O conteúdo é exibido como texto seguro, não como HTML.</p></div>
+      <div id="training-file-fields" hidden><label for="training-file">Arquivo privado: PDF ou imagem, até 10 MB</label><input id="training-file" type="file" accept="application/pdf,image/png,image/jpeg,image/webp"><p class="ops-muted">Ao editar um arquivo existente, os metadados podem ser alterados sem reenviar o arquivo.</p></div>
+      <label class="ops-check"><input id="training-published" type="checkbox"> Disponibilizar aos técnicos autorizados</label>
+      <div class="ops-controls"><button type="submit" class="primary" id="training-save">Salvar material</button><button type="button" class="secondary" id="training-cancel" hidden>Cancelar edição</button></div>
+    </form>
     <div id="training-list" class="ops-list"></div>
   </div>
   <div id="ops-tools" class="ops-view px-panel" hidden>
