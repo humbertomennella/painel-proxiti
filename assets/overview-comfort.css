@@ -280,3 +280,76 @@ html[data-theme] body.workspace-mode #overview-home.overview-reading-mode .modul
  html[data-theme] body.workspace-mode #overview-home .overview-view-controls #overview-focus-toggle{grid-column:1/-1}
  html[data-theme] body.workspace-mode #overview-home .overview-metric{min-height:165px}
 }
+
+/* Mobile v2: stable geometry, touch targets and restrained icons across 320–760px. */
+@media(max-width:760px){
+ html[data-theme] body.workspace-mode .panel-head{
+   position:relative;display:grid;grid-template-columns:minmax(0,1fr);
+   align-items:start;gap:12px;padding:14px 0;margin-bottom:14px;min-height:0;
+   backdrop-filter:none
+ }
+ html[data-theme] body.workspace-mode .panel-head-greeting{min-width:0}
+ html[data-theme] body.workspace-mode .panel-head #welcome{font-size:clamp(1.58rem,6vw,1.93rem);line-height:1.17}
+ html[data-theme] body.workspace-mode .panel-head .kicker{font-size:.73rem;letter-spacing:.075em}
+ html[data-theme] body.workspace-mode .panel-head .head-subtitle{font-size:.94rem!important}
+ html[data-theme] body.workspace-mode .panel-account{
+   width:100%;min-width:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));
+   align-items:center;gap:7px;justify-items:stretch
+ }
+ html[data-theme] body.workspace-mode .panel-account>button,
+ html[data-theme] body.workspace-mode .panel-account .notification-trigger,
+ html[data-theme] body.workspace-mode .panel-account .profile-trigger{
+   width:100%;min-width:0;min-height:46px;height:46px;
+   padding:7px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center
+ }
+ html[data-theme] body.workspace-mode .panel-account .notification-hub{min-width:0}
+ html[data-theme] body.workspace-mode .panel-account .theme-switch-label{display:none!important}
+ html[data-theme] body.workspace-mode .panel-account .theme-switch svg{width:21px;height:21px}
+ html[data-theme] body.workspace-mode .panel-account .profile-trigger .avatar-round{width:35px;height:35px}
+ html[data-theme] body.workspace-mode .panel-account .sound-toggle{font-size:0!important}
+ html[data-theme] body.workspace-mode .panel-account .sound-toggle::before{content:"♫";font-size:19px;line-height:1}
+ html[data-theme] body.workspace-mode .panel-account .sound-toggle[aria-pressed="false"]::before{content:"♪"}
+ html[data-theme] body.workspace-mode .panel-account #logout{font-size:0!important}
+ html[data-theme] body.workspace-mode .panel-account #logout::before{content:"Sair";font-size:.84rem;line-height:1.25;font-weight:740}
+ html[data-theme] body.workspace-mode .panel-account .mobile-nav-toggle{font-size:1.35rem;line-height:1}
+ html[data-theme] body.workspace-mode #overview-home{--overview-gap:15px;min-height:0}
+ html[data-theme] body.workspace-mode #overview-home .overview-section-heading{
+   display:grid;grid-template-columns:minmax(0,1fr);align-items:start;gap:14px;margin:0
+ }
+ html[data-theme] body.workspace-mode #overview-home .overview-view-controls{
+   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+   align-items:stretch;justify-content:stretch;gap:10px;width:100%;min-width:0
+ }
+ html[data-theme] body.workspace-mode #overview-home .overview-view-controls>button{
+   width:100%;height:48px;min-height:48px;min-width:0;max-width:100%;
+   display:inline-flex;align-items:center;justify-content:center;gap:8px;
+   padding:8px 9px;border-radius:12px;white-space:nowrap;
+   font-size:clamp(.86rem,3.7vw,.99rem);line-height:1.25;overflow:hidden
+ }
+ html[data-theme] body.workspace-mode #overview-home .overview-view-controls>#overview-focus-toggle{grid-column:1/-1}
+ html[data-theme] body.workspace-mode #overview-home .overview-view-controls svg{
+   width:18px!important;height:18px!important;min-width:18px!important;
+   max-width:18px!important;max-height:18px!important;display:block;flex:0 0 18px
+ }
+ html[data-theme] body.workspace-mode #overview-home .overview-view-controls .overview-reading-icon{
+   display:inline-grid;place-items:center;flex:0 0 21px;width:21px;height:21px;
+   font-size:.96rem;line-height:1
+ }
+ html[data-theme] body.workspace-mode #overview-home .overview-banner{padding:18px;border-radius:17px}
+ html[data-theme] body.workspace-mode #overview-home .overview-banner-copy h3{
+   font-size:clamp(1.76rem,7.4vw,2.13rem);max-width:19ch;line-height:1.12
+ }
+ html[data-theme] body.workspace-mode #overview-home .overview-banner-copy p:not(.kicker){
+   font-size:1rem;line-height:1.57
+ }
+ html[data-theme] body.workspace-mode #overview-home .overview-hero-actions{
+   display:grid;grid-template-columns:minmax(0,1fr);gap:9px;width:100%
+ }
+ html[data-theme] body.workspace-mode #overview-home .overview-hero-actions .px-button{width:100%;justify-content:center}
+ html[data-theme] body.workspace-mode #overview-home .overview-guide-grid{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:380px){
+ html[data-theme] body.workspace-mode .panel-account{gap:5px}
+ html[data-theme] body.workspace-mode #overview-home .overview-view-controls{gap:8px}
+ html[data-theme] body.workspace-mode #overview-home .overview-view-controls>button{font-size:.87rem;padding:8px 7px}
+}
