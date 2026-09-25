@@ -26,4 +26,18 @@ assert(get("supabase/admin_totp_authorization_v6.sql").includes("proxiti_mfa_rea
 assert(get("supabase/functions/proxiti-support/index.ts").includes('assurance !== "aal2"'));
 for (const match of html.matchAll(/<script[^>]+src="\.\/([^"]+)"[^>]*>/g))
   assert(existsSync(new URL("../"+match[1],import.meta.url)),"Script local ausente: "+match[1]);
-console.log("PROXITI: sintaxe JS, IDs, inbox, MFA e fontes SQL/Edge verificados.");
+for (const link of html.matchAll(/<link[^>]+rel="stylesheet"[^>]+href="\.\/([^"]+)"[^>]*>/g))
+  assert(existsSync(new URL("../"+link[1],import.meta.url)),"Estilo local ausente: "+link[1]);
+for (const path of ["assets/proxiti-ui.css","assets/interface.css","assets/support-desk.svg","assets/overview-art.svg"])
+  assert(existsSync(new URL("../"+path,import.meta.url)),path+" ausente");
+assert(html.includes('id="theme-toggle-public"')&&html.includes('id="theme-toggle-panel"'),"Tema público/privado ausente");
+assert(!html.includes('id="palette-select"'),"Paletas antigas ainda presentes na interface");
+assert(html.includes('data-theme="light"'),"Tema claro inicial ausente");
+assert(get("assets/appearance.js").includes('proxiti-theme-v3'),"Preferência de tema incompatível com o site");
+assert(get("assets/layout.js").includes('sidebar.addEventListener("pointerenter"'),"Hover lateral ausente");
+assert(get("assets/layout.js").includes('sidebar.addEventListener("pointerleave"'),"Recolhimento lateral ausente");
+assert(get("assets/alerts.js").includes("tone([650,480]"),"Som de desativação ausente");
+const interfaceCss=get("assets/interface.css");
+assert(interfaceCss.includes('html[data-theme="light"]')&&interfaceCss.includes('html[data-theme="dark"]'),"Temas incompletos");
+assert.equal((interfaceCss.match(/{/g)||[]).length,(interfaceCss.match(/}/g)||[]).length,"Chaves CSS desbalanceadas");
+console.log("PROXITI: sintaxe JS, IDs, inbox, MFA, framework, temas e sidebar verificados.");
