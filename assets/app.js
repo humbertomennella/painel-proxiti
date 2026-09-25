@@ -5,6 +5,7 @@
   const buttons = ["login-button","forgot-button","reset-button"].map(el);
   const auth = el("auth-screen"), panel = el("panel"), feedback = el("feedback");
   let client = null, busy = false, generation = 0;
+  let activeUserId = null, lastProfileKey = null;
   let recovering = ["recovery","invite"].includes(new URLSearchParams(location.hash.replace(/^#/,"")).get("type"));
   function message(value="",kind="") {
     feedback.textContent=value; feedback.className="message"+(kind?" "+kind:""); feedback.hidden=!value;
@@ -17,11 +18,13 @@
     busy=value; buttons.forEach(button=>button.disabled=value||!client);
   }
   function showAuth(name="login") {
+    activeUserId=null;lastProfileKey=null;
     window.PROXITI_ACTIVE_SESSION=null;
     document.dispatchEvent(new Event("proxiti-session-ended"));
     panel.hidden=true;auth.hidden=false;view(name);
   }
   function blocked(title,description) {
+    activeUserId=null;lastProfileKey=null;
     window.PROXITI_ACTIVE_SESSION=null;
     document.dispatchEvent(new Event("proxiti-session-ended"));
     auth.hidden=true;panel.hidden=false;el("blocked").hidden=false;el("workspace").hidden=true;
@@ -32,7 +35,8 @@
     const current=++generation;
     if(recovering){showAuth("reset");return;}
     if(!session?.user){showAuth();return;}
-    blocked("Verificando suas permissões…","Consultando seu perfil autorizado.");
+    const sameSession=activeUserId===session.user.id && !!window.PROXITI_ACTIVE_SESSION && !panel.hidden && !el("workspace").hidden;
+    if (!sameSession) blocked("Verificando suas permissões…","Consultando seu perfil autorizado.");
     try {
       const {data,error}=await client.from("profiles").select("display_name,role,status,permissions").eq("id",session.user.id).maybeSingle();
       if(current!==generation||recovering)return;
@@ -40,14 +44,23 @@
       if(!data){blocked("Perfil não cadastrado.","A conta existe, mas não há um perfil PROXITI vinculado.");return;}
       if(data.status!=="active"){blocked(data.status==="suspended"?"Acesso suspenso.":"Acesso pendente.",data.status==="suspended"?"Seu acesso foi suspenso pela administração.":"A administração precisa autorizar sua conta antes do uso.");return;}
       if(!["administrator","technician"].includes(data.role)){blocked("Permissões inválidas.","Contate a administração da PROXITI.");return;}
+      const fingerprint=JSON.stringify([data.role,data.status,data.permissions]);
+      const previous=lastProfileKey;
+      activeUserId=session.user.id;lastProfileKey=fingerprint;
       auth.hidden=true;panel.hidden=false;el("blocked").hidden=true;el("workspace").hidden=false;
       const role=data.role==="administrator"?"Administrador":"Técnico parceiro";
-      el("person-name").textContent=data.display_name||"Profissional PROXITI";
+      const name=String(data.display_name||session.user.email?.split("@")[0]||"Profissional").trim();
+      const givenName=name.split(/[.\\s_-]+/).filter(Boolean)[0]||"Profissional";
+      const displayName=givenName.charAt(0).toLocaleUpperCase("pt-BR")+givenName.slice(1);
+      const hour=new Date().getHours();
+      el("welcome").textContent=(hour<12?"Bom dia":hour<18?"Boa tarde":"Boa noite")+", "+displayName;
+      el("person-name").textContent=name;
       el("person-email").textContent=session.user.email||"";
-      el("person-role").textContent=role;el("welcome").textContent="Bem-vindo à sua área privada · "+role;
+      el("person-role").textContent=role;
+      const notifySession=!sameSession || previous!==fingerprint;
       window.PROXITI_ACTIVE_SESSION={client,user:session.user,profile:data};
-      document.dispatchEvent(new CustomEvent("proxiti-session-ready",{detail:window.PROXITI_ACTIVE_SESSION}));
-    }catch{if(current===generation)blocked("Erro de conexão.","Não foi possível verificar seu perfil agora.");}
+      if (notifySession) document.dispatchEvent(new CustomEvent("proxiti-session-ready",{detail:window.PROXITI_ACTIVE_SESSION}));
+    }catch{if(current===generation && !sameSession)blocked("Erro de conexão.","Não foi possível verificar seu perfil agora.");}
   }
   el("forgot-link").addEventListener("click",()=>view("forgot"));
   el("forgot-form").querySelector("[data-back]").addEventListener("click",()=>view("login"));
@@ -108,6 +121,7 @@
   }catch{el("setup").hidden=false;buttons.forEach(button=>button.disabled=true);return;}
   client.auth.onAuthStateChange((event,session)=>{
     if(event==="PASSWORD_RECOVERY")recovering=true;
+    if (event==="TOKEN_REFRESHED" && activeUserId===session?.user?.id && window.PROXITI_ACTIVE_SESSION) return;
     queueMicrotask(()=>{if(recovering)showAuth("reset");else void refresh(session);});
   });
   setBusy(false);
