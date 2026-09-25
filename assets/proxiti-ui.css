@@ -1,0 +1,23 @@
+/* PROXITI UI v1: framework de componentes leve, hospedado no próprio GitHub Pages.
+   Tokens compartilhados de tipografia, espaçamento e controles para site e Central. */
+:root{--px-font:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--px-radius-sm:10px;--px-radius:14px;--px-radius-lg:20px;--px-ease:180ms cubic-bezier(.2,.75,.2,1);--px-focus:var(--orange,#f28c45)}
+html[data-theme="light"]{color-scheme:light;--px-bg:#f6f7f9;--px-bg-muted:#eef1f5;--px-surface:#fff;--px-surface-soft:#f9fafb;--px-ink:#0b1220;--px-text:#243044;--px-muted:#5b6475;--px-line:#d9e0e9;--px-line-strong:#b9c3d0;--px-blue:#2f6df6;--px-orange:#f28c45;--px-shadow:0 16px 46px rgba(11,18,32,.065)}
+html[data-theme="dark"]{color-scheme:dark;--px-bg:#0b1220;--px-bg-muted:#111a2a;--px-surface:#141f31;--px-surface-soft:#101a29;--px-ink:#f7f8fa;--px-text:#d6dde8;--px-muted:#a5b0c0;--px-line:#25344a;--px-line-strong:#3b4c66;--px-blue:#67a2ff;--px-orange:#ffad73;--px-shadow:0 16px 46px rgba(0,0,0,.17)}
+body,button,input,select,textarea{font-family:var(--px-font)}
+.px-cluster{display:flex;align-items:center;flex-wrap:wrap;gap:12px}
+.px-stack{display:grid;align-content:start;gap:16px}
+.px-shell{width:min(100% - 40px,1220px);margin-inline:auto}
+.px-card,.px-panel{border:1px solid var(--px-line);background:var(--px-surface);color:var(--px-ink);border-radius:var(--px-radius)}
+.px-card{padding:clamp(16px,2vw,24px)}.px-panel{padding:clamp(20px,2.8vw,30px);box-shadow:var(--px-shadow)}
+.px-button{display:inline-flex;justify-content:center;align-items:center;gap:8px;min-height:42px;padding:10px 15px;border-radius:var(--px-radius-sm);font-size:.85rem;font-weight:750;line-height:1.25;transition:background-color var(--px-ease),border-color var(--px-ease),transform var(--px-ease)}
+.px-button:hover:not(:disabled){transform:translateY(-1px)}.px-button:disabled{cursor:not-allowed;opacity:.6}
+.px-icon-button{display:inline-grid;place-items:center;flex:none;width:38px;height:38px;padding:0;border:1px solid var(--px-line-strong);border-radius:var(--px-radius-sm);background:var(--px-surface);color:var(--px-ink)}
+.px-icon-button:hover{border-color:var(--px-blue);color:var(--px-blue)}.px-icon-button svg{width:18px;height:18px}
+.px-field{min-height:42px;border:1px solid var(--px-line-strong);border-radius:var(--px-radius-sm);background:var(--px-surface);color:var(--px-ink)}
+.px-field:focus-visible,.px-button:focus-visible,.px-card[tabindex]:focus-visible,.px-icon-button:focus-visible{outline:2px solid var(--px-focus);outline-offset:3px}
+.px-kicker{display:inline-flex;gap:10px;align-items:center;font-weight:800;font-size:.7rem;letter-spacing:.115em;text-transform:uppercase;color:var(--px-blue)}
+.px-kicker:before{content:"";width:22px;height:2px;border-radius:2px;background:var(--px-orange)}
+.px-muted{color:var(--px-muted)}.px-divider{height:1px;width:100%;background:var(--px-line)}
+.px-inset{background:var(--px-bg-muted);border:1px solid var(--px-line);border-radius:var(--px-radius)}
+.px-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(prefers-reduced-motion:reduce){.px-button{transition:none}.px-button:hover{transform:none}}
