@@ -17,10 +17,12 @@
     busy=value; buttons.forEach(button=>button.disabled=value||!client);
   }
   function showAuth(name="login") {
+    window.PROXITI_ACTIVE_SESSION=null;
     document.dispatchEvent(new Event("proxiti-session-ended"));
     panel.hidden=true;auth.hidden=false;view(name);
   }
   function blocked(title,description) {
+    window.PROXITI_ACTIVE_SESSION=null;
     document.dispatchEvent(new Event("proxiti-session-ended"));
     auth.hidden=true;panel.hidden=false;el("blocked").hidden=false;el("workspace").hidden=true;
     el("blocked-title").textContent=title;el("blocked-text").textContent=description;
@@ -43,7 +45,8 @@
       el("person-name").textContent=data.display_name||"Profissional PROXITI";
       el("person-email").textContent=session.user.email||"";
       el("person-role").textContent=role;el("welcome").textContent="Bem-vindo à sua área privada · "+role;
-      document.dispatchEvent(new CustomEvent("proxiti-session-ready",{detail:{client,user:session.user,profile:data}}));
+      window.PROXITI_ACTIVE_SESSION={client,user:session.user,profile:data};
+      document.dispatchEvent(new CustomEvent("proxiti-session-ready",{detail:window.PROXITI_ACTIVE_SESSION}));
     }catch{if(current===generation)blocked("Erro de conexão.","Não foi possível verificar seu perfil agora.");}
   }
   el("forgot-link").addEventListener("click",()=>view("forgot"));
