@@ -290,6 +290,8 @@
   }
   document.addEventListener("proxiti-session-ready",e=>{void start(e);});
   document.addEventListener("proxiti-session-ended",stop);
+  // Recupera o contexto se o SDK autenticou antes de este script terminar de carregar.
+  if(window.PROXITI_ACTIVE_SESSION)void start({detail:window.PROXITI_ACTIVE_SESSION});
   for(const tab of el("ops-tabs").querySelectorAll("[data-ops-view]"))
     tab.addEventListener("click",()=>showView(tab.dataset.opsView));
   el("reload-tickets").addEventListener("click",()=>void loadTickets());
