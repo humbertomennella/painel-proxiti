@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="./assets/proxiti-ui.css">
 <link rel="stylesheet" href="./assets/interface.css">
 <link rel="stylesheet" href="./assets/overview-comfort.css?v=20260925-2">
+<link rel="stylesheet" href="./assets/ticket-workflow.css?v=1">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js" defer></script>
 <script src="./assets/config.js" defer></script>
 <script src="./assets/app.js" defer></script>
@@ -20,6 +21,7 @@
 <script src="./assets/profile.js" defer></script>
 <script src="./assets/appearance.js" defer></script>
 <script src="./assets/overview.js?v=20260925-2" defer></script>
+<script src="./assets/ticket-workflow.js?v=1" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Ir para o conteúdo</a>
@@ -97,6 +99,54 @@
       <button type="button" id="save-status" class="secondary">Salvar situação</button>
       <label id="assign-group" data-admin-only>Designar técnico <select id="ticket-assignee"></select></label>
       <button type="button" id="save-assignee" class="secondary" data-admin-only>Designar</button></div>
+
+      <section id="ticket-workflow" class="ticket-workflow" aria-labelledby="ticket-workflow-title" hidden>
+        <div class="ticket-workflow-head">
+          <div><p class="kicker">FERRAMENTAS DE ATENDIMENTO</p><h4 id="ticket-workflow-title">Área técnica do chamado</h4><p>Registre o diagnóstico e preserve o contexto. Notas internas e arquivos não são enviados ao cliente.</p></div>
+          <span id="ticket-workflow-mode" class="ticket-workflow-mode">Verificando permissões</span>
+        </div>
+        <p id="ticket-workflow-feedback" class="ticket-workflow-feedback" role="status" aria-live="polite" hidden></p>
+        <div class="ticket-workflow-grid">
+          <section class="ticket-workflow-card" aria-labelledby="ticket-note-heading">
+            <div class="ticket-workflow-card-head"><h5 id="ticket-note-heading">Notas internas</h5><span>Somente equipe autorizada</span></div>
+            <form id="ticket-note-form" class="ticket-workflow-form">
+              <label for="ticket-note-body">Registro técnico</label>
+              <textarea id="ticket-note-body" maxlength="3000" minlength="3" rows="3" placeholder="Registre observações técnicas, sem senhas, códigos ou dados desnecessários." required></textarea>
+              <button type="submit" class="primary">Salvar nota interna</button>
+            </form>
+            <ol id="ticket-notes-list" class="ticket-workflow-list" aria-label="Notas internas do chamado"><li class="ticket-workflow-empty">Selecione um chamado.</li></ol>
+          </section>
+          <section class="ticket-workflow-card" aria-labelledby="ticket-tasks-heading">
+            <div class="ticket-workflow-card-head"><h5 id="ticket-tasks-heading">Roteiro técnico</h5><span id="ticket-tasks-progress">Nenhum roteiro iniciado</span></div>
+            <div id="ticket-tasks-start" class="ticket-workflow-form">
+              <label for="ticket-task-template">Modelo de diagnóstico</label>
+              <select id="ticket-task-template"><option value="general">Atendimento geral</option><option value="computer">Computador ou notebook</option><option value="network">Redes e Wi-Fi</option><option value="backup">Backup e acessos</option><option value="security">Segurança preventiva</option></select>
+              <button type="button" id="ticket-tasks-create" class="secondary">Criar roteiro para este chamado</button>
+            </div>
+            <ol id="ticket-tasks-list" class="ticket-workflow-list" aria-label="Etapas do atendimento"><li class="ticket-workflow-empty">Escolha um roteiro depois de assumir o chamado.</li></ol>
+          </section>
+        </div>
+        <section class="ticket-workflow-card ticket-workflow-files" aria-labelledby="ticket-files-heading">
+          <div class="ticket-workflow-card-head"><h5 id="ticket-files-heading">Evidências e anexos</h5><span>Armazenamento privado</span></div>
+          <p class="ticket-workflow-help">Somente PDF, PNG, JPG ou WebP, até 5 MB por arquivo. Evite dados pessoais que não sejam necessários ao serviço.</p>
+          <form id="ticket-file-form" class="ticket-workflow-files-form">
+            <label for="ticket-file-input">Escolher arquivo do atendimento</label>
+            <input type="file" id="ticket-file-input" accept="application/pdf,image/png,image/jpeg,image/webp" required>
+            <button type="submit" class="secondary">Adicionar anexo privado</button>
+          </form>
+          <ul id="ticket-files-list" class="ticket-workflow-list" aria-label="Arquivos privados do atendimento"><li class="ticket-workflow-empty">Nenhum anexo neste chamado.</li></ul>
+        </section>
+        <details id="ticket-report-panel" class="ticket-workflow-report">
+          <summary>Preparar relatório de atendimento <span>Revisar antes de imprimir ou salvar em PDF</span></summary>
+          <form id="ticket-report-form" class="ticket-workflow-form">
+            <p class="ticket-workflow-help">O documento inclui dados do chamado e apenas os campos abaixo. Notas internas, conversa e anexos não entram no relatório.</p>
+            <label for="ticket-report-diagnosis">Diagnóstico realizado</label><textarea id="ticket-report-diagnosis" maxlength="3000" minlength="5" rows="3" required></textarea>
+            <label for="ticket-report-service">Serviço executado ou encaminhamento</label><textarea id="ticket-report-service" maxlength="3000" minlength="5" rows="3" required></textarea>
+            <label for="ticket-report-advice">Testes e orientações ao cliente</label><textarea id="ticket-report-advice" maxlength="3000" rows="3" placeholder="Informe apenas o que foi verificado e autorizado."></textarea>
+            <button type="submit" class="primary">Revisar e imprimir relatório</button>
+          </form>
+        </details>
+      </section>
       <div class="ops-conversation"><h4>Conversa do atendimento</h4><div id="staff-messages" class="ops-messages" aria-live="polite"></div>
       <form id="staff-reply-form"><label for="staff-reply">Responder ao cliente</label><textarea id="staff-reply" maxlength="2000" rows="3" required placeholder="Escreva sua mensagem para o cliente. Não solicite senhas."></textarea><button type="submit" class="primary">Enviar resposta ↗</button></form></div>
       <details class="ticket-audit-panel"><summary>Histórico das movimentações</summary><ol id="ticket-audit-list" class="ticket-audit-list"><li>Carregando histórico…</li></ol></details>
