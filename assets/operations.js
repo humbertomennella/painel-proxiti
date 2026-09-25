@@ -204,7 +204,26 @@
       area.append(entry);
     }
     el("notifications-toggle").setAttribute("aria-label",count?count+" pendências, abrir notificações":"Abrir notificações");
+    publishOverview();
   }
+  function publishOverview(){
+    if(!state.user||!can("tickets_view"))return;
+    const unread=t=>(!seenTicket(t.id)&&["new","triage"].includes(t.status))||unreadMessages(t.id)>0;
+    const active=state.tickets.filter(isOpen);
+    const priority=t=>unread(t)?0:["new","triage"].includes(t.status)?1:t.status==="in_progress"?2:3;
+    const recent=active.slice().sort((a,b)=>priority(a)-priority(b)||
+      (Date.parse(b.created_at)||0)-(Date.parse(a.created_at)||0)).slice(0,4).map(t=>({
+       id:t.id,reference:t.reference,subject:t.subject,status:t.status,created_at:t.created_at,unread:unread(t)
+      }));
+    document.dispatchEvent(new CustomEvent("proxiti-overview-updated",{detail:{
+      unread:state.tickets.filter(unread).length,
+      open:state.tickets.filter(t=>["new","triage"].includes(t.status)).length,
+      progress:state.tickets.filter(t=>t.status==="in_progress").length,
+      waiting:state.tickets.filter(t=>t.status==="waiting_customer").length,
+      active:active.length,recent,at:Date.now()
+    }}));
+  }
+
   function updateMetrics(){
     const count=condition=>state.tickets.filter(condition).length;
     el("ticket-metric-open").textContent=String(count(t=>["new","triage"].includes(t.status)));
