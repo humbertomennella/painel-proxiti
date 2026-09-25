@@ -1,0 +1,42 @@
+name: PROXITI | Teste de chamado completo
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/qa-ticket-roundtrip.yml']
+permissions:
+  contents: read
+jobs:
+  ticket:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Criar, consultar e responder chamado sintético
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=$(sed -n 's/.*url: "\([^"]*\)".*/\1/p' assets/config.js)
+          KEY=$(sed -n 's/.*publishableKey: "\([^"]*\)".*/\1/p' assets/config.js)
+          API="$BASE/functions/v1/proxiti-support"
+          origin=(-H 'Origin: https://proxiti.com.br' -H "apikey: $KEY" -H 'Content-Type: application/json')
+          PAYLOAD=$(jq -cn --arg email "qa-$GITHUB_RUN_ID@example.invalid" '{"action":"create","source":"chat","name":"Teste automatizado PROXITI","email":$email,"subject":"TESTE INTERNO PROXITI","description":"Teste automatizado da jornada de atendimento. Esta mensagem não é um cliente real.","privacy_accepted":true}')
+          code=$(curl -sS --max-time 25 -o created.json -w '%{http_code}' -X POST "$API" "${origin[@]}" --data "$PAYLOAD")
+          test "$code" = 201
+          ID=$(jq -r '.id' created.json)
+          TOKEN=$(jq -r '.access_token' created.json)
+          test "${#TOKEN}" = 64
+          REQUEST=$(jq -cn --arg id "$ID" --arg token "$TOKEN" '{action:"conversation",ticket_id:$id,access_token:$token}')
+          code=$(curl -sS --max-time 25 -o history.json -w '%{http_code}' -X POST "$API" "${origin[@]}" --data "$REQUEST")
+          test "$code" = 200
+          jq -e '.messages | length==1' history.json >/dev/null
+          REQUEST=$(jq -cn --arg id "$ID" --arg token "$TOKEN" '{action:"reply",ticket_id:$id,access_token:$token,message:"Resposta sintética de teste."}')
+          code=$(curl -sS --max-time 25 -o reply.json -w '%{http_code}' -X POST "$API" "${origin[@]}" --data "$REQUEST")
+          test "$code" = 200
+          REQUEST=$(jq -cn --arg id "$ID" --arg token "$TOKEN" '{action:"conversation",ticket_id:$id,access_token:$token}')
+          code=$(curl -sS --max-time 25 -o history2.json -w '%{http_code}' -X POST "$API" "${origin[@]}" --data "$REQUEST")
+          test "$code" = 200
+          jq -e '.messages | length==2' history2.json >/dev/null
+          REQUEST=$(jq -cn --arg id "$ID" '{action:"conversation",ticket_id:$id,access_token:"0000000000000000000000000000000000000000000000000000000000000000"}')
+          code=$(curl -sS --max-time 25 -o denied.json -w '%{http_code}' -X POST "$API" "${origin[@]}" --data "$REQUEST")
+          test "$code" = 404
+          echo "Fluxo público verificado com dados sintéticos. Limpeza será feita no banco."
