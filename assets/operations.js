@@ -211,7 +211,8 @@
     const unread=t=>(!seenTicket(t.id)&&["new","triage"].includes(t.status))||unreadMessages(t.id)>0;
     const active=state.tickets.filter(isOpen);
     const priority=t=>unread(t)?0:["new","triage"].includes(t.status)?1:t.status==="in_progress"?2:3;
-    const recent=active.slice().sort((a,b)=>priority(a)-priority(b)||
+    const relevant=state.tickets.filter(t=>isOpen(t)||(t.status==="resolved"&&unread(t)));
+    const recent=relevant.slice().sort((a,b)=>priority(a)-priority(b)||
       (Date.parse(b.created_at)||0)-(Date.parse(a.created_at)||0)).slice(0,4).map(t=>({
        id:t.id,reference:t.reference,subject:t.subject,status:t.status,created_at:t.created_at,unread:unread(t)
       }));
