@@ -195,3 +195,14 @@ body.workspace-mode .profile-section .message{margin-top:14px}
 @media(max-width:700px){body.workspace-mode .panel-head{flex-wrap:wrap}.panel-account{flex-wrap:wrap;width:100%}.palette-picker label{display:none}.palette-picker select{max-width:132px}.profile-trigger .panel-account-name{display:none}.overview-banner{grid-template-columns:minmax(0,1fr) 135px}.overview-banner img{height:110px}.profile-grid{grid-template-columns:1fr}.profile-password{grid-column:auto}.profile-page-head{grid-template-columns:1fr 100px}}
 @media(max-width:460px){body.workspace-mode .panel-head{display:grid}.panel-account{justify-content:space-between;gap:6px}.overview-banner{grid-template-columns:1fr}.overview-banner img{display:none}.profile-page-head{grid-template-columns:1fr}.profile-page-head img{display:none}.auth-layout{gap:17px}.login-art{min-height:180px}.login-art img{height:190px}.profile-card{padding:17px}.panel-account .sound-toggle{font-size:.68rem}}
 @media(prefers-reduced-motion:reduce){body.workspace-mode .panel,.app-sidebar,.side-link,.side-home,.sidebar-brand,.side-label{transition:none!important}}
+
+/* Menu lateral móvel sempre legível, mesmo quando a preferência desktop é retraída. */
+@media(max-width:930px){
+  body.workspace-mode .panel.sidebar-collapsed .sidebar-brand .side-label,
+  body.workspace-mode .panel.sidebar-collapsed .side-link .side-label,
+  body.workspace-mode .panel.sidebar-collapsed .side-home .side-label{display:block;opacity:1}
+  body.workspace-mode .panel.sidebar-collapsed .sidebar-nav .side-link,
+  body.workspace-mode .panel.sidebar-collapsed .side-home{justify-content:flex-start;padding:9px 12px}
+  body.workspace-mode .panel.sidebar-collapsed .sidebar-top{justify-content:space-between;flex-wrap:nowrap}
+  body.workspace-mode .panel.sidebar-collapsed .side-count{position:static;margin:0 0 0 auto}
+}
