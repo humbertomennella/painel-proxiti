@@ -89,5 +89,9 @@ for(const rule of ["create or replace function public.proxiti_ticket_access",
 assert(get("assets/operations.js").includes('const unread=t=>t.status!=="closed"'),
  "Histórico encerrado ainda aparece como pendência");
 assert(techCss.includes("@media(max-width:680px)"),"Ferramentas sem layout móvel");
+for(const id of ["training-search","training-search-status","tools-search","tools-search-status"])
+ assert(html.includes('id="'+id+'"'),"Pesquisa sem controle: "+id);
+assert(get("assets/operations.js").includes("function filterOpsList("),"Busca local ausente");
+assert(techCss.includes(".ops-list-item[hidden]"),"Busca não recolhe itens no CSS");
 assert(get("assets/layout.js").includes('el("overview-home").hidden=!overview'),"Visão geral não é isolada");
 console.log("PROXITI: JS, IDs, inbox, MFA, temas, sidebar e Visão geral verificados.");
