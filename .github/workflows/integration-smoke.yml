@@ -2,7 +2,7 @@ name: PROXITI API smoke
 on:
   push:
     branches: [main]
-    paths: ['.github/workflows/integration-smoke.yml']
+    paths: ['.github/workflows/integration-smoke.yml', 'supabase/**']
   workflow_dispatch:
 permissions:
   contents: read
@@ -32,4 +32,10 @@ jobs:
           jq -e 'map(.content_key) | index("home.contact.intro") != null' cms.json >/dev/null
           http=$(curl -sS --max-time 25 -o tickets.json -w '%{http_code}' "$BASE/rest/v1/support_tickets?select=id" -H "apikey: $KEY")
           test "$http" != 200
+          for TABLE in ticket_read_receipts ticket_audit; do
+            http=$(curl -sS --max-time 25 -o "blocked-$TABLE.json" -w '%{http_code}' "$BASE/rest/v1/$TABLE?select=*" -H "apikey: $KEY")
+            test "$http" != 200
+          done
+          http=$(curl -sS --max-time 25 -o receipt.json -w '%{http_code}' -X POST "$BASE/rest/v1/rpc/proxiti_mark_ticket_read" -H "apikey: $KEY" -H 'Content-Type: application/json' --data '{"p_ticket":"00000000-0000-0000-0000-000000000000"}')
+          test "$http" != 200 && test "$http" != 204
           echo 'API pública e políticas anônimas validadas.'
