@@ -2,7 +2,7 @@
   "use strict";
   const el = id => document.getElementById(id);
   const state = { db:null, user:null, profile:null, tickets:[], staff:[], active:null,
-    channel:null, poll:null, heartbeat:null, currentView:"tickets", loading:false,accessGeneration:0,ticketsReady:false,ticketError:false,ticketLastUpdated:0,threadRevision:0,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,messageCheckPromise:null,messageReady:false,messagesCapped:false,readIssue:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),readReceipts:new Map(),receiptsReady:false,readFetch:null,readSaving:new Set(),toastTimer:null };
+    channel:null, poll:null, heartbeat:null, currentView:"tickets", loading:false,accessGeneration:0,ticketsReady:false,ticketError:false,ticketLastUpdated:0,threadRevision:0,threadRows:new Map(),threadExpanded:false,threadHasMore:false,threadOlderBusy:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,messageCheckPromise:null,messageReady:false,messagesCapped:false,readIssue:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),readReceipts:new Map(),receiptsReady:false,readFetch:null,readSaving:new Set(),toastTimer:null };
   const statusNames = {new:"Aberto",triage:"Em triagem",in_progress:"Em atendimento",
     waiting_customer:"Aguardando cliente",resolved:"Resolvido",closed:"Encerrado"};
   const permNames = {tickets_view:"Consultar chamados",tickets_claim:"Assumir chamados",
@@ -49,10 +49,11 @@
     output.dataset.phase=phase;
     retry.disabled=phase==="loading"||phase==="restricted";
     if(phase==="ready")output.textContent=count?"Conversa atualizada.":"Ainda não há mensagens neste chamado.";
-    else if(phase==="partial")output.textContent="Exibindo as 150 mensagens mais recentes. Há mensagens anteriores no histórico.";
+    else if(phase==="partial")output.textContent="Exibindo as "+count+" mensagens mais recentes. Use Carregar mensagens anteriores para consultar o restante.";
     else if(phase==="loading")output.textContent="Consultando as mensagens autorizadas…";
     else if(phase==="error")output.textContent="Não foi possível atualizar a conversa. Tente novamente.";
     else if(phase==="read-error")output.textContent="Conversa carregada, mas não foi possível confirmar a leitura. Tente Atualizar conversa.";
+    else if(phase==="history-error")output.textContent="Não foi possível carregar mensagens anteriores. Tente novamente.";
     else output.textContent="Abra um chamado com acesso à conversa para visualizar mensagens.";
   }
   function notice(message,fail=false){
@@ -490,7 +491,10 @@
     for(const id of ["ticket-code","ticket-subject","ticket-customer",
       "ticket-description","ticket-audit-list","ticket-current-status"])
       el(id).replaceChildren();
+    state.threadRevision++;state.threadRows.clear();state.threadExpanded=false;
+    state.threadHasMore=false;state.threadOlderBusy=false;
     el("staff-messages").replaceChildren();el("staff-reply").value="";
+    el("ticket-thread-older").hidden=true;el("ticket-thread-older").disabled=false;
     el("ticket-search").value="";
     threadSync("restricted");
   }
@@ -871,7 +875,7 @@
     if(state.heartbeat)clearInterval(state.heartbeat);
     if(state.channel&&state.db)void state.db.removeChannel(state.channel);
     if(state.toastTimer)clearTimeout(state.toastTimer);
-    Object.assign(state,{db:null,user:null,profile:null,tickets:[],staff:[],active:null,channel:null,poll:null,heartbeat:null,loading:false,accessGeneration:nextGeneration,ticketsReady:false,ticketError:false,ticketLastUpdated:0,threadRevision:0,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,messageCheckPromise:null,messageReady:false,messagesCapped:false,readIssue:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),readReceipts:new Map(),receiptsReady:false,readFetch:null,readSaving:new Set(),toastTimer:null});
+    Object.assign(state,{db:null,user:null,profile:null,tickets:[],staff:[],active:null,channel:null,poll:null,heartbeat:null,loading:false,accessGeneration:nextGeneration,ticketsReady:false,ticketError:false,ticketLastUpdated:0,threadRevision:0,threadRows:new Map(),threadExpanded:false,threadHasMore:false,threadOlderBusy:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,messageCheckPromise:null,messageReady:false,messagesCapped:false,readIssue:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),readReceipts:new Map(),receiptsReady:false,readFetch:null,readSaving:new Set(),toastTimer:null});
     el("alert-toast").hidden=true;el("notifications-panel").hidden=true;
     el("notifications-toggle").setAttribute("aria-expanded","false");
     el("notifications-count").hidden=true;el("ticket-badge").hidden=true;
