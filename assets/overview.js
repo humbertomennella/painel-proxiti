@@ -77,8 +77,8 @@ function clearSensitive(){
  fallback("Seus atendimentos aparecerão quando a fila estiver disponível.");
 }
 function syncAccess(allowed){
- const next=!!allowed.tickets;
- if(canTickets&&!next)clearSensitive();
+ const next=!!allowed.tickets,wasAllowed=canTickets;
+ if(wasAllowed&&!next)clearSensitive();
  canTickets=next;
  el("overview-guide-tickets").hidden=!canTickets;
  el("overview-focus-toggle").hidden=!canTickets;
@@ -93,7 +93,7 @@ function syncAccess(allowed){
  }else{
    el("overview-metrics-section").hidden=false;el("overview-recent-section").hidden=false;
  }
- setSync(canTickets?"loading":"restricted");
+ if(!canTickets||!hasData)setSync(canTickets?"loading":"restricted");
 }
 function renderRecent(items){
  const area=el("overview-recent-list");area.replaceChildren();
@@ -202,6 +202,12 @@ function start(session){
  setFocus(focused);
  let enlarged=false;try{enlarged=localStorage.getItem(readingKey(userId))==="true";}catch{}
  setReading(enlarged);setGuide(false);
+ const snapshot=window.PROXITI_OVERVIEW_SNAPSHOT;
+ if(canTickets&&snapshot?.userId===userId){
+   render(snapshot.detail);
+   const state=window.PROXITI_OVERVIEW_STATUS;
+   setSync(state?.userId===userId?state.phase:"ready",state?.at||Date.now());
+ }
 }
 document.addEventListener("proxiti-session-ready",event=>start(event.detail));
 document.addEventListener("proxiti-navigation-updated",event=>{
