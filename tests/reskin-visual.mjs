@@ -189,6 +189,11 @@ try{
  }
  await page.setViewportSize({width:375,height:850});
  await page.evaluate(()=>window.dispatchEvent(new Event("resize")));
+ for(const id of ["open-profile","theme-toggle-panel","notifications-toggle",
+   "toggle-alerts","logout","mobile-nav-toggle"])
+   assert.equal(await page.locator("#"+id).isVisible(),true,
+    "Ação inacessível na topbar móvel: #"+id);
+ console.log("PASS: avatar, tema, notificações, som, saída e menu acessíveis no celular.");
  await page.click("#mobile-nav-toggle");
  await page.waitForFunction(()=>document.getElementById("reskin-nav-scrim").hidden===false);
  assert.equal(await page.isVisible("#app-sidebar"),true);
