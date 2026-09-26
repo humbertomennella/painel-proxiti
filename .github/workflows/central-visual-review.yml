@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install --no-save --no-package-lock playwright@1.55.0
+      - run: npm install --no-save --no-package-lock playwright@1.55.0 axe-core@4.10.3
       - run: npx playwright install --with-deps chromium
       - name: Integridade operacional e contratos
         run: |

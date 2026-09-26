@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import {createServer} from "node:http";
-import {readFile,mkdir} from "node:fs/promises";
+import {readFile,mkdir,writeFile} from "node:fs/promises";
 import {resolve,extname,sep} from "node:path";
 import {fileURLToPath} from "node:url";
 import {chromium} from "playwright";
@@ -315,6 +315,7 @@ async function openScenario({materials=[],admin=false,failTraining=false,deferTr
 
 // Shared scenario structure mirrors the existing integration harness. All data is test-only.
 const shots=resolve(root,"artifacts","central-completo");await mkdir(shots,{recursive:true});
+const contrastReports=[];
 const surfaces=["overview","tickets","staff","content","agenda","training","tools","profile"];
 try{
  const page=await openScenario({admin:true,progressFixture:[{course_id:"at-01",best_score:100,last_score:100,attempts:1,completed_at:stamp,updated_at:stamp}],quizAttemptsFixture:[{course_id:"at-01",score:100,passed:true,created_at:stamp}]});
@@ -326,8 +327,18 @@ try{
    await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);
    for(const view of surfaces){
     await page.evaluate(v=>window.PROXITI_OPEN_VIEW(v),view);
-    await page.waitForTimeout(100);
+    await page.waitForTimeout(300); // Wait for the existing 220ms sidebar transition.
     const size=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,side:document.getElementById("app-sidebar").getBoundingClientRect().width}));
+    if(width===1366){
+     await page.addScriptTag({path:resolve(root,"node_modules/axe-core/axe.min.js")});
+     const audit=await page.evaluate(()=>window.axe.run(document,{runOnly:{type:"rule",values:["color-contrast"]}}));
+     contrastReports.push({view,width,theme,violations:audit.violations,incomplete:audit.incomplete});
+     await writeFile(resolve(shots,"contrast.json"),JSON.stringify(contrastReports,null,2));
+    }
+    if(size.scroll>width+1){
+     console.log('OVERFLOW ELEMENTS',await page.evaluate(()=>[...document.querySelectorAll('body *')].filter(n=>n.getBoundingClientRect().right>innerWidth+1).map(n=>({tag:n.tagName,id:n.id,cls:n.className,right:n.getBoundingClientRect().right})).slice(-20)));
+     await page.screenshot({path:resolve(shots,`overflow-${view}-${width}-${theme}.png`),fullPage:true});
+    }
     assert(size.scroll<=width+1,`${view} ${width} ${theme} overflow ${JSON.stringify(size)}`);
     if(width>=1200)assert.equal(size.side,240);
     else if(width>=768)assert.equal(size.side,72);
@@ -352,6 +363,7 @@ try{
  await page.waitForFunction(()=>document.querySelectorAll("#academy-quiz-form fieldset").length===4);
  assert.deepEqual(page.__errors,[],"JavaScript errors");
  await page.close();
+ console.log("CONTRAST",JSON.stringify(contrastReports.map(r=>({view:r.view,theme:r.theme,failures:r.violations.reduce((n,v)=>n+v.nodes.length,0)}))));
  const login=await browser.newPage();await login.route("https://cdn.jsdelivr.net/**",r=>r.abort());await login.goto(url);
  for(const width of [1920,1366,768,375,320])for(const theme of ["light","dark"]){
   await login.setViewportSize({width,height:1000});await login.evaluate(t=>document.documentElement.dataset.theme=t,theme);
