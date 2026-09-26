@@ -12,7 +12,7 @@
     const list=Array.isArray(tickets)?tickets:[];
     const seen=options.seen||(()=>false),unread=options.unread||(()=>0);
     const canReadMessages=!!options.canReadMessages,messagesReady=!!options.messagesReady;
-    const complete=!canReadMessages||messagesReady;
+    const complete=!options.readIssue&&(!canReadMessages||messagesReady);
     const needs=t=>attention(t,seen,unread,canReadMessages,messagesReady);
     const priority=t=>needs(t)?0:newlyArrived.has(t.status)?1:t.status==="in_progress"?2:3;
     const recent=list.filter(t=>openStatuses.has(t.status)||(t.status==="resolved"&&needs(t)))
