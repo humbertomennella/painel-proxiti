@@ -52,7 +52,7 @@ jobs:
         run: node tests/tickets-functional.mjs
       - name: Verificar agenda com confirmação, paginação, reagendamento e permissões
         run: node tests/agenda-functional.mjs
-      - name: Verificar Academia com busca, publicação, revisão e privacidade
+      - name: Verificar UniProxiti com busca, publicação, revisão e privacidade
         run: node tests/academy-functional.mjs
       - name: Verificar aulas, prova final, nota e certificado interno
         run: node tests/academy-learning-functional.mjs
