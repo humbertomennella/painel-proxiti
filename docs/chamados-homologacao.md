@@ -6,7 +6,7 @@
 
 1. **Entrada e triagem:** um chamado novo não lido aparece uma vez na fila e no contador. Técnicos com permissão podem consultar os chamados sem responsável e assumir um deles; somente o primeiro a assumir recebe a atribuição.
 2. **Atribuição:** o técnico pode assumir um chamado ainda elegível. Se já estiver em atendimento ou aguardando cliente, assumir **não** redefine sua situação para triagem. A designação administrativa continua restrita ao administrador.
-3. **Conversa:** a interface carrega as 150 mensagens mais recentes em ordem cronológica, deixando explícito quando existem mensagens anteriores. Ao mudar de chamado, conversas pendentes não podem preencher o atendimento seguinte. Uma leitura só é marcada depois da confirmação da RPC do banco.
+3. **Conversa:** a interface carrega inicialmente as 150 mensagens mais recentes em ordem cronológica e oferece “Carregar mensagens anteriores” em lotes de até 150, com cursor estável por data e identificador. Ao mudar de chamado, conversas pendentes não podem preencher o atendimento seguinte. Uma leitura só é marcada depois da confirmação da RPC do banco.
 4. **Notas, roteiro e anexos:** notas internas não entram no relatório ao cliente; o rascunho de nota é mantido **somente em memória nesta sessão** e apagado ao sair. Roteiros são registrados por chamado e a equipe precisa justificar uma etapa não aplicável. Anexos PDF/imagem têm limite de 5 MB e são privados, sem URL permanente. Se a confirmação da gravação falhar, a interface consulta o metadado antes de decidir pela remoção do objeto.
 5. **Equipamento e agenda:** informações técnicas e retornos são vinculados ao chamado e carregados somente em sessão autorizada. Planejar um retorno **não** confirma com o cliente nem envia convite automaticamente.
 6. **Relatórios e encerramento:** versões privadas do relatório permanecem no histórico, com distinção entre rascunho e versão revisada. Para encerrar, a interface solicita confirmação e avisa quando há etapas pendentes ou nenhum relatório final. O banco impede alterar a situação de um chamado já encerrado; o atendimento posterior deverá ser registrado em novo chamado. O encerramento não é aceite, assinatura ou comunicação automática ao cliente.
@@ -27,12 +27,12 @@ A migração `supabase/ticket_safety_v9.sql` modifica apenas `proxiti_claim_tick
 - `node tests/central-integrity.mjs` valida sintaxe, IDs, restrições estáticas e migração.
 - `node tests/browser-smoke.mjs` cobre o layout geral nos temas e larguras principais.
 - `node tests/overview-functional.mjs` mantém a regressão dos indicadores de atendimento.
-- `node tests/tickets-functional.mjs` exercita a jornada com dados **simulados só no navegador**: assumir preservando situação, falha/recuperação de leitura, conversa longa, envio concorrente com rascunho, confirmação de encerramento, notas por chamado e gravação de anexo com confirmação ambígua.
+- `node tests/tickets-functional.mjs` exercita a jornada com dados **simulados só no navegador**: assumir preservando situação, falha/recuperação de leitura, conversa longa com paginação, envio concorrente com rascunho, confirmação de encerramento, notas por chamado e gravação de anexo com confirmação ambígua e adaptação móvel nos dois temas.
 
 ## Limites que não podem ser chamados de homologação real
 
 - Ainda é necessário testar com **duas contas legítimas**, uma administrativa e uma técnica, autorizadas pelo titular. Os testes de navegador não provam as permissões efetivas com dois tokens do Supabase nem substituem a checagem da interface autenticada em celular e computador.
-- O histórico da conversa mostra inicialmente as 150 mensagens mais recentes. Quando há mais mensagens, o sistema informa o recorte; não afirme que a interface apresentou a conversa inteira.
+- O histórico da conversa começa pelas 150 mensagens mais recentes. Mensagens anteriores podem ser consultadas por páginas; a interface não afirma que toda a conversa foi carregada até chegar ao fim da paginação. Cada lote é validado pelo contexto e pela autorização da conta.
 - A fila consulta até 100 chamados acessíveis; os totais são desse recorte. O histórico completo permanece no banco sujeito às políticas e limites de consulta.
 - Uma mensagem registrada na conversa não prova envio de e-mail ou SMS. Não há promessa de notificação transacional externa sem teste de entrega separado.
 - Conferir a versão final do relatório, autorizações, retenção de evidências e procedimento de eliminação antes de operar com dados reais.
