@@ -385,7 +385,7 @@ async function save(event){
      .eq("id",original.id).eq("updated_at",original.updated_at):
      s.client.from("training_materials").insert(payload);
    const saved=await query(request.select("id,storage_path,updated_at").maybeSingle());
-   if(!saved)throw new Error("Edição concorrente ou gravação sem confirmação. Atualize antes de reenviar.");
+   if(!saved)throw new Error("Outra edição pode ter sido salva antes desta. Atualize a biblioteca e confira a versão antes de reenviar.");
    if(!still())return;
    resetEditor();message(original?"Nova versão registrada.":"Material cadastrado.");
    await load();
