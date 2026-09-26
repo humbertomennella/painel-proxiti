@@ -300,12 +300,13 @@
     if(state.messageCheckPromise)return state.messageCheckPromise;
     const db=state.db,uid=state.user.id;
     state.messageCheckBusy=true;
+    const stillAuthorized=()=>state.db===db&&state.user?.id===uid&&can("tickets_view")&&can("chat");
     const work=(async()=>{
       try{
         const fetched=await query(db.from("support_messages")
           .select("id,ticket_id,sender_kind,created_at")
           .eq("sender_kind","customer").order("created_at",{ascending:false}).limit(251));
-        if(state.db!==db||state.user?.id!==uid)return;
+        if(!stillAuthorized())return;
         const rows=fetched.slice(0,250),ids=new Set(rows.map(m=>m.id));
         const changed=state.messageIds?rows.filter(m=>!state.messageIds.has(m.id)):[];
         state.messageRows=rows;state.messageIds=ids;
@@ -318,14 +319,14 @@
         updateInbox();renderTickets();
         if(state.ticketsReady&&!state.ticketError)overviewStatus(overviewComplete()?"ready":"partial");
       }catch{
-        if(state.db!==db||state.user?.id!==uid)return;
+        if(!stillAuthorized())return;
         state.messageReady=false;state.messagesCapped=false;
         if(state.ticketsReady){
           updateInbox();renderTickets();
           if(!state.ticketError)overviewStatus("partial");
         }
       }finally{
-        if(state.db===db&&state.user?.id===uid){
+        if(stillAuthorized()){
           state.messageCheckBusy=false;state.messageCheckPromise=null;
         }
       }
@@ -364,6 +365,17 @@
     for(const tab of el("ops-tabs").querySelectorAll("[data-ops-view]"))
       tab.hidden=!allowed[tab.dataset.opsView];
     el("notifications-toggle").hidden=!can("tickets_view");
+    if(!allowed.tickets){
+      // Revogação deve limpar dados da conta anterior inclusive em memória de interface.
+      state.tickets=[];state.ticketsReady=false;state.ticketError=false;state.active=null;
+      state.ticketIds=null;state.messageRows=[];state.messageIds=null;
+      state.messageReady=false;state.messagesCapped=false;state.readIssue=false;
+      state.readReceipts.clear();state.receiptsReady=false;state.renderedTable="";
+      window.PROXITI_OVERVIEW_SNAPSHOT=null;window.PROXITI_OVERVIEW_STATUS=null;
+      el("ticket-list").replaceChildren();el("ticket-detail").hidden=true;
+      el("ticket-empty-state").hidden=false;
+      announceTicket();updateInbox();
+    }
     const first=Object.keys(allowed).find(key=>allowed[key]);
     el("operations").hidden=!first;
     if(first)showView(allowed[state.currentView]?state.currentView:first);
@@ -423,7 +435,7 @@
   async function loadTickets(){
     if(!state.db||!state.user||!can("tickets_view")||state.loading)return;
     const db=state.db,uid=state.user.id;
-    const same=()=>state.db===db&&state.user?.id===uid;
+    const same=()=>state.db===db&&state.user?.id===uid&&can("tickets_view");
     state.loading=true;
     if(!state.ticketsReady)overviewStatus("loading");
     try{
