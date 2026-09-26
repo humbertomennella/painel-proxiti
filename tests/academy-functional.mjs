@@ -425,10 +425,12 @@ try{
    try{
      await academy(page);
      const button=page.getByRole("button",{name:"Marcar como consultado neste navegador"});
+     const certificatesBefore=await page.evaluate(()=>window.__fixture.calls.filter(x=>x.includes("certificate")).length);
      await button.click();
      assert.equal(await page.getAttribute(".academy-mark-read","aria-pressed"),"true");
      assert((await page.textContent("#training-list")).includes("Consultado neste navegador"));
-     assert.equal(await page.evaluate(()=>window.__fixture.calls.some(x=>x.includes("certificate"))),false);
+     assert.equal(await page.evaluate(()=>window.__fixture.calls.filter(x=>x.includes("certificate")).length),certificatesBefore,
+       "Marcar consulta não solicita emissão de certificado");
    }finally{await page.close();}
  });
  await test("Academia preenchida é legível nos dois temas e cinco larguras",async()=>{
