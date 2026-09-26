@@ -214,7 +214,7 @@ html[data-theme] .auth-layout .intro h1{font-size:clamp(38px,4.4vw,64px);line-he
 html[data-theme] .auth-layout .intro h1 span{color:#62c9ff}
 html[data-theme] .auth-layout .intro>p{position:relative;z-index:1;color:#eef5ff;max-width:36ch;font-size:15px}
 html[data-theme] .auth-layout .intro .kicker{font-size:11px;letter-spacing:.16em;color:#bcdefb}
-html[data-theme] .auth-layout .login-art{position:absolute;inset:0;z-index:-1;width:100%;height:100%;margin:0;opacity:.7}
+html[data-theme] .auth-layout .login-art{position:absolute;inset:0;z-index:-1;width:100%;max-width:none;height:100%;margin:0;border:0;border-radius:0;box-shadow:none;opacity:.7}
 html[data-theme] .auth-layout .login-art img{width:100%;height:100%;max-height:none;object-fit:cover;object-position:64% center;filter:brightness(.6)}
 html[data-theme] .login-principles{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:120px}
 html[data-theme] .login-principles span{padding:8px 11px;border:1px solid #6c8aab;border-radius:6px;background:#0c2840;font-size:11px;color:#f0f7ff}

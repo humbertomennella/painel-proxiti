@@ -45,7 +45,7 @@ Chamados prioriza conversa e resposta antes dos registros técnicos. Técnicos s
 
 ## Limites da verificação
 
-Testes funcionais usam sessões e respostas simuladas, executando os scripts reais do repositório no Chromium. Capturas são do HTML real com essas fixtures; não são imagens geradas da interface nem dados de produção.
+Testes funcionais usam sessões e respostas simuladas, executando os scripts reais do repositório no Chromium. As capturas do login mostram também o aviso de SDK indisponível, pois o teste bloqueia o CDN; isso não diagnostica a configuração do ambiente real. Capturas são do HTML real com essas fixtures; não são imagens geradas da interface nem dados de produção.
 
 Axe verifica contraste renderizado onde pode determinar o fundo. Gradientes e fotografias podem retornar verificação incompleta; esses trechos exigem inspeção visual e cálculo conservador das cores, não devem ser apresentados como aprovação automática integral de WCAG.
 
