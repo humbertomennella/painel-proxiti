@@ -50,6 +50,8 @@ for(const key of ["--c-bg-sidebar:#0d1a2b","--c-bg-content:#f2f5f9",
  "--c-info:#3b82f6","--radius:14px","--radius-sm:10px",
  "--shadow-card:","--status-waiting_customer:","--font:"])
  assert(css.includes(key),"Token do reskin ausente: "+key);
+const ticketFile=await read("assets/ticket-workflow.js");
+assert(ticketFile.includes("5242880"),"Limite de anexos de 5 MB foi removido");
 const alertBase=original("assets/alerts.js"),alertNew=await read("assets/alerts.js");
 const expected=alertBase
  .replace('button.textContent=enabled?"♫ Alertas ativados":"♪ Alertas desativados";',
@@ -224,7 +226,18 @@ try{
  const output=await page.textContent("#subnet-result");
  assert(output&&output.includes("10.0.0."),"Calculadora CIDR /31 deixou de responder");
  assert.equal(network.length,0,"Calculadora local fez requisições: "+network.join(", "));
- console.log("PASS: CIDR /31 continua local, sem requisições.");
+ await page.locator("#hash-file").setInputFiles({
+  name:"hash-fixture.txt",mimeType:"text/plain",buffer:Buffer.from("abc")
+ });
+ await page.fill("#hash-reference",
+  "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+ await page.click('#hash-form button[type="submit"]');
+ await page.waitForFunction(()=>document.getElementById("hash-result").textContent.includes(
+  "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"));
+ assert((await page.textContent("#hash-result")).includes("igual ao valor informado"),
+  "SHA-256 deixou de conferir o hash conhecido");
+ assert.equal(network.length,0,"Hash local fez requisições: "+network.join(", "));
+ console.log("PASS: CIDR /31 e SHA-256 funcionam localmente, sem requisições.");
  await page.evaluate(()=>{
   document.body.classList.remove("workspace-mode");
   document.getElementById("panel").hidden=true;
