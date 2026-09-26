@@ -41,16 +41,17 @@
   let presenceCheckedAt=0;
   async function updatePresence(){
     if(!state.db||Date.now()-presenceCheckedAt<20000)return;
-    const db=state.db,uid=state.user?.id;
+    const db=state.db,uid=state.user?.id,generation=state.accessGeneration;
     presenceCheckedAt=Date.now();
     try{
       const rows=await query(db.from("staff_presence").select("staff_id")
         .gte("last_seen",new Date(Date.now()-60000).toISOString()).limit(50));
-      if(state.db!==db||state.user?.id!==uid)return;
+      if(state.db!==db||state.user?.id!==uid||state.accessGeneration!==generation)return;
       el("overview-online").textContent=isAdmin()
         ?(rows.length===1?"1 profissional online":rows.length+" profissionais online")
         :(rows.length?"Você está online":"Disponibilidade em atualização");
-    }catch{if(state.db===db&&state.user?.id===uid)el("overview-online").textContent="Presença em atualização";}
+    }catch{if(state.db===db&&state.user?.id===uid&&state.accessGeneration===generation)
+      el("overview-online").textContent="Presença em atualização";}
   }
 
   // Leituras persistidas no Supabase; armazenamento local serve só antes da primeira sincronização.
