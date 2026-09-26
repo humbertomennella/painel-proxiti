@@ -120,6 +120,19 @@ try{
   document.getElementById("person-name").textContent="Pessoa de Teste";
   window.dispatchEvent(new Event("resize"));
  });
+ await page.evaluate(()=>{
+   document.getElementById("overview-online").textContent="1 profissional online";
+ });
+ await page.waitForFunction(()=>document.getElementById("overview-online").textContent==="1 conta online agora");
+ await page.evaluate(()=>{
+   document.getElementById("overview-online").textContent="2 profissionais online";
+ });
+ await page.waitForFunction(()=>document.getElementById("overview-online").textContent==="2 contas online agora");
+ await page.evaluate(()=>{
+   document.getElementById("overview-online").textContent="Você está online";
+ });
+ await page.waitForFunction(()=>document.getElementById("overview-online").textContent==="Você está online");
+ console.log("PASS: presença exibida como contas online, sem confundir com cadastro de técnicos.");
  for(const width of [320,375,430,767,768,930,1199,1200,1366,1920]){
   await page.setViewportSize({width,height:870});
   await page.evaluate(()=>window.dispatchEvent(new Event("resize")));
