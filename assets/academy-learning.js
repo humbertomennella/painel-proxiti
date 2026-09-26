@@ -24,7 +24,7 @@ const request=async promise=>{
 };
 const points=n=>Number.isFinite(Number(n))?Number(n).toFixed(2).replace(".",","):"—";
 const formatDate=value=>new Date(value).toLocaleDateString("pt-BR",
- {day:"2-digit",month:"long",year:"numeric"});
+ {day:"2-digit",month:"2-digit",year:"numeric"});
 const setStatus=(message,phase="ready")=>{
  const target=el("academy-learning-status");
  target.textContent=message;target.dataset.phase=phase;
