@@ -208,6 +208,30 @@ try{
      assert.equal((await page.textContent("#overview-metric-unread-label")).trim(),"Novos chamados não lidos");
    }finally{await page.close();}
  });
+ await test("Permissão atualizada sem dados visíveis da autorização anterior",async()=>{
+   const page=await openScenario();
+   try{
+     await page.waitForFunction(()=>document.querySelector("#overview-sync-state").dataset.phase==="ready");
+     await page.evaluate(()=>{
+       const active=window.PROXITI_ACTIVE_SESSION;
+       active.profile.permissions.tickets_view=false;
+       active.profile.permissions.chat=false;
+       document.dispatchEvent(new CustomEvent("proxiti-session-ready",{detail:active}));
+     });
+     await page.waitForFunction(()=>document.querySelector("#overview-sync-state").dataset.phase==="restricted");
+     assert.equal(await page.isHidden("#overview-metrics-section"),true);
+     assert.equal((await page.textContent("#overview-kpi-unread")).trim(),"—");
+     assert.equal(await page.evaluate(()=>window.PROXITI_OVERVIEW_SNAPSHOT),null);
+     await page.evaluate(()=>{
+       const active=window.PROXITI_ACTIVE_SESSION;
+       active.profile.permissions.tickets_view=true;
+       active.profile.permissions.chat=true;
+       document.dispatchEvent(new CustomEvent("proxiti-session-ready",{detail:active}));
+     });
+     await page.waitForFunction(()=>document.querySelector("#overview-sync-state").dataset.phase==="ready");
+     assert.equal((await page.textContent("#overview-kpi-unread")).trim(),"2");
+   }finally{await page.close();}
+ });
  await test("Layout autenticado simulado com atendimento ativo em cinco larguras e dois temas",async()=>{
    const page=await openScenario();
    try{
@@ -246,7 +270,7 @@ try{
      assert.deepEqual(page.__errors,[],"O navegador registrou erros de JavaScript na Visão Geral");
    }finally{await page.close();}
  });
- console.log("PASS: 7 fluxos funcionais da Visão Geral, incluindo 10 verificações de layout com sessão simulada.");
+ console.log("PASS: 8 fluxos funcionais da Visão Geral, incluindo 10 verificações de layout com sessão simulada.");
 }finally{
  await browser.close();
  await new Promise((done,fail)=>server.close(error=>error?fail(error):done()));
