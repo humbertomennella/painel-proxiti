@@ -289,24 +289,42 @@
     el("ticket-table-result").textContent=rows.length+" de "+state.tickets.length;
   }
   async function checkNewMessages(){
-    if(!state.db||!can("chat")||!can("tickets_view")||state.messageCheckBusy)return;
+    if(!state.db||!can("chat")||!can("tickets_view"))return;
+    if(state.messageCheckPromise)return state.messageCheckPromise;
+    const db=state.db,uid=state.user.id;
     state.messageCheckBusy=true;
-    try{
-      const rows=await query(state.db.from("support_messages")
-        .select("id,ticket_id,sender_kind,created_at")
-        .eq("sender_kind","customer").order("created_at",{ascending:false}).limit(250));
-      const ids=new Set(rows.map(m=>m.id));
-      const changed=state.messageIds?rows.filter(m=>!state.messageIds.has(m.id)):[];
-      state.messageRows=rows;
-      state.messageIds=ids;
-      if(changed.length){
-        sound("message");
-        toast(changed.length===1?"Nova mensagem de cliente recebida.":changed.length+" novas mensagens de clientes.");
-        browserNotice("message",changed[0]?.ticket_id);
+    const work=(async()=>{
+      try{
+        const fetched=await query(db.from("support_messages")
+          .select("id,ticket_id,sender_kind,created_at")
+          .eq("sender_kind","customer").order("created_at",{ascending:false}).limit(251));
+        if(state.db!==db||state.user?.id!==uid)return;
+        const rows=fetched.slice(0,250),ids=new Set(rows.map(m=>m.id));
+        const changed=state.messageIds?rows.filter(m=>!state.messageIds.has(m.id)):[];
+        state.messageRows=rows;state.messageIds=ids;
+        state.messagesCapped=fetched.length>250;state.messageReady=true;
+        if(changed.length){
+          sound("message");
+          toast(changed.length===1?"Nova mensagem de cliente recebida.":changed.length+" novas mensagens de clientes.");
+          browserNotice("message",changed[0]?.ticket_id);
+        }
+        updateInbox();renderTickets();
+        if(state.ticketsReady&&!state.ticketError)overviewStatus(overviewComplete()?"ready":"partial");
+      }catch{
+        if(state.db!==db||state.user?.id!==uid)return;
+        state.messageReady=false;state.messagesCapped=false;
+        if(state.ticketsReady){
+          updateInbox();renderTickets();
+          if(!state.ticketError)overviewStatus("partial");
+        }
+      }finally{
+        if(state.db===db&&state.user?.id===uid){
+          state.messageCheckBusy=false;state.messageCheckPromise=null;
+        }
       }
-      updateInbox();renderTickets();
-    }catch{/* indisponibilidade temporária não reinicia a interface */}
-    finally{state.messageCheckBusy=false;}
+    })();
+    state.messageCheckPromise=work;
+    return work;
   }
   function showView(view){
     state.currentView=view;
