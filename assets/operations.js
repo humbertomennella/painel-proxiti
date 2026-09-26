@@ -386,7 +386,7 @@
     const names={tickets:["Chamados","Prioridades, responsáveis e histórico dos atendimentos."],
       staff:["Equipe e permissões","Convites, aprovações e acesso individual."],
       content:["Conteúdo do site","Textos publicados e personalizações autorizadas."],
-      training:["UniProxiti","Materiais técnicos e capacitação privada."],
+      training:["UniProxiti","Programa interno de capacitação PROXITI"],
       agenda:["Agenda","Retornos, visitas e horários planejados por chamado."],
       tools:["Ferramentas","Inventário e equipamentos atribuídos."]};
     el("ops-heading").textContent=names[view]?.[0]||"Operação";
