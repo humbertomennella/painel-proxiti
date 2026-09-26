@@ -71,7 +71,9 @@ function setSync(phase="loading",at=Date.now()){
 }
 function clearSensitive(){
  hasData=false;latest=null;lastSignature="";lastSuccess=0;resumeId=null;
- el("overview-resume").hidden=true;el("overview-action-count").hidden=true;
+ el("overview-resume").hidden=true;
+ el("overview-resume-detail").textContent="Retome o contexto do atendimento que você estava acompanhando.";
+ el("overview-action-count").hidden=true;el("overview-action-count").textContent="";
  for(const id of ["overview-kpi-unread","overview-kpi-open","overview-kpi-progress","overview-kpi-waiting"])
    el(id).textContent="—";
  el("overview-updated").textContent="Sincronizando…";
