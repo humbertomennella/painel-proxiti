@@ -438,3 +438,12 @@ html[data-theme] body.workspace-mode #overview-home.overview-reading-mode .overv
  }
  html[data-theme] body.workspace-mode #overview-home #overview-resume-action{width:100%}
 }
+
+/* Sem indicador verde enganoso quando a consulta estiver incompleta. */
+html[data-theme] body.workspace-mode #overview-home[data-overview-sync="loading"] .overview-live-dot{
+ background:var(--px-muted);box-shadow:0 0 0 3px color-mix(in srgb,var(--px-muted) 13%,transparent)
+}
+html[data-theme] body.workspace-mode #overview-home[data-overview-sync="partial"] .overview-live-dot,
+html[data-theme] body.workspace-mode #overview-home[data-overview-sync="error"] .overview-live-dot{
+ background:#bd7b35;box-shadow:0 0 0 3px #bd7b351c
+}
