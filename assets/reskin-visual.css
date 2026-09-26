@@ -201,7 +201,7 @@ html[data-theme] body.workspace-mode .digital-toolkit .ticket-workflow-grid{disp
 html[data-theme] body.workspace-mode .digital-toolkit .ticket-workflow-card{padding:22px;border-top:3px solid #2877cb}
 html[data-theme] body.workspace-mode .toolkit-result{background:var(--px-surface-soft);color:var(--px-text);border:1px solid var(--px-line);border-radius:8px;overflow-wrap:anywhere}
 html[data-theme] body.workspace-mode .profile-page-head{padding:26px;background:linear-gradient(110deg,#0b1c32,#16446c);border:0;border-radius:12px;color:#fff}
-html[data-theme] body.workspace-mode .profile-page-head :is(h2,p,.kicker){color:#eef6ff}
+html[data-theme] body.workspace-mode #profile-section .profile-page-head :is(h2,p,.kicker){color:#eef6ff}
 html[data-theme] body.workspace-mode .profile-page-head h2{font-size:30px;margin:4px 0}
 html[data-theme] body.workspace-mode .profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:18px}
 html[data-theme] body.workspace-mode .profile-card{padding:22px}
@@ -242,7 +242,7 @@ html[data-theme] .auth-layout .login-card input{background:var(--px-surface-soft
 }
 @media(max-width:767px){
  html[data-theme] body.workspace-mode .panel,html[data-theme] body.workspace-mode .panel.sidebar-collapsed{display:block}
- html[data-theme] body.workspace-mode .app-sidebar{position:fixed;inset:0 auto 0 0;width:240px;height:100dvh;z-index:80;transform:translateX(-100%);visibility:hidden;transition:transform .18s ease,visibility .18s ease}
+ html[data-theme] body.workspace-mode .app-sidebar{position:fixed;inset:0 auto 0 0;width:240px;height:100dvh;z-index:80;transform:translateX(-100%);visibility:hidden;transition:transform .18s ease}
  html[data-theme] body.workspace-mode .panel.mobile-side-open .app-sidebar{transform:translateX(0);visibility:visible;display:flex}
  html[data-theme] body.workspace-mode .panel.mobile-side-open .side-label{display:block}
  html[data-theme] body.workspace-mode .panel.mobile-side-open .reskin-help-copy{display:grid}
@@ -281,3 +281,5 @@ html[data-theme] .auth-layout .login-card input{background:var(--px-surface-soft
 }
 @media(max-width:360px){html[data-theme] body.workspace-mode #overview-home .overview-metrics{grid-template-columns:minmax(0,1fr)}}
 @media(prefers-reduced-motion:reduce){html[data-theme] *,html[data-theme] *:before,html[data-theme] *:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+html[data-theme] body.workspace-mode .profile-password{grid-column:auto;max-width:none;width:100%}

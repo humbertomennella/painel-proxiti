@@ -6,7 +6,7 @@ html[data-theme] body.workspace-mode #ops-training .uniproxiti-update-strip{disp
 html[data-theme] body.workspace-mode #ops-training .uniproxiti-update-strip button{min-height:32px;padding:5px 9px;font-size:11px}
 html[data-theme] body.workspace-mode #ops-training #training-sync-state{margin:0 0 8px;font-size:11px}
 html[data-theme] body.workspace-mode #ops-training .academy-learning{display:grid;gap:16px;margin:0 0 28px;min-width:0}
-html[data-theme] body.workspace-mode #ops-training .academy-learning-hero{position:relative;isolation:isolate;overflow:hidden;display:block;min-height:224px;margin:0 -24px;width:calc(100% + 48px);padding:28px 24px;border:0;border-radius:0;background:#07162b;box-shadow:none}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-hero{position:relative;isolation:isolate;overflow:hidden;display:block;min-height:224px;margin:0 -24px;width:calc(100% + 48px);max-width:none;padding:28px 24px;border:0;border-radius:0;background:#07162b;box-shadow:none}
 html[data-theme] body.workspace-mode #ops-training .learning-hero-photo{position:absolute;inset:0;z-index:-2}
 html[data-theme] body.workspace-mode #ops-training .learning-hero-photo img{width:100%;height:100%;max-height:none;object-fit:cover;object-position:right 58%;border:0;border-radius:0;opacity:.85}
 html[data-theme] body.workspace-mode #ops-training .academy-learning-hero:after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#06152bfa 0%,#06152bd9 42%,#06152b11 100%)}

@@ -22,3 +22,8 @@ for(const path of ['assets/reskin-visual.css','assets/uniproxiti-dashboard.css']
  const css=readFileSync(path,'utf8');assert.equal((css.match(/{/g)||[]).length,(css.match(/}/g)||[]).length);
 }
 console.log(`PASS: ${ids(old).length} IDs do PR #9, campos, seletores e todos os scripts operacionais/Supabase byte a byte.`);
+// Conservative endpoint checks for gradient regions that axe marks as incomplete.
+const luminance=h=>{const c=h.match(/../g).map(x=>parseInt(x,16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);return .2126*c[0]+.7152*c[1]+.0722*c[2]};
+for(const [label,fg,bg] of [['menu','d7e3f3','0c1b2a'],['active','ffffff','086bd8'],['primary','ffffff','086cdc'],['topbar','ffffff','155a8b'],['muted-light','5b6b82','ffffff'],['muted-dark','bdcbe0','1a2639'],['chips','f2f8ff','102d4e']]){
+ const [a,b]=[luminance(fg),luminance(bg)].sort((a,b)=>a-b);const ratio=(b+.05)/(a+.05);assert(ratio>=4.5,label+' contrast');console.log(`PASS: AA ${label} ${ratio.toFixed(2)}:1`);
+}
