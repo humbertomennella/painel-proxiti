@@ -999,41 +999,117 @@
       if(can("chat"))void rpc("proxiti_heartbeat",{}).catch(()=>{});
     }
   });
-  el("claim-ticket").addEventListener("click",async()=>{
-    if(!state.active)return;
+  el("claim-ticket").addEventListener("click",async event=>{
+    if(!state.active||!can("tickets_claim")||!can("tickets_view"))return;
+    const ticket=state.active,db=state.db,uid=state.user.id,generation=state.accessGeneration;
+    const button=event.currentTarget;button.disabled=true;
     try{
-      const ok=await rpc("proxiti_claim_ticket",{p_ticket:state.active.id});
-      if(!ok)throw new Error("O chamado já foi assumido por outro profissional.");
-      notice("Chamado assumido.");await loadTickets();await loadMessages();
-    }catch(e){notice(e.message,true);}
+      const ok=await query(db.rpc("proxiti_claim_ticket",{p_ticket:ticket.id}));
+      if(!ok)throw new Error("O chamado já foi assumido ou mudou de situação. Atualize a fila.");
+      if(state.db!==db||state.user?.id!==uid||state.accessGeneration!==generation)return;
+      if(state.active?.id===ticket.id){
+        state.active.assigned_to=uid;
+        if(state.active.status==="new")state.active.status="triage";
+        updateTicketHeading();announceTicket();
+        notice("Chamado #"+ticket.reference+" assumido.");
+      }
+      await loadTickets();
+      if(state.active?.id===ticket.id&&can("chat"))void loadMessages();
+    }catch(error){
+      if(state.db===db&&state.user?.id===uid&&state.accessGeneration===generation)
+        notice(error.message,true);
+    }finally{button.disabled=false;}
   });
-  el("save-status").addEventListener("click",async()=>{
-    if(!state.active)return;
+  el("save-status").addEventListener("click",async event=>{
+    if(!state.active||!can("tickets_view")||state.active.status==="closed")return;
+    const ticket=state.active,nextStatus=el("ticket-status").value;
+    if(nextStatus===ticket.status){notice("A situação do chamado não mudou.");return;}
+    const db=state.db,uid=state.user.id,generation=state.accessGeneration;
+    const button=event.currentTarget;button.disabled=true;
+    const same=()=>state.db===db&&state.user?.id===uid&&state.accessGeneration===generation;
     try{
-      await rpc("proxiti_change_ticket_status",{p_ticket:state.active.id,p_status:el("ticket-status").value});
-      notice("Situação atualizada.");await loadTickets();
-    }catch(e){notice(e.message,true);}
+      if(nextStatus==="closed"){
+        const [tasks,reports]=await Promise.all([
+          query(db.from("ticket_tasks").select("state").eq("ticket_id",ticket.id).limit(31)),
+          query(db.from("ticket_reports").select("id").eq("ticket_id",ticket.id)
+            .eq("finalized",true).limit(1))
+        ]);
+        if(!same()||state.active?.id!==ticket.id)return;
+        const pending=tasks.filter(item=>item.state==="pending").length;
+        const missingReport=reports.length===0;
+        const warnings=[];
+        if(pending)warnings.push(pending+" etapa(s) do roteiro ainda pendente(s)");
+        if(missingReport)warnings.push("nenhum relatório final registrado");
+        const message="Encerrar o chamado #"+ticket.reference+"? "+
+          "Após o encerramento, os registros técnicos serão somente leitura."+
+          (warnings.length?"\n\nAtenção: "+warnings.join("; ")+".":"")+
+          "\n\nConfirme somente depois de revisar a entrega ao cliente.";
+        if(!window.confirm(message)){
+          el("ticket-status").value=ticket.status;return;
+        }
+      }
+      if(!same()||state.active?.id!==ticket.id)return;
+      await query(db.rpc("proxiti_change_ticket_status",{
+        p_ticket:ticket.id,p_status:nextStatus
+      }));
+      if(!same())return;
+      if(state.active?.id===ticket.id){
+        state.active.status=nextStatus;updateTicketHeading();announceTicket();
+        notice("Situação do chamado #"+ticket.reference+" atualizada.");
+      }
+      await loadTickets();
+    }catch(error){
+      if(same()){
+        if(state.active?.id===ticket.id)el("ticket-status").value=state.active.status;
+        notice("Não foi possível alterar a situação: "+error.message,true);
+      }
+    }finally{button.disabled=false;}
   });
-  el("save-assignee").addEventListener("click",async()=>{
-    if(!state.active||!isAdmin())return;
+  el("save-assignee").addEventListener("click",async event=>{
+    if(!state.active||!isAdmin()||state.active.status==="closed")return;
+    const ticket=state.active,assignee=el("ticket-assignee").value||null;
+    const db=state.db,uid=state.user.id,generation=state.accessGeneration;
+    const button=event.currentTarget;button.disabled=true;
     try{
-      await rpc("proxiti_admin_assign_ticket",{p_ticket:state.active.id,
-        p_staff:el("ticket-assignee").value||null});
-      notice("Responsável atualizado.");await loadTickets();
-    }catch(e){notice(e.message,true);}
+      await query(db.rpc("proxiti_admin_assign_ticket",{
+        p_ticket:ticket.id,p_staff:assignee
+      }));
+      if(state.db!==db||state.user?.id!==uid||state.accessGeneration!==generation)return;
+      if(state.active?.id===ticket.id){
+        state.active.assigned_to=assignee;updateTicketHeading();announceTicket();
+        notice("Responsável pelo chamado #"+ticket.reference+" atualizado.");
+      }
+      await loadTickets();
+    }catch(error){
+      if(state.db===db&&state.user?.id===uid&&state.accessGeneration===generation){
+        if(state.active?.id===ticket.id)el("ticket-assignee").value=state.active.assigned_to||"";
+        notice(error.message,true);
+      }
+    }finally{button.disabled=false;}
   });
-  el("staff-reply-form").addEventListener("submit",async e=>{
-    e.preventDefault();
-    if(!state.active||!can("chat"))return;
-    const field=el("staff-reply");const body=field.value.trim();
+  el("staff-reply-form").addEventListener("submit",async event=>{
+    event.preventDefault();
+    if(!state.active||!can("chat")||!can("tickets_view")||state.active.status==="closed")return;
+    const ticket=state.active,db=state.db,uid=state.user.id,generation=state.accessGeneration;
+    const field=el("staff-reply"),body=field.value.trim();
     if(!body)return;
-    const send=e.currentTarget.querySelector("button[type=submit]");
+    const send=event.currentTarget.querySelector('button[type="submit"]');
     send.disabled=true;
     try{
-      await rpc("proxiti_staff_reply",{p_ticket:state.active.id,p_body:body});
-      field.value="";remember("draft-"+state.active.id,"");await loadMessages();notice("Mensagem enviada.");
-    }catch(error){notice(error.message,true);}
-    finally{send.disabled=false;}
+      await query(db.rpc("proxiti_staff_reply",{p_ticket:ticket.id,p_body:body}));
+      if(state.db!==db||state.user?.id!==uid||state.accessGeneration!==generation)return;
+      if(state.active?.id===ticket.id){
+        if(field.value.trim()===body){
+          field.value="";remember("draft-"+ticket.id,"");
+        }
+        await loadMessages();
+        notice("Resposta enviada no chamado #"+ticket.reference+".");
+      }
+    }catch(error){
+      if(state.db===db&&state.user?.id===uid&&state.accessGeneration===generation)
+        notice("A resposta não foi confirmada. Verifique o histórico antes de reenviar: "+
+          error.message,true);
+    }finally{send.disabled=false;}
   });
   el("invite-form").addEventListener("submit",async e=>{
     e.preventDefault();if(!isAdmin())return;
