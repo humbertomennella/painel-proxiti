@@ -283,4 +283,9 @@ assert(academyCode.includes("proxiti-academy-read-v2-"),
  "Indicação de consulta não distingue as versões do material");
 assert(get("assets/operations.js").includes('proxiti-academy-refresh'),
  "Navegação não atualiza o módulo independente");
+assert(existsSync(new URL("../tests/academy-functional.mjs",import.meta.url)),
+ "Academia sem testes funcionais de sessão simulada");
+assert(existsSync(new URL("../docs/academia-homologacao.md",import.meta.url))&&
+ get("README.md").includes("docs/academia-homologacao.md"),
+ "Academia sem roteiro editorial e de homologação");
 console.log("Academia: integridade, versões, acesso privado e pesquisa validados.");
