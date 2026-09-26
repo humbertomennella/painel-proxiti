@@ -69,8 +69,9 @@ async function openScenario({tickets=baseline,chat=true,failTickets=false,failMe
          select(){return chain;},
          eq(field,value){filters.push(["eq",field,value]);return chain;},
          gte(field,value){filters.push(["gte",field,value]);return chain;},
+         lt(field,value){filters.push(["lt",field,value]);return chain;},
          in(field,values){filters.push(["in",field,values]);return chain;},
-         order(field,{ascending=true}={}){chain.sort={field,ascending};return chain;},
+         order(field,{ascending=true}={}){(chain.sorts??=[]).push({field,ascending});return chain;},
          limit(limit){chain.max=limit;return chain;},
          maybeSingle(){const result=chain.make();return Promise.resolve({...result,data:result.data?.[0]||null});},
          make(){
@@ -83,10 +84,14 @@ async function openScenario({tickets=baseline,chat=true,failTickets=false,failMe
              if(kind==="eq")rows=rows.filter(row=>row[field]===value);
              if(kind==="in")rows=rows.filter(row=>value.includes(row[field]));
              if(kind==="gte")rows=rows.filter(row=>row[field]>=value);
+             if(kind==="lt")rows=rows.filter(row=>row[field]<value);
            }
-           if(chain.sort)rows.sort((a,b)=>{
-             const x=a[chain.sort.field],y=b[chain.sort.field];
-             return (x===y?0:x<y?-1:1)*(chain.sort.ascending?1:-1);
+           if(chain.sorts)rows.sort((a,b)=>{
+             for(const sort of chain.sorts){
+               const x=a[sort.field],y=b[sort.field];
+               if(x!==y)return (x<y?-1:1)*(sort.ascending?1:-1);
+             }
+             return 0;
            });
            return {data:chain.max?rows.slice(0,chain.max):rows,error:null};
          },
@@ -211,6 +216,10 @@ try{
    assert(text.includes("Novidade mais recente"));
    assert(!text.includes("Mensagem mais antiga"));
    assert.equal(await page.locator("#staff-messages .ops-bubble").count(),150);
+   await page.click("#ticket-thread-older");
+   await page.waitForFunction(()=>document.querySelectorAll("#staff-messages .ops-bubble").length===151);
+   assert((await page.textContent("#staff-messages")).includes("Mensagem mais antiga"));
+   assert.equal(await page.isHidden("#ticket-thread-older"),true);
   }finally{await page.close();}
  });
  await test("Resposta atrasada de um chamado preserva rascunho de outro",async()=>{
