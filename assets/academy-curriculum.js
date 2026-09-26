@@ -14,7 +14,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
     "quizWeight": 0.6,
     "examWeight": 0.4,
     "criticalRequired": true,
-    "certificateType": "Certificado de Conclusão Interna — Academia PROXITI"
+    "certificateType": "Certificado de Conclusão Interna — UniProxiti"
   },
   "tracks": [
     {
