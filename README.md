@@ -81,3 +81,5 @@ As migrações `supabase/central_operations_v8.sql` e `supabase/academy_content_
 **Verificações:** `node tests/central-integrity.mjs` e `node tests/browser-smoke.mjs` (Chromium; cinco larguras) são exigidos na revisão. Os testes do navegador exercitam a geometria sem autenticação; ensaios com duas contas reais e fluxos de cliente continuam necessários antes de ampliar equipe. Não criar chamados fictícios em produção para preencher os painéis.
 
 Veja o [manual operacional da V8](docs/entrega-operacional-v8.md), o [fluxo privado V7](docs/fluxo-tecnico-v7.md) e a [implantação do domínio opcional](docs/implantacao-operacional.md).
+
+A **Visão Geral** possui agora critérios próprios de contagem e estados de sincronização, com testes de navegador e [roteiro de homologação](docs/visao-geral-homologacao.md). A revisão dos módulos seguintes permanece independente.
