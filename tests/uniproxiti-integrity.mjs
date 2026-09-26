@@ -28,8 +28,9 @@ for(const id of ["uniproxiti-dashboard","uniproxiti-progress-ring","uniproxiti-a
 for(const id of ["academy-quiz-form","academy-exam-form","academy-certificate-print",
  "training-save","training-search","academy-learning-show-tracks"])
  assert(oldIds.includes(id)&&newIds.includes(id),"Contrato operacional removido: #"+id);
-assert(html.includes('href="./assets/uniproxiti-dashboard.css?v=20260926-1"'));
-assert(html.includes("Programa interno de capacitação PROXITI"));
+assert(html.includes('href="./assets/uniproxiti-dashboard.css?v=20260926-2"'));
+assert(read("assets/operations.js").includes("Programa interno de capacitação PROXITI"));
+assert(!html.includes("<h3>UniProxiti</h3>"),"Título duplicado dentro do módulo");
 assert(html.includes("Certificado UniProxiti"));
 assert(!html.includes("Academia PROXITI"));
 const js=read("assets/academy-learning.js"),oldJs=baseline("assets/academy-learning.js");
