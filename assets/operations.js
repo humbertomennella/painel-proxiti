@@ -2,7 +2,7 @@
   "use strict";
   const el = id => document.getElementById(id);
   const state = { db:null, user:null, profile:null, tickets:[], staff:[], active:null,
-    channel:null, poll:null, heartbeat:null, currentView:"tickets", loading:false,ticketsReady:false,ticketError:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,messageCheckPromise:null,messageReady:false,messagesCapped:false,readIssue:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),readReceipts:new Map(),receiptsReady:false,readFetch:null,readSaving:new Set(),toastTimer:null };
+    channel:null, poll:null, heartbeat:null, currentView:"tickets", loading:false,accessGeneration:0,ticketsReady:false,ticketError:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,messageCheckPromise:null,messageReady:false,messagesCapped:false,readIssue:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),readReceipts:new Map(),receiptsReady:false,readFetch:null,readSaving:new Set(),toastTimer:null };
   const statusNames = {new:"Aberto",triage:"Em triagem",in_progress:"Em atendimento",
     waiting_customer:"Aguardando cliente",resolved:"Resolvido",closed:"Encerrado"};
   const permNames = {tickets_view:"Consultar chamados",tickets_claim:"Assumir chamados",
@@ -60,7 +60,7 @@
   async function loadReadReceipts(){
     if(!state.db||!state.user)return;
     if(state.readFetch)return state.readFetch;
-    const db=state.db,uid=state.user.id,ids=state.tickets.map(t=>t.id);
+    const db=state.db,uid=state.user.id,generation=state.accessGeneration,ids=state.tickets.map(t=>t.id);
     if(!ids.length){
       state.readReceipts=new Map();state.receiptsReady=true;state.readIssue=false;return;
     }
@@ -69,15 +69,15 @@
         const rows=await query(db.from("ticket_read_receipts")
           .select("ticket_id,first_seen_at,last_read_customer_at")
           .eq("staff_id",uid).in("ticket_id",ids).limit(100));
-        if(state.db!==db||state.user?.id!==uid)return;
+        if(state.db!==db||state.user?.id!==uid||state.accessGeneration!==generation)return;
         state.readReceipts=new Map(rows.map(row=>[row.ticket_id,row]));
         state.receiptsReady=true;state.readIssue=false;
       }catch{
-        if(state.db!==db||state.user?.id!==uid)return;
+        if(state.db!==db||state.user?.id!==uid||state.accessGeneration!==generation)return;
         state.readIssue=true;
         el("ops-live").textContent="Leitura entre dispositivos temporariamente indisponível";
       }finally{
-        if(state.db===db&&state.user?.id===uid)state.readFetch=null;
+        if(state.db===db&&state.user?.id===uid&&state.accessGeneration===generation)state.readFetch=null;
       }
     })();
     return state.readFetch;
@@ -298,9 +298,10 @@
   async function checkNewMessages(){
     if(!state.db||!can("chat")||!can("tickets_view"))return;
     if(state.messageCheckPromise)return state.messageCheckPromise;
-    const db=state.db,uid=state.user.id;
+    const db=state.db,uid=state.user.id,generation=state.accessGeneration;
     state.messageCheckBusy=true;
-    const stillAuthorized=()=>state.db===db&&state.user?.id===uid&&can("tickets_view")&&can("chat");
+    const stillAuthorized=()=>state.db===db&&state.user?.id===uid&&
+      state.accessGeneration===generation&&can("tickets_view")&&can("chat");
     const work=(async()=>{
       try{
         const fetched=await query(db.from("support_messages")
@@ -367,6 +368,8 @@
     el("notifications-toggle").hidden=!can("tickets_view");
     if(!allowed.tickets){
       // Revogação deve limpar dados da conta anterior inclusive em memória de interface.
+      state.accessGeneration++;state.loading=false;state.messageCheckBusy=false;
+      state.messageCheckPromise=null;state.readFetch=null;
       state.tickets=[];state.ticketsReady=false;state.ticketError=false;state.active=null;
       state.ticketIds=null;state.messageRows=[];state.messageIds=null;
       state.messageReady=false;state.messagesCapped=false;state.readIssue=false;
@@ -434,8 +437,9 @@
   }
   async function loadTickets(){
     if(!state.db||!state.user||!can("tickets_view")||state.loading)return;
-    const db=state.db,uid=state.user.id;
-    const same=()=>state.db===db&&state.user?.id===uid&&can("tickets_view");
+    const db=state.db,uid=state.user.id,generation=state.accessGeneration;
+    const same=()=>state.db===db&&state.user?.id===uid&&
+      state.accessGeneration===generation&&can("tickets_view");
     state.loading=true;
     if(!state.ticketsReady)overviewStatus("loading");
     try{
@@ -757,7 +761,7 @@
     if(state.heartbeat)clearInterval(state.heartbeat);
     if(state.channel&&state.db)void state.db.removeChannel(state.channel);
     if(state.toastTimer)clearTimeout(state.toastTimer);
-    Object.assign(state,{db:null,user:null,profile:null,tickets:[],staff:[],active:null,channel:null,poll:null,heartbeat:null,loading:false,ticketsReady:false,ticketError:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,messageCheckPromise:null,messageReady:false,messagesCapped:false,readIssue:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),readReceipts:new Map(),receiptsReady:false,readFetch:null,readSaving:new Set(),toastTimer:null});
+    Object.assign(state,{db:null,user:null,profile:null,tickets:[],staff:[],active:null,channel:null,poll:null,heartbeat:null,loading:false,accessGeneration:0,ticketsReady:false,ticketError:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,messageCheckPromise:null,messageReady:false,messagesCapped:false,readIssue:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),readReceipts:new Map(),receiptsReady:false,readFetch:null,readSaving:new Set(),toastTimer:null});
     el("alert-toast").hidden=true;el("notifications-panel").hidden=true;
     el("notifications-toggle").setAttribute("aria-expanded","false");
     el("notifications-count").hidden=true;el("ticket-badge").hidden=true;
