@@ -345,7 +345,7 @@ try{
    try{
      await first(page);await select(page,"#academy-quiz-form",4);
      await page.locator("#academy-quiz-form button[type=submit]").click();
-     await page.waitForFunction(()=>document.getElementById("academy-quiz-status").textContent
+     await page.waitForFunction(()=>document.getElementById("academy-quiz-status").textContent.toLowerCase()
        .includes("não foi possível confirmar"));
      assert.equal(await page.evaluate(()=>window.__fixture.progress.length),0);
      assert.equal(await page.evaluate(()=>window.__fixture.certificates.length),0);
