@@ -472,3 +472,205 @@ html[data-theme] body.workspace-mode #ops-tools .toolkit-result{
  border:1px solid var(--px-line);border-radius:10px;
  background:var(--px-bg-muted);color:var(--px-ink);overflow-wrap:anywhere
 }
+
+/* Fase 5 · responsividade e acessibilidade. */
+html[data-theme] :is(button,a,input,textarea,select,summary,[role="button"]):focus-visible{
+ outline:3px solid var(--px-focus)!important;outline-offset:3px!important;
+}
+html[data-theme] body.workspace-mode .app-sidebar :is(button,a):focus-visible{
+ outline-color:#b9dcff!important;outline-offset:2px!important;
+}
+html[data-theme] body.workspace-mode :is(.ops-view,.profile-card,.academy-learning) :is(button,input,select,textarea){
+ min-height:44px;
+}
+html[data-theme] body.workspace-mode :is(.ops-view,.profile-card,.academy-learning) button:disabled{
+ opacity:.58;cursor:not-allowed;
+}
+html[data-theme] body.workspace-mode .ops-view :is(.ops-list,.ops-table,.ops-messages),
+html[data-theme] body.workspace-mode .profile-grid,
+html[data-theme] body.workspace-mode #overview-home .overview-lower-grid{
+ min-width:0;max-width:100%;
+}
+html[data-theme] body.workspace-mode .ops-table-wrap{
+ max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain;
+}
+html[data-theme] body.workspace-mode .ops-view :is(input,textarea,select){max-width:100%}
+html[data-theme] body.workspace-mode #overview-home[data-overview-sync="loading"] .overview-metric{
+ overflow:hidden;
+}
+html[data-theme] body.workspace-mode #overview-home[data-overview-sync="loading"] .overview-metric::after{
+ content:"";position:absolute;left:0;right:0;bottom:0;height:4px;
+ background:linear-gradient(90deg,transparent 0%,#9fc2ee 40%,transparent 80%);
+ background-size:200% 100%;animation:reskin-progress 1.35s ease-in-out infinite;
+}
+html[data-theme] body.workspace-mode .ticket-sync-status[data-phase="loading"]::after,
+html[data-theme] body.workspace-mode .academy-sync-state[data-phase="loading"]::after,
+html[data-theme] body.workspace-mode #agenda-sync-state[data-phase="loading"]::after{
+ content:"";display:inline-block;flex:0 0 35px;height:6px;border-radius:20px;
+ background:linear-gradient(90deg,var(--px-bg-muted),#85b8ec,var(--px-bg-muted));
+ background-size:200% 100%;animation:reskin-progress 1.35s ease-in-out infinite;
+}
+@keyframes reskin-progress{from{background-position:160% 0}to{background-position:-50% 0}}
+@media(min-width:1200px){
+ html[data-theme] body.workspace-mode .panel:not(.sidebar-collapsed){--side-width:240px}
+ html[data-theme] body.workspace-mode .panel:not(.sidebar-collapsed) .side-label{display:block}
+ html[data-theme] body.workspace-mode .panel:not(.sidebar-collapsed) .reskin-help-copy{display:grid}
+ html[data-theme] body.workspace-mode .panel-head .mobile-nav-toggle{display:none!important}
+}
+@media(min-width:768px) and (max-width:1199px){
+ html[data-theme] body.workspace-mode .panel,
+ html[data-theme] body.workspace-mode .panel.sidebar-collapsed{
+  --side-width:72px;display:grid;grid-template-columns:72px minmax(0,1fr)
+ }
+ html[data-theme] body.workspace-mode .app-sidebar{
+  position:sticky;top:0;left:auto;bottom:auto;
+  width:72px;height:100dvh;max-width:72px;min-height:0;
+  transform:none!important;box-shadow:none;z-index:35;padding:16px 8px
+ }
+ html[data-theme] body.workspace-mode .panel .sidebar-top{
+  justify-content:center;flex-wrap:wrap;gap:4px;padding:0 0 12px
+ }
+ html[data-theme] body.workspace-mode .panel .sidebar-brand .side-label,
+ html[data-theme] body.workspace-mode .panel .side-link .side-label,
+ html[data-theme] body.workspace-mode .panel .side-home .side-label,
+ html[data-theme] body.workspace-mode .panel .reskin-help-copy{display:none!important}
+ html[data-theme] body.workspace-mode .panel .sidebar-nav .side-link,
+ html[data-theme] body.workspace-mode .panel .side-home{
+  justify-content:center;padding:9px 4px;min-height:48px
+ }
+ html[data-theme] body.workspace-mode .panel .side-count{
+  position:absolute;top:2px;right:0;min-width:16px;min-height:16px;
+  margin:0;padding:0 3px
+ }
+ html[data-theme] body.workspace-mode .panel .sidebar-toggle{
+  display:none!important
+ }
+ html[data-theme] body.workspace-mode .panel .reskin-help{
+  display:grid;grid-template-columns:1fr;justify-items:center;
+  padding:9px 3px;min-height:46px
+ }
+ html[data-theme] body.workspace-mode .panel .reskin-help-icon{width:26px;height:26px}
+ html[data-theme] body.workspace-mode .panel-head .mobile-nav-toggle{display:none!important}
+ html[data-theme] body.workspace-mode .panel-main{max-width:none;min-width:0}
+}
+@media(max-width:767px){
+ html[data-theme] body.workspace-mode .panel,
+ html[data-theme] body.workspace-mode .panel.sidebar-collapsed{
+  display:block;grid-template-columns:none
+ }
+ html[data-theme] body.workspace-mode .app-sidebar{
+  position:fixed;left:0;top:0;bottom:0;z-index:90;
+  width:min(270px,calc(100vw - 46px));max-width:none;
+  height:100dvh;min-height:0;overflow-y:auto;
+  transform:translateX(-110%);transition:transform .2s ease;
+  box-shadow:15px 0 45px rgba(0,0,0,.32)
+ }
+ html[data-theme] body.workspace-mode .panel.mobile-side-open .app-sidebar{
+  transform:translateX(0)
+ }
+ html[data-theme] body.workspace-mode .panel .sidebar-top{
+  justify-content:space-between;flex-wrap:nowrap
+ }
+ html[data-theme] body.workspace-mode .panel .side-label,
+ html[data-theme] body.workspace-mode .panel .reskin-help-copy{
+  display:block!important
+ }
+ html[data-theme] body.workspace-mode .panel .reskin-help-copy{display:grid!important}
+ html[data-theme] body.workspace-mode .panel .sidebar-nav .side-link,
+ html[data-theme] body.workspace-mode .panel .side-home{
+  justify-content:flex-start;padding:10px 12px
+ }
+ html[data-theme] body.workspace-mode .panel .reskin-help{
+  grid-template-columns:27px minmax(0,1fr);padding:12px 10px
+ }
+ html[data-theme] body.workspace-mode .panel .sidebar-toggle{display:none!important}
+ html[data-theme] body.workspace-mode .panel-head .mobile-nav-toggle{
+  display:inline-flex!important
+ }
+ html[data-theme] body.workspace-mode .panel-head{
+  position:relative;display:grid;grid-template-columns:minmax(0,1fr);
+  gap:12px;min-height:0;padding:14px 16px;margin:0 -16px 17px;
+  background:linear-gradient(125deg,#0b1b32,#194878)
+ }
+ html[data-theme] body.workspace-mode .panel-account{
+  order:-1;width:100%;min-width:0;display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));gap:7px
+ }
+ html[data-theme] body.workspace-mode .panel-head-greeting{
+  order:2;min-width:0;width:100%
+ }
+ html[data-theme] body.workspace-mode .panel-account .mobile-nav-toggle{
+  order:-1;min-width:0;width:100%;font-size:21px
+ }
+ html[data-theme] body.workspace-mode .panel-account .notification-hub{min-width:0}
+ html[data-theme] body.workspace-mode .panel-account :is(.profile-trigger,.theme-switch,.notification-trigger,.sound-toggle,#logout,.mobile-nav-toggle){
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:0;width:100%;height:46px;min-height:46px;padding:6px;border-radius:10px
+ }
+ html[data-theme] body.workspace-mode .panel-account .panel-account-name,
+ html[data-theme] body.workspace-mode .panel-account .theme-switch-label,
+ html[data-theme] body.workspace-mode .panel-account .notification-trigger-label{
+  display:none!important
+ }
+ html[data-theme] body.workspace-mode .panel-account .avatar-round,
+ html[data-theme] body.workspace-mode .panel-account .reskin-user-initials{
+  width:34px;height:34px
+ }
+ html[data-theme] body.workspace-mode .panel-head #welcome{
+  font-size:clamp(21px,5.1vw,27px)
+ }
+ html[data-theme] body.workspace-mode .panel-head .head-subtitle{
+  display:block!important;color:#d1e1f6!important;font-size:12px!important
+ }
+ html[data-theme] body.workspace-mode .panel-main{padding:0 16px 28px}
+ html[data-theme] body.workspace-mode #overview-home .overview-metrics{
+  grid-template-columns:repeat(2,minmax(0,1fr))
+ }
+ html[data-theme] body.workspace-mode #overview-home .overview-lower-grid{
+  grid-template-columns:minmax(0,1fr)
+ }
+ html[data-theme] body.workspace-mode #ops-tickets .ticket-workspace{
+  grid-template-columns:minmax(0,1fr)
+ }
+ html[data-theme] body.workspace-mode #ops-tickets .ticket-metrics{
+  grid-template-columns:repeat(2,minmax(0,1fr))
+ }
+ html[data-theme] body.workspace-mode #ops-training .academy-track-list{
+  grid-template-columns:minmax(0,1fr)
+ }
+ html[data-theme] body.workspace-mode #ops-training .academy-learning-hero{
+  grid-template-columns:minmax(0,1fr)
+ }
+ html[data-theme] body.workspace-mode #ops-training .academy-learning-hero img{
+  display:none
+ }
+ html[data-theme] body.workspace-mode :is(.ops-view,.profile-card,.overview-recent,.overview-resources){
+  min-width:0;padding:clamp(13px,3vw,18px)
+ }
+}
+@media(max-width:390px){
+ html[data-theme] body.workspace-mode #overview-home .overview-metrics{
+  grid-template-columns:minmax(0,1fr)
+ }
+ html[data-theme] body.workspace-mode .panel-head .panel-account{
+  gap:5px
+ }
+ html[data-theme] body.workspace-mode .panel-head .theme-switch,
+ html[data-theme] body.workspace-mode .panel-head .notification-trigger,
+ html[data-theme] body.workspace-mode .panel-head .sound-toggle,
+ html[data-theme] body.workspace-mode .panel-head #logout,
+ html[data-theme] body.workspace-mode .panel-head .mobile-nav-toggle{
+  min-height:44px;height:44px
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-theme] body.workspace-mode :is(.overview-metric,.academy-course-card,.side-link){
+  transition:none!important;transform:none!important
+ }
+ html[data-theme] body.workspace-mode #overview-home[data-overview-sync="loading"] .overview-metric::after,
+ html[data-theme] body.workspace-mode .ticket-sync-status[data-phase="loading"]::after,
+ html[data-theme] body.workspace-mode .academy-sync-state[data-phase="loading"]::after,
+ html[data-theme] body.workspace-mode #agenda-sync-state[data-phase="loading"]::after{
+  animation:none
+ }
+}
