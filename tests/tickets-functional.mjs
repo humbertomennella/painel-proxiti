@@ -176,7 +176,8 @@ try{
   const page=await openScenario({tickets});
   try{
    await visit(page,102);await page.click("#claim-ticket");
-   await page.waitForFunction(()=>document.getElementById("ticket-assignee").value.endsWith("101"));
+   await page.waitForFunction(()=>window.__fixture.tickets[1].assigned_to?.endsWith("101")===true);
+   await page.waitForFunction(()=>document.getElementById("claim-ticket").hidden===true);
    assert.equal(await page.inputValue("#ticket-status"),"in_progress");
    assert.equal(await page.evaluate(()=>window.__fixture.tickets[1].status),"in_progress");
   }finally{await page.close();}
