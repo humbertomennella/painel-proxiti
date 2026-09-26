@@ -235,7 +235,7 @@
     if(!state.user||!state.ticketsReady||!can("tickets_view"))return;
     const summary=window.PROXITI_OVERVIEW_MODEL.summarize(state.tickets,{
       seen:seenTicket,unread:unreadMessages,canReadMessages:can("chat"),
-      messagesReady:state.messageReady&&!state.messagesCapped,readIssue:state.readIssue,
+      messagesReady:state.messageReady,readIssue:state.readIssue||state.messagesCapped,
       activeId:state.active?.id,at:Date.now(),sampleLimit:100
     });
     window.PROXITI_OVERVIEW_SNAPSHOT={userId:state.user.id,detail:summary};
