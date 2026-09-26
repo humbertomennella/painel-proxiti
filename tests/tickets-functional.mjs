@@ -283,6 +283,20 @@ try{
    assert.equal((await page.textContent("#ticket-notes-list")).trim(),"Selecione um chamado.");
   }finally{await page.close();}
  });
+ await test("Retirada de acesso a um chamado limpa os dados da interface",async()=>{
+  const page=await openScenario();
+  try{
+   await visit(page,102);
+   assert((await page.textContent("#ticket-customer")).includes("teste@example.invalid"));
+   await page.evaluate(()=>{window.__fixture.tickets=window.__fixture.tickets.filter(t=>t.reference!==102);});
+   await page.click("#reload-tickets");
+   await page.waitForFunction(()=>document.getElementById("ticket-detail").hidden);
+   assert.equal((await page.textContent("#ticket-customer")).trim(),"");
+   assert.equal((await page.textContent("#ticket-subject")).trim(),"");
+   assert.equal((await page.textContent("#staff-messages")).trim(),"");
+   assert.equal(await page.isHidden("#ticket-workflow"),true);
+  }finally{await page.close();}
+ });
  await test("Anexo com resposta ambígua não apaga arquivo já registrado",async()=>{
   const page=await openScenario({attachAmbiguous:true});
   try{
@@ -328,7 +342,7 @@ try{
    assert.deepEqual(page.__errors,[]);
   }finally{await page.close();}
  });
- console.log("PASS: 9 cenários de Chamados em Chromium, incluindo 10 medidas de layout.");
+ console.log("PASS: 10 cenários de Chamados em Chromium, incluindo 10 medidas de layout.");
 }finally{
  await browser.close();
  await new Promise((resolve,reject)=>server.close(error=>error?reject(error):resolve()));
