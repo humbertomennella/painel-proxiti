@@ -2,9 +2,9 @@
 
 Branch de trabalho: `reskin-visual`, criada a partir de `main`. Nenhuma alteração será mesclada sem aprovação do titular.
 
-**Escopo permitido:** somente apresentação e acessibilidade do HTML/CSS; um módulo independente e estritamente de interface para saudação, avatar visual, ajuda e responsividade; microcopy do botão de áudio sem alterar sua lógica; testes de regressão visual e documentação.
+**Escopo permitido:** somente apresentação e acessibilidade do HTML/CSS; um módulo independente e estritamente de interface para saudação, avatar visual, ajuda e responsividade; microcopy do botão de áudio sem alterar sua lógica; duas substituições estritamente de formatação de datas na Visão Geral e no certificado interno (DD/MM/AAAA); testes de regressão visual e documentação.
 
-**Escopo protegido:** `assets/app.js`, `assets/profile.js`, `assets/operations.js`, `assets/overview.js`, `assets/academy*.js`, `assets/agenda.js`, `assets/ticket-*.js`, `assets/technical-tools*.js`, `assets/config.js`, todas as migrações `supabase/**` e Edge Functions. Não modificar consultas, credenciais, persistência de rascunhos, fluxos de publicação, políticas nem permissões.
+**Escopo protegido:** `assets/app.js`, `assets/profile.js`, `assets/operations.js`, `assets/academy.js`, `assets/academy-curriculum.js`, `assets/agenda.js`, `assets/ticket-*.js`, `assets/technical-tools*.js`, `assets/config.js`, todas as migrações `supabase/**` e Edge Functions. Em `assets/overview.js` e `assets/academy-learning.js`, permitir **somente uma troca de formato de data em cada arquivo**, conferida por igualdade byte a byte com a `main` após a substituição esperada. Não modificar consultas, credenciais, persistência de rascunhos, fluxos de publicação, políticas nem permissões.
 
 **HTML:** preservar IDs, atributos de dados, nomes de classes usados pelos scripts, `hidden`, formulários, `aria-*`, opções e ações. A sidebar não ganha módulos que existem somente na referência; os módulos efetivos permanecem condicionados às permissões atuais.
 
