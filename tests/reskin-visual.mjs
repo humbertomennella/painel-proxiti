@@ -189,13 +189,14 @@ try{
  });
  await page.waitForTimeout(280);
  const side=page.locator('#sidebar-nav [data-side-view="training"]');
- await side.focus();
+ await page.locator('#sidebar-nav [data-side-view="agenda"]').focus();
+ await page.keyboard.press("Tab");
  const focus=await side.evaluate(node=>({
    element:document.activeElement===node,
    outline:getComputedStyle(node).outlineStyle,
    color:getComputedStyle(node).outlineColor
  }));
- assert(focus.element&&focus.outline!=="none","Menu sem navegação ou foco por teclado");
+ assert(focus.element&&focus.outline!=="none","Menu sem navegação ou foco por teclado: "+JSON.stringify(focus));
  const before=await page.evaluate(()=>getComputedStyle(
    document.getElementById("app-sidebar")).backgroundImage);
  await page.click("#theme-toggle-panel");
