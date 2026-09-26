@@ -38,7 +38,7 @@ Repositório público da interface privada da PROXITI. A autenticação, as regr
 
 Este painel permite administrar **os dados operacionais, técnicos, arquivos autorizados e os blocos de conteúdo já vinculados**. **Ele ainda não edita todo o HTML, CSS, JavaScript, páginas estáticas, layouts, domínio ou checkout do GitHub.** Para controlar o código-fonte sem abrir o editor do GitHub, falta construir uma integração de publicação por servidor usando uma GitHub App autorizada exclusivamente no repositório da PROXITI, com permissão mínima, proteção de branch e trilha de auditoria. Nunca coloque token GitHub ou chave Supabase privada no navegador.
 
-Os cursos completos com progresso/avaliações, portfólios públicos individuais e alterações arbitrárias do site também não estão implementados. Os materiais privados da UniProxiti já têm upload e gestão.
+As aulas, avaliações e o certificado interno da UniProxiti estão implementados. Portfólios públicos individuais e alterações arbitrárias do código do site continuam fora do escopo. Os materiais privados da UniProxiti têm upload e gestão.
 
 ## Arquitetura
 
@@ -91,3 +91,9 @@ A **Agenda** agora tem confirmação de contato com canal registrado, reagendame
 A **UniProxiti** preserva os dez procedimentos internos publicados, agora com busca técnica em português, revisão explícita, versões anteriores privadas, arquivamento e acesso temporário a arquivos. O [roteiro editorial e de homologação](docs/academia-homologacao.md) distingue os testes automatizados da conferência profissional e das permissões de contas reais.
 
 A **UniProxiti V13** separa os dez procedimentos de consulta da capacitação: [16 aulas em oito trilhas, 64 questões, prova final de 24 questões, pontuação no Supabase e certificado interno](docs/academia-homologacao.md). Há oito ilustrações técnicas SVG originais; o gabarito permanece no banco privado e o certificado depende de critérios registrados no servidor, não de um botão local.
+
+## UniProxiti · Dashboard (Iteração 2)
+
+A área antes denominada UniProxiti foi reorganizada como painel de estudos, com quatro indicadores calculados a partir das tabelas existentes do Supabase, trilhas com a classificação `required` do catálogo, retomada de aula, atividade recente baseada em tentativas registradas e certificado somente após emissão real pelo servidor. A seção de biblioteca técnica, questionários, prova final e PDF mantém os fluxos anteriores. Subtítulo da área: **Programa interno de capacitação PROXITI**.
+
+O banco registra aulas aprovadas, tentativas e notas, mas **não registra percentual de leitura da aula**. A retomada apresenta o percentual real da trilha, sem inventar conclusão de leitura. Veja [fontes, limites e QA da UniProxiti](docs/uniproxiti-dashboard.md). Branch de revisão: `uniproxiti-dashboard`; nenhuma publicação ou merge sem aprovação.
