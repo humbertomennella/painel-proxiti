@@ -1,16 +1,9 @@
 /* UniProxiti · dashboard isolado. Não altera estados, consultas ou privilégios. */
-html[data-theme] body.workspace-mode #ops-training .ops-section-head{
-  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 16px;align-items:center;
-  padding-bottom:18px
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-update-strip{
+  display:flex;justify-content:flex-end;align-items:center;margin:0 0 12px
 }
-html[data-theme] body.workspace-mode #ops-training .ops-section-head h3{
-  grid-column:1;grid-row:1;font-size:clamp(24px,2.4vw,34px);margin:0
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-subtitle{
-  grid-column:1;grid-row:2;margin:0;color:var(--px-muted);font-size:14px
-}
-html[data-theme] body.workspace-mode #ops-training .ops-section-head #reload-training{
-  grid-column:2;grid-row:1/3;justify-self:end
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-update-strip #reload-training{
+  min-height:40px;padding:9px 15px
 }
 html[data-theme] body.workspace-mode #ops-training .academy-learning{gap:16px;margin-top:14px}
 html[data-theme] body.workspace-mode #ops-training .academy-learning-hero{
@@ -71,6 +64,13 @@ html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat small{
 }
 html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat-progress{
   display:flex;align-items:center;gap:14px
+}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat-progress>div{
+  display:grid;gap:5px;min-width:0;align-content:center
+}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat-progress>div span,
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat-progress>div small{
+  display:block;line-height:1.45;overflow-wrap:anywhere
 }
 html[data-theme] body.workspace-mode #ops-training .uniproxiti-ring{
   --up-progress:0%;position:relative;isolation:isolate;flex:0 0 86px;
@@ -214,10 +214,7 @@ html[data-theme] body.workspace-mode #overview-home .overview-hero-status .overv
  html[data-theme] body.workspace-mode #ops-training .uniproxiti-dashboard-heading button{width:100%}
  html[data-theme] body.workspace-mode #ops-training .academy-learning-hero{grid-template-columns:minmax(0,1fr)}
  html[data-theme] body.workspace-mode #ops-training .academy-learning-hero img{max-height:130px}
- html[data-theme] body.workspace-mode #ops-training .ops-section-head{grid-template-columns:minmax(0,1fr)}
- html[data-theme] body.workspace-mode #ops-training .ops-section-head #reload-training{
-  grid-column:1;grid-row:3;justify-self:start;margin-top:10px
- }
+ html[data-theme] body.workspace-mode #ops-training .uniproxiti-update-strip{justify-content:flex-start}
  html[data-theme] body.workspace-mode #ops-training .uniproxiti-resume,
  html[data-theme] body.workspace-mode #ops-training .uniproxiti-activity{padding:16px}
 }
