@@ -373,7 +373,7 @@ try{
      assert.equal(await page.textContent("#uniproxiti-progress-percent"),"6%");
      assert((await page.textContent("#uniproxiti-last-score")).includes("50,00"));
      assert((await page.textContent("#uniproxiti-average-score")).includes("75,00"));
-     assert((await page.textContent("#uniproxiti-resume-title")).includes("Computadores"));
+     assert((await page.textContent("#uniproxiti-resume-title")).includes("Diagnóstico de lentidão"));
      assert((await page.textContent("#uniproxiti-resume-progress")).includes("trilha: 0 de 2 aulas (0%)"));
      assert((await page.textContent("#uniproxiti-activity-list")).includes("Quiz realizado"));
      assert((await page.textContent("#uniproxiti-activity-list")).includes("Aula concluída"));
@@ -433,6 +433,7 @@ try{
      await page.locator("#academy-exam-form button[type=submit]").click();
      await page.waitForFunction(()=>window.__fixture.certificates.length===1);
      assert((await page.textContent("#academy-exam-result")).includes("91,00"));
+     await page.click("#academy-learning-show-tracks");
      assert.equal(await page.locator("#uniproxiti-certificate-card").isVisible(),true);
      assert.equal(await page.textContent("#uniproxiti-cert-status"),"Disponível");
      await page.click("#academy-learning-show-certificate");
