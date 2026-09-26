@@ -66,7 +66,7 @@ html[data-theme] button:disabled{opacity:.65;cursor:not-allowed}
 html[data-theme] body.workspace-mode .wrap{width:100%;max-width:none;margin:0}
 html[data-theme] body.workspace-mode .panel{--side-width:240px;display:grid;grid-template-columns:var(--side-width) minmax(0,1fr);gap:0;min-height:100dvh;background:var(--px-bg)}
 html[data-theme] body.workspace-mode .panel.sidebar-collapsed{--side-width:72px}
-html[data-theme] body.workspace-mode .app-sidebar{position:fixed;top:0;left:0;align-self:start;height:100dvh;width:var(--side-width);min-height:0;padding:22px 10px 16px;overflow-y:auto;overflow-x:hidden;z-index:50;border:0;border-right:1px solid #182b42;background:linear-gradient(165deg,#081421,#0c1b2a)!important;scrollbar-width:thin;scrollbar-color:#456080 transparent}
+html[data-theme] body.workspace-mode .app-sidebar{position:fixed;top:0;left:0;transform:none;visibility:visible;align-self:start;height:100dvh;width:var(--side-width);min-height:0;padding:22px 10px 16px;overflow-y:auto;overflow-x:hidden;z-index:50;border:0;border-right:1px solid #182b42;background:linear-gradient(165deg,#081421,#0c1b2a)!important;scrollbar-width:thin;scrollbar-color:#456080 transparent}
 html[data-theme] body.workspace-mode .sidebar-top{display:flex;align-items:center;gap:5px;padding:0 6px 25px;min-height:76px;border:0}
 html[data-theme] body.workspace-mode .sidebar-brand{color:#fff;letter-spacing:-.06em;font-size:28px;font-weight:850;gap:0}
 html[data-theme] body.workspace-mode .sidebar-brand .blue{color:#fff}
@@ -132,6 +132,10 @@ html[data-theme] body.workspace-mode :is(.ops-form,.profile-card) label{font-siz
 html[data-theme] body.workspace-mode :is(.message,.blocked,.ticket-workflow-feedback,.academy-learning-detail){border:1px solid var(--px-line);border-radius:10px;background:var(--px-surface-soft);color:var(--px-text);padding:16px}
 html[data-theme] body.workspace-mode :is(.message.error,.ticket-workflow-feedback.error){border-color:#b84a58;color:var(--px-ink)}
 html[data-theme] body.workspace-mode :is(.ops-empty,.ticket-list-empty,.ticket-empty-state,.academy-empty){padding:32px 20px;color:var(--px-muted);text-align:center}
+/* Badges and checkbox labels inherit the content theme, including CMS drafts. */
+html[data-theme] body.workspace-mode .ops-badge{color:var(--px-blue);background:var(--px-bg-muted);border:1px solid var(--px-line-strong);border-radius:6px;padding:4px 7px}
+html[data-theme] body.workspace-mode .ops-check{display:flex;align-items:center;justify-content:flex-start;gap:9px;text-align:left}
+html[data-theme] body.workspace-mode .ops-check input[type=checkbox]{width:18px;height:18px;min-height:18px;max-width:18px;flex:0 0 18px;padding:0;margin:0}
 /* Visão geral: banner contínuo, KPIs e dois painéis operacionais. */
 html[data-theme] body.workspace-mode #overview-home .overview-section-heading{margin:0 0 8px;min-height:50px}
 html[data-theme] body.workspace-mode #overview-home .overview-section-heading h2{font-size:28px;letter-spacing:-.04em}

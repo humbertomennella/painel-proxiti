@@ -341,7 +341,7 @@ try{
     await page.evaluate(v=>window.PROXITI_OPEN_VIEW(v),view);
     assert(await page.locator(view==="overview"?"#overview-home":view==="profile"?"#profile-section":"#ops-"+view).isVisible(),`View not selected: ${view}`);
     await page.waitForTimeout(300); // Wait for the existing 220ms sidebar transition.
-    const size=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,side:document.getElementById("app-sidebar").getBoundingClientRect().width}));
+    const size=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,side:document.getElementById("app-sidebar").getBoundingClientRect().width,sideLeft:document.getElementById("app-sidebar").getBoundingClientRect().left}));
     if(width===1366){
      await page.addScriptTag({path:resolve(root,"node_modules/axe-core/axe.min.js")});
      const audit=await page.evaluate(()=>window.axe.run(document,{runOnly:{type:"rule",values:["color-contrast"]}}));
@@ -353,9 +353,11 @@ try{
      await page.screenshot({path:resolve(shots,`overflow-${view}-${width}-${theme}.png`),fullPage:true});
     }
     assert(size.scroll<=width+1,`${view} ${width} ${theme} overflow ${JSON.stringify(size)}`);
+    if(width>=768)assert.equal(size.sideLeft,0,"Navigation outside viewport");
     if(width>=1200)assert.equal(size.side,240);
     else if(width>=768)assert.equal(size.side,72);
     if([1920,1366,375].includes(width))await page.screenshot({path:resolve(shots,`${view}-${width}-${theme}.png`),fullPage:true});
+    if(view==="training"&&[1920,1366,375].includes(width))await page.screenshot({path:resolve(shots,`training-viewport-${width}-${theme}.png`),fullPage:false});
    }
    console.log(`PASS: eight areas at ${width}px, ${theme}, no overflow`);
   }
@@ -382,6 +384,10 @@ try{
  console.log("PASS: CMS literal text/edit/save/delete, profile name, CIDR /31 and SHA-256");
  await page.setViewportSize({width:375,height:850});
  await page.click("#mobile-nav-toggle");
+ await page.waitForTimeout(350);
+ console.log("DRAWER STATE",await page.evaluate(()=>({classes:document.getElementById("panel").className,active:document.activeElement.outerHTML.slice(0,400),inert:document.getElementById("panel-main").inert,sideHidden:document.getElementById("app-sidebar").hidden,sideVisibility:getComputedStyle(document.getElementById("app-sidebar")).visibility,sideDisplay:getComputedStyle(document.getElementById("app-sidebar")).display,errors:window.__visualErrors})));
+ await page.screenshot({path:resolve(shots,"drawer-375.png"),fullPage:false});
+ console.log("PAGE ERRORS",page.__errors);
  await page.waitForFunction(()=>document.activeElement.closest("#app-sidebar"));
  await page.keyboard.press("Escape");
  await page.waitForFunction(()=>document.activeElement.id==="mobile-nav-toggle"&&!document.getElementById("panel-main").inert);
@@ -402,7 +408,19 @@ try{
  for(const width of [1920,1366,768,375,320])for(const theme of ["light","dark"]){
   await login.setViewportSize({width,height:1000});await login.evaluate(t=>document.documentElement.dataset.theme=t,theme);
   assert(await login.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`login overflow ${width}`);
+  if(width===1366){
+   await login.addScriptTag({path:resolve(root,"node_modules/axe-core/axe.min.js")});
+   const audit=await login.evaluate(()=>window.axe.run(document,{runOnly:{type:"rule",values:["color-contrast"]}}));
+   contrastReports.push({view:"login",width,theme,violations:audit.violations,incomplete:audit.incomplete});
+   await writeFile(resolve(shots,"contrast.json"),JSON.stringify(contrastReports,null,2));
+   assert.equal(audit.violations.length,0,"Login contrast violations");
+  }
   if([1366,375].includes(width))await login.screenshot({path:resolve(shots,`login-${width}-${theme}.png`),fullPage:true});
+ }
+ for(const id of ["forgot-form","reset-form","mfa-form"]){
+  await login.evaluate(id=>{for(const form of document.querySelectorAll('.login-card form'))form.hidden=form.id!==id;},id);
+  assert(await login.locator("#"+id).isVisible());
+  assert(await login.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),id+" overflow");
  }
  await login.close();
  console.log("PASS: login all widths/themes, native course disclosure and questionnaire, zero pageerror");
