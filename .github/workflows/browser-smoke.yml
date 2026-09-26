@@ -59,6 +59,16 @@ jobs:
       - name: Auditoria visual sem alterações em auth, dados ou permissões
         if: github.event_name == 'pull_request' && github.head_ref == 'reskin-visual'
         run: node tests/reskin-visual.mjs
+      - name: Preparar snapshot reproduzível do reskin
+        if: github.event_name == 'pull_request' && github.head_ref == 'reskin-visual'
+        run: git archive --format=tar.gz --output=artifacts/proxiti-reskin-source.tar.gz HEAD
+      - name: Guardar fonte para auditoria local
+        if: github.event_name == 'pull_request' && github.head_ref == 'reskin-visual'
+        uses: actions/upload-artifact@v4
+        with:
+          name: proxiti-reskin-source-review
+          path: artifacts/proxiti-reskin-source.tar.gz
+          if-no-files-found: error
       - name: Guardar capturas para revisão
         if: always()
         uses: actions/upload-artifact@v4
