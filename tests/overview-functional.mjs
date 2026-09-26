@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import {createServer} from "node:http";
-import {readFile} from "node:fs/promises";
+import {readFile,mkdir} from "node:fs/promises";
 import {resolve,extname,sep} from "node:path";
 import {fileURLToPath} from "node:url";
 import {chromium} from "playwright";
@@ -40,6 +40,8 @@ const messages=baseline.map((t,i)=>({
 }));
 async function openScenario({tickets=baseline,chat=true,failTickets=false,failMessages=false,viewer=true}={}){
  const page=await browser.newPage({viewport:{width:375,height:850},deviceScaleFactor:1});
+ page.__errors=[];
+ page.on("pageerror",error=>page.__errors.push(error.message));
  await page.route("https://cdn.jsdelivr.net/**",route=>route.abort());
  await page.goto(url,{waitUntil:"load",timeout:30000});
  await page.evaluate(({tickets,messages,chat,failTickets,failMessages,viewer})=>{
@@ -206,7 +208,45 @@ try{
      assert.equal((await page.textContent("#overview-metric-unread-label")).trim(),"Novos chamados não lidos");
    }finally{await page.close();}
  });
- console.log("PASS: 6 fluxos funcionais da Visão Geral, sem acesso a contas ou dados de produção.");
+ await test("Layout autenticado simulado com atendimento ativo em cinco larguras e dois temas",async()=>{
+   const page=await openScenario();
+   try{
+     await page.waitForFunction(()=>document.querySelector("#overview-sync-state").dataset.phase==="ready");
+     await page.click("#overview-recent-list button:nth-child(2)");
+     await page.waitForFunction(()=>window.PROXITI_ACTIVE_TICKET?.id?.endsWith("2"));
+     await page.evaluate(()=>window.PROXITI_OPEN_VIEW("overview"));
+     await page.waitForFunction(()=>!document.querySelector("#overview-resume").hidden);
+     const artifactFolder=resolve(root,"artifacts");
+     await mkdir(artifactFolder,{recursive:true});
+     for(const width of [320,375,430,768,1366]){
+       await page.setViewportSize({width,height:870});
+       for(const theme of ["light","dark"]){
+         await page.evaluate(value=>document.documentElement.dataset.theme=value,theme);
+         const geometry=await page.evaluate(()=>{
+           const root=document.documentElement;
+           const card=document.getElementById("overview-resume").getBoundingClientRect();
+           const button=document.getElementById("overview-resume-action").getBoundingClientRect();
+           return {viewport:window.innerWidth,scroll:root.scrollWidth,
+             card:{left:card.left,right:card.right,width:card.width},
+             button:{left:button.left,right:button.right,width:button.width,height:button.height},
+             sync:document.querySelector("#overview-sync-state").dataset.phase};
+         });
+         assert(geometry.scroll<=geometry.viewport+2,
+           width+"px/"+theme+": rolagem horizontal com dados carregados ("+geometry.scroll+">"+geometry.viewport+")");
+         assert(geometry.card.left>=-1&&geometry.card.right<=width+1,
+           width+"px/"+theme+": cartão de retomada fora da tela");
+         assert(geometry.button.left>=-1&&geometry.button.right<=width+1&&geometry.button.height>=44,
+           width+"px/"+theme+": ação de retomada inacessível");
+         assert.equal(geometry.sync,"ready");
+         if([375,1366].includes(width))
+           await page.screenshot({path:resolve(artifactFolder,"overview-autorizada-"+width+"-"+theme+".png"),fullPage:true});
+       }
+       console.log("PASS: conteúdo autorizado, retomada e temas sem overflow em "+width+"px");
+     }
+     assert.deepEqual(page.__errors,[],"O navegador registrou erros de JavaScript na Visão Geral");
+   }finally{await page.close();}
+ });
+ console.log("PASS: 7 fluxos funcionais da Visão Geral, incluindo 10 verificações de layout com sessão simulada.");
 }finally{
  await browser.close();
  await new Promise((done,fail)=>server.close(error=>error?fail(error):done()));
