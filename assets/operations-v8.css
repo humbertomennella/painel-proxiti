@@ -572,3 +572,14 @@ html[data-theme] body.workspace-mode #ops-training .academy-choice:focus-within{
   padding:12px 10px
  }
 }
+
+/* Esconder painéis de avaliação independentemente dos displays responsivos. */
+html[data-theme] body.workspace-mode #ops-training .academy-learning [hidden],
+html[data-theme] body.workspace-mode #ops-training .academy-learning[hidden]{
+ display:none!important
+}
+html[data-theme] body.workspace-mode #ops-training .academy-entry .academy-versions ol,
+html[data-theme] body.workspace-mode #ops-training .academy-entry .academy-article>div,
+html[data-theme] body.workspace-mode #ops-training .academy-entry .academy-entry-head{
+ max-inline-size:100%;min-inline-size:0
+}
