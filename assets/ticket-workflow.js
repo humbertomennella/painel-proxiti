@@ -109,10 +109,13 @@
         make("small",(file.byte_size/1048576).toFixed(2)+" MB · "+stamp(file.created_at)));
       const open=make("button","Baixar","secondary");open.type="button";
       open.addEventListener("click",async()=>{
-        if(selected?.id!==file.ticket_id)return;
+        if(selected?.id!==file.ticket_id||!canRead())return;
+        const db=database(),uid=session().user.id,rev=revision;
         open.disabled=true;note("");
         try{
-          const blob=await query(database().storage.from(bucket).download(file.storage_path));
+          const blob=await query(db.storage.from(bucket).download(file.storage_path));
+          if(rev!==revision||selected?.id!==file.ticket_id||database()!==db||
+             session()?.user?.id!==uid||!canRead())return;
           const objectUrl=URL.createObjectURL(blob),a=make("a");
           a.href=objectUrl;a.download=file.file_name.replace(/[^\p{L}\p{N} .()_\-]/gu,"_");
           document.body.append(a);a.click();a.remove();
@@ -125,8 +128,8 @@
     }
   }
   async function refresh(section,ticketId){
-    const db=database(),rev=revision;
-    if(!db||!ticketId)return;
+    const db=database(),rev=revision,uid=session()?.user?.id;
+    if(!db||!ticketId||!canRead())return;
     const tables={
       notes:["ticket_internal_notes","id,ticket_id,author_id,body,created_at","created_at",false],
       tasks:["ticket_tasks","id,ticket_id,title,position,state,note,updated_at","position",true],
@@ -136,12 +139,14 @@
     try{
       const rows=await query(db.from(table).select(fields).eq("ticket_id",ticketId)
         .order(order,{ascending}).limit(150));
-      if(rev!==revision||selected?.id!==ticketId)return;
+      if(rev!==revision||selected?.id!==ticketId||database()!==db||
+         session()?.user?.id!==uid||!canRead())return;
       if(section==="notes")displayNotes(rows||[]);
       if(section==="tasks")displayTasks(rows||[]);
       if(section==="files")displayFiles(rows||[]);
     }catch(error){
-      if(rev!==revision||selected?.id!==ticketId)return;
+      if(rev!==revision||selected?.id!==ticketId||database()!==db||
+         session()?.user?.id!==uid||!canRead())return;
       note("Não foi possível consultar "+({notes:"as notas",tasks:"o roteiro",files:"os anexos"}[section])+
         ": "+error.message,true);
     }
