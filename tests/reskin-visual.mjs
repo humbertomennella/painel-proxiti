@@ -14,7 +14,8 @@ const original=path=>execFileSync("git",["show","origin/main:"+path],{
 const changed=execFileSync("git",["diff","--name-only","origin/main...HEAD"],{
  cwd:root,encoding:"utf8"}).trim().split("\n").filter(Boolean);
 const allowed=new Set(["index.html","assets/reskin-visual.css","assets/reskin-visual.js",
- "assets/alerts.js","tests/reskin-visual.mjs",".github/workflows/browser-smoke.yml",
+ "assets/alerts.js","assets/overview.js","assets/academy-learning.js",
+ "tests/reskin-visual.mjs",".github/workflows/browser-smoke.yml",
  "docs/reskin-fase0-protecao.md","docs/reskin-revisao.md"]);
 for(const path of changed)
  assert(allowed.has(path),"Fora do escopo visual: "+path);
@@ -61,6 +62,19 @@ const expected=alertBase
  .replace('button.title=enabled?"Desativar alertas":"Ativar alertas";',
           'button.title=enabled?"Desativar som dos alertas":"Ativar som dos alertas";');
 assert.equal(alertNew,expected,"Comportamento do som foi alterado, e não apenas o texto");
+const dateOnlyChanges=[
+ ["assets/overview.js",'created.toLocaleDateString("pt-BR",{day:"2-digit",month:"short"})',
+  'created.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric"})'],
+ ["assets/academy-learning.js",'{day:"2-digit",month:"long",year:"numeric"}',
+  '{day:"2-digit",month:"2-digit",year:"numeric"}']
+];
+for(const [path,before,after] of dateOnlyChanges){
+ const baseline=original(path),actual=await read(path);
+ assert.equal(baseline.split(before).length,2,"Marcador original de data inesperado: "+path);
+ assert.equal(actual,baseline.replace(before,after),
+  "O arquivo "+path+" foi alterado além da formatação visual de datas");
+}
+console.log("PASS: formatação DD/MM/AAAA sem tocar na lógica operacional das duas telas.");
 function luminance(hex){
  const rgb=hex.match(/[\da-f]{2}/gi).map(v=>parseInt(v,16)/255);
  const [r,g,b]=rgb.map(n=>n<=.04045?n/12.92:Math.pow((n+.055)/1.055,2.4));
