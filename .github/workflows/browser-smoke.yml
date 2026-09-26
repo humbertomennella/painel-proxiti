@@ -10,6 +10,7 @@ on:
       - "tests/tickets-functional.mjs"
       - "tests/agenda-functional.mjs"
       - "tests/academy-functional.mjs"
+      - "tests/academy-learning-functional.mjs"
       - ".github/workflows/browser-smoke.yml"
   push:
     branches: [main]
@@ -21,6 +22,7 @@ on:
       - "tests/tickets-functional.mjs"
       - "tests/agenda-functional.mjs"
       - "tests/academy-functional.mjs"
+      - "tests/academy-learning-functional.mjs"
       - ".github/workflows/browser-smoke.yml"
   workflow_dispatch:
 permissions:
@@ -48,6 +50,8 @@ jobs:
         run: node tests/agenda-functional.mjs
       - name: Verificar Academia com busca, publicação, revisão e privacidade
         run: node tests/academy-functional.mjs
+      - name: Verificar aulas, prova final, nota e certificado interno
+        run: node tests/academy-learning-functional.mjs
       - name: Guardar capturas para revisão
         if: always()
         uses: actions/upload-artifact@v4
