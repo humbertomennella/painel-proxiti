@@ -543,45 +543,69 @@
   }
   function updateTicketHeading(){
     const t=state.active;if(!t)return;
-    el("ticket-detail").hidden=false;
-    el("ticket-empty-state").hidden=true;
+    el("ticket-detail").hidden=false;el("ticket-empty-state").hidden=true;
     el("ticket-detail").dataset.status=t.status;
     el("ticket-code").textContent="CHAMADO #"+t.reference+" · "+shortDate(t.created_at);
     el("ticket-subject").textContent=t.subject;
     el("ticket-current-status").replaceChildren(statusPill(t.status));
-    el("ticket-customer").textContent=t.customer_name+" · "+t.customer_email+(t.customer_phone?" · "+t.customer_phone:"");
+    el("ticket-customer").textContent=t.customer_name+" · "+t.customer_email+
+      (t.customer_phone?" · "+t.customer_phone:"");
     el("ticket-description").textContent=t.description;
     el("ticket-status").value=t.status;
     el("ticket-assignee").value=t.assigned_to||"";
-    const assigned=t.assigned_to===state.user.id,manage=isAdmin()||assigned;
-    el("claim-ticket").hidden=!!t.assigned_to||!can("tickets_claim");
+    const closed=t.status==="closed",assigned=t.assigned_to===state.user.id;
+    const manage=!closed&&(isAdmin()||assigned);
+    el("claim-ticket").hidden=!!t.assigned_to||!can("tickets_claim")||
+      ["closed","resolved"].includes(t.status);
     el("ticket-status").disabled=!manage;
     el("save-status").hidden=!manage;
-    el("staff-reply-form").hidden=!(manage&&can("chat"))||t.status==="closed";
+    el("assign-group").hidden=!isAdmin()||closed;
+    el("save-assignee").hidden=!isAdmin()||closed;
+    el("staff-reply-form").hidden=!(manage&&can("chat"));
+    el("ticket-conversation").hidden=!can("chat");
+    el("ticket-thread-retry").hidden=!can("chat");
+    el("ticket-status-help").textContent=closed?
+      "Histórico encerrado: não é possível alterar situação, responsável ou resposta. Abra um novo atendimento quando necessário.":
+      t.status==="resolved"?
+      "Resolvido: revise o resultado antes do encerramento. A ação de encerrar é definitiva.":
+      "As mudanças de situação ficam registradas no histórico do chamado.";
   }
   async function loadMessages(){
-    const t=state.active;
-    if(!t||!can("chat"))return;
+    const ticket=state.active,db=state.db,uid=state.user?.id,generation=state.accessGeneration;
+    const revision=++state.threadRevision;
+    if(!ticket||!db||!can("chat")||!can("tickets_view"))return;
+    const valid=()=>state.db===db&&state.user?.id===uid&&state.accessGeneration===generation&&
+      state.threadRevision===revision&&state.active?.id===ticket.id&&can("chat")&&can("tickets_view");
+    threadSync("loading");
     try{
-      const list=await query(state.db.from("support_messages")
-        .select("id,sender_kind,body,created_at").eq("ticket_id",t.id)
-        .order("created_at",{ascending:true}).limit(150));
-      if(state.active?.id!==t.id)return;
-      const box=el("staff-messages"),signature=JSON.stringify([t.id,list.map(m=>m.id)]);
-      if(signature!==state.renderedThread){
-        const nearBottom=box.scrollHeight-box.scrollTop-box.clientHeight<130;
-        box.replaceChildren();
-        if(!list.length)box.append(elem("p","Ainda não há mensagens.","ops-muted"));
-        for(const m of list){
-          const bubble=elem("div","","ops-bubble"+(m.sender_kind==="staff"?" own":""));
-          bubble.append(elem("small",(m.sender_kind==="staff"?"Equipe PROXITI":"Cliente")+" · "+shortDate(m.created_at)),elem("div",m.body));
-          box.append(bubble);
-        }
-        if(nearBottom)box.scrollTop=box.scrollHeight;
-        state.renderedThread=signature;
+      // A ordem descendente traz a conversa recente; a apresentação é cronológica.
+      const fetched=await query(db.from("support_messages")
+        .select("id,sender_kind,body,created_at").eq("ticket_id",ticket.id)
+        .order("created_at",{ascending:false}).limit(151));
+      if(!valid())return;
+      const list=fetched.slice(0,150).reverse(),capped=fetched.length>150;
+      const box=el("staff-messages");
+      const nearBottom=box.scrollHeight-box.scrollTop-box.clientHeight<130;
+      box.replaceChildren();
+      if(capped)box.append(elem("p",
+        "Exibindo as 150 mensagens mais recentes. Mensagens anteriores permanecem no histórico.",
+        "ops-muted"));
+      if(!list.length)box.append(elem("p","Ainda não há mensagens.","ops-muted"));
+      for(const message of list){
+        const bubble=elem("div","","ops-bubble"+(message.sender_kind==="staff"?" own":""));
+        bubble.append(elem("small",(message.sender_kind==="staff"?"Equipe PROXITI":"Cliente")+
+          " · "+shortDate(message.created_at)),elem("div",message.body));
+        box.append(bubble);
       }
-      await markMessagesSeen(t.id,list);
-    }catch(e){notice("Falha ao consultar conversa: "+e.message,true);}
+      if(nearBottom)box.scrollTop=box.scrollHeight;
+      state.renderedThread=JSON.stringify([ticket.id,list.map(message=>message.id)]);
+      threadSync(capped?"partial":"ready",list.length);
+      await markMessagesSeen(ticket.id,list);
+    }catch(error){
+      if(!valid())return;
+      threadSync("error");
+      notice("Falha ao consultar conversa: "+error.message,true);
+    }
   }
   async function openTicket(id){
     const t=state.tickets.find(t=>t.id===id);if(!t)return;
