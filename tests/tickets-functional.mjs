@@ -222,6 +222,25 @@ try{
    assert.equal(await page.isHidden("#ticket-thread-older"),true);
   }finally{await page.close();}
  });
+ await test("Paginação inclui mensagens com horário idêntico sem duplicar ou omitir",async()=>{
+  const now=new Date().toISOString();
+  const many=Array.from({length:151},(_,i)=>({
+   id:"shared-"+String(i).padStart(3,"0"),ticket_id:baseline[1].id,
+   sender_kind:"customer",created_at:now,body:"Mensagem simultânea "+i
+  }));
+  const page=await openScenario({messagesFixture:many});
+  try{
+   await visit(page,102);
+   await page.waitForFunction(()=>document.getElementById("ticket-thread-status").dataset.phase==="partial");
+   assert.equal(await page.locator("#staff-messages .ops-bubble").count(),150);
+   await page.click("#ticket-thread-older");
+   await page.waitForFunction(()=>document.querySelectorAll("#staff-messages .ops-bubble").length===151);
+   const values=await page.locator("#staff-messages .ops-bubble > div").allTextContents();
+   assert.equal(new Set(values).size,151);
+   assert(values.includes("Mensagem simultânea 0"));
+   assert.equal(await page.isHidden("#ticket-thread-older"),true);
+  }finally{await page.close();}
+ });
  await test("Resposta atrasada de um chamado preserva rascunho de outro",async()=>{
   const page=await openScenario({deferReply:true});
   try{
@@ -309,7 +328,7 @@ try{
    assert.deepEqual(page.__errors,[]);
   }finally{await page.close();}
  });
- console.log("PASS: 8 cenários de Chamados em Chromium, incluindo 10 medidas de layout.");
+ console.log("PASS: 9 cenários de Chamados em Chromium, incluindo 10 medidas de layout.");
 }finally{
  await browser.close();
  await new Promise((resolve,reject)=>server.close(error=>error?reject(error):resolve()));
