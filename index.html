@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="./assets/overview-comfort.css?v=20260925-3">
 <link rel="stylesheet" href="./assets/ticket-workflow.css?v=20260926-1">
 <link rel="stylesheet" href="./assets/operations-v8.css?v=20260926-4">
-<link rel="stylesheet" href="./assets/reskin-visual.css?v=20260926-1">
+<link rel="stylesheet" href="./assets/reskin-visual.css?v=20260926-2">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js" defer></script>
 <script src="./assets/config.js" defer></script>
 <script src="./assets/app.js" defer></script>
@@ -22,7 +22,7 @@
 <script src="./assets/operations.js?v=20260926-3" defer></script>
 <script src="./assets/academy.js?v=20260926-1" defer></script>
 <script src="./assets/academy-curriculum.js?v=20260926-1" defer></script>
-<script src="./assets/academy-learning.js?v=20260926-2" defer></script>
+<script src="./assets/academy-learning.js?v=20260926-3" defer></script>
 <script src="./assets/layout.js" defer></script>
 <script src="./assets/profile.js" defer></script>
 <script src="./assets/appearance.js" defer></script>
@@ -228,18 +228,32 @@
   <div id="ops-training" class="ops-view px-panel" hidden>
     <div class="ops-section-head"><h3>UniProxiti</h3><p class="uniproxiti-subtitle">Programa interno de capacitação PROXITI</p><button type="button" id="reload-training" class="secondary">Atualizar ↻</button></div>
     <p id="training-sync-state" class="academy-sync-state" role="status" aria-live="polite">Consultando a biblioteca autorizada…</p>
-    <div class="academy-intro"><strong>Duas formas de aprender e trabalhar.</strong><p>As trilhas de capacitação possuem aulas, avaliações e certificado interno por aproveitamento. A biblioteca abaixo permanece para consulta durante os atendimentos; consultar um documento não equivale a concluir curso.</p></div>
+    
     <section id="academy-learning-root" class="academy-learning" aria-labelledby="academy-learning-heading">
       <div class="academy-learning-hero">
         <div class="academy-learning-hero-copy">
-          <p class="kicker">CAPACITAÇÃO INTERNA · PROXITI</p>
-          <h4 id="academy-learning-heading">Aprenda, pratique e comprove seu progresso.</h4>
-          <p>16 aulas, oito áreas da operação e avaliação corrigida pelo servidor. O certificado é interno, não equivale a diploma ou habilitação profissional externa.</p>
+          <p class="kicker">UNIPROXITI · CAPACITAÇÃO INTERNA</p>
+          <h4 id="academy-learning-heading">Seu aprendizado, com progresso verificável.</h4>
+          <p>Trilhas, avaliação corrigida pelo servidor e biblioteca técnica em um só lugar. Seus resultados aparecem conforme os registros da sua conta.</p>
           <div id="academy-learning-status" class="academy-learning-status" role="status" aria-live="polite">Preparando seus cursos…</div>
           <button id="academy-learning-refresh" type="button" class="secondary">Atualizar progresso</button>
         </div>
         <img src="./assets/academy-visuals/operacao.svg" alt="Ilustração original: chamado, agenda e relatório como etapas do atendimento PROXITI." width="960" height="440" loading="lazy">
       </div>
+      <section id="uniproxiti-dashboard" class="uniproxiti-dashboard" aria-labelledby="uniproxiti-dashboard-heading" hidden>
+        <div class="uniproxiti-dashboard-heading"><div><p class="kicker">MEU PAINEL</p><h5 id="uniproxiti-dashboard-heading">Seu progresso de estudo</h5></div><button id="uniproxiti-continue" type="button" class="primary" disabled>Continuar estudo</button></div>
+        <div class="uniproxiti-stats" aria-label="Indicadores reais de capacitação">
+          <article class="uniproxiti-stat uniproxiti-stat-progress"><div class="uniproxiti-ring" id="uniproxiti-progress-ring" role="progressbar" aria-label="Aulas aprovadas em porcentagem" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><strong id="uniproxiti-progress-percent">—</strong></div><div><span>Progresso geral</span><small>Aulas aprovadas do currículo ativo</small></div></article>
+          <article class="uniproxiti-stat"><span>Aulas aprovadas</span><strong id="uniproxiti-approved">—</strong><small id="uniproxiti-approved-note">Consultando as aulas autorizadas…</small></article>
+          <article class="uniproxiti-stat"><span>Última nota</span><strong id="uniproxiti-last-score">—</strong><small id="uniproxiti-average-score">Média das aulas aprovadas indisponível</small></article>
+          <article class="uniproxiti-stat"><span>Certificação interna</span><strong id="uniproxiti-cert-status">Em andamento</strong><small id="uniproxiti-cert-note">Verificando o certificado emitido pelo servidor…</small></article>
+        </div>
+        <div class="uniproxiti-dashboard-columns">
+          <section class="uniproxiti-resume" aria-labelledby="uniproxiti-resume-heading"><p class="kicker">RETOME SEU PERCURSO</p><h5 id="uniproxiti-resume-heading">Continuar de onde parou</h5><strong id="uniproxiti-resume-title">Consultando seu histórico…</strong><p id="uniproxiti-resume-note">Os dados da aula são carregados da sua conta.</p><div class="uniproxiti-resume-track" id="uniproxiti-resume-track" hidden><span id="uniproxiti-resume-progress">—</span><div class="uniproxiti-resume-bar" role="progressbar" aria-label="Progresso da trilha" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="uniproxiti-resume-fill"></span></div></div><button id="uniproxiti-resume-action" type="button" class="secondary" disabled>Retomar aula</button><small class="uniproxiti-reading-note">O sistema registra tentativas e aprovações, não a porcentagem de leitura da aula.</small></section>
+          <section class="uniproxiti-activity" aria-labelledby="uniproxiti-activity-heading"><p class="kicker">REGISTROS DA SUA CONTA</p><h5 id="uniproxiti-activity-heading">Minha atividade recente</h5><ol id="uniproxiti-activity-list" aria-live="polite"><li>Consultando as atividades registradas…</li></ol><p id="uniproxiti-activity-note" class="uniproxiti-note"></p></section>
+        </div>
+        <section id="uniproxiti-certificate-card" class="uniproxiti-certificate" aria-labelledby="uniproxiti-certificate-heading" hidden><div><p class="kicker">CERTIFICAÇÃO EMITIDA</p><h5 id="uniproxiti-certificate-heading">Certificado UniProxiti</h5><p id="uniproxiti-certificate-detail">Certificado interno emitido e registrado para sua conta.</p><small>Certificação interna, não credencial formal.</small></div><button id="uniproxiti-certificate-pdf" type="button" class="primary">Imprimir / Salvar PDF</button></section>
+      </section>
       <div id="academy-learning-summary" class="academy-learning-summary" role="status" aria-live="polite">
         <p>Consultando seu progresso individual…</p>
       </div>
@@ -248,7 +262,8 @@
         <button id="academy-learning-show-certificate" type="button" class="secondary">Meu certificado</button>
         <button id="academy-learning-open-exam" type="button" class="primary" disabled>Prova final · concluir 16 cursos</button>
       </div>
-      <p class="academy-learning-policy">Para concluir cada aula: pelo menos 3 de 4 questões corretas (75%). Para o certificado interno: concluir as 16 aulas, obter no mínimo 75 na prova de 24 questões, média final ponderada mínima de 80 e acertar as quatro questões críticas de segurança e privacidade. Média final = 60% da média dos melhores questionários + 40% da prova final.</p>
+      <details class="uniproxiti-rules"><summary>Critérios de aprovação e certificação interna</summary><p class="academy-learning-policy">Para concluir cada aula: pelo menos 3 de 4 questões corretas (75%). Para o certificado interno: concluir as 16 aulas, obter no mínimo 75 na prova de 24 questões, média final ponderada mínima de 80 e acertar as quatro questões críticas de segurança e privacidade. Média final = 60% da média dos melhores questionários + 40% da prova final.</p></details>
+      <div class="uniproxiti-tracks-heading"><div><p class="kicker">PERCURSOS DISPONÍVEIS</p><h5>Trilhas de capacitação</h5></div><p>Os indicadores mostram aulas aprovadas e as exigências registradas no currículo.</p></div>
       <div id="academy-track-list" class="academy-track-list" aria-label="Trilhas e aulas disponíveis"></div>
       <section id="academy-lesson-panel" class="academy-learning-detail" aria-labelledby="academy-lesson-heading" hidden>
         <button type="button" id="academy-lesson-back" class="secondary">← Voltar às trilhas</button>
