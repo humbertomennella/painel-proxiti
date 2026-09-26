@@ -115,7 +115,7 @@ function renderRecent(items){
    const subject=node("strong","",ticket.subject||"Atendimento");
    const created=ticket.created_at?new Date(ticket.created_at):null;
    const date=created&&!Number.isNaN(created.getTime())?
-     "Aberto em "+created.toLocaleDateString("pt-BR",{day:"2-digit",month:"short"})+
+     "Aberto em "+created.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric"})+
      " às "+created.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}):"";
    btn.append(ref,status,subject,node("small","",date));
    btn.addEventListener("click",()=>document.dispatchEvent(
