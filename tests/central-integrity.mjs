@@ -6,7 +6,7 @@ const get = path => readFileSync(new URL("../"+path,import.meta.url),"utf8");
 const html=get("index.html");
 const scriptPaths=[
   "assets/app.js","assets/alerts.js","assets/operations.js","assets/layout.js",
-  "assets/profile.js","assets/appearance.js","assets/overview.js","assets/ticket-workflow.js",
+  "assets/profile.js","assets/appearance.js","assets/overview-model.js","assets/overview.js","assets/ticket-workflow.js",
   "assets/ticket-extras.js","assets/technical-tools-core.js","assets/technical-tools.js"
 ];
 for (const path of scriptPaths) new Script(get(path),{filename:path});
@@ -87,8 +87,11 @@ for(const rule of ["create or replace function public.proxiti_ticket_access",
  "revoke all on public.ticket_attachments from public,anon,authenticated"]){
  assert(migration.includes(rule),"Permissão ou estrutura ausente: "+rule);
 }
-assert(get("assets/operations.js").includes('const unread=t=>t.status!=="closed"'),
- "Histórico encerrado ainda aparece como pendência");
+assert(get("assets/operations.js").includes("const nextGeneration=state.accessGeneration+1"),
+ "Reingresso não deve aceitar consultas da sessão anterior");
+assert(get("assets/operations.js").includes("state.tickets.filter(hasAttention)")&&
+ get("assets/overview-model.js").includes('ticket.status!=="closed"'),
+ "Fila e visão geral devem excluir históricos encerrados das pendências");
 assert(techCss.includes("@media(max-width:680px)"),"Ferramentas sem layout móvel");
 for(const id of ["training-search","training-search-status","tools-search","tools-search-status"])
  assert(html.includes('id="'+id+'"'),"Pesquisa sem controle: "+id);
@@ -137,3 +140,51 @@ assert.throws(()=>calculator("300.0.0.1",24));
 assert.throws(()=>calculator("10.0.0.1",33));
 assert.throws(()=>calculator("001.0.0.1",24));
 console.log("PROXITI V8: Academia, agenda, dispositivos, relatórios e calculadora IPv4 testados.");
+
+for(const id of ["overview-sync-state","overview-retry","overview-resume","overview-resume-action",
+ "overview-data-note","overview-metric-unread-label","overview-metric-unread-description"]){
+ assert(html.includes('id="'+id+'"'),"Visão geral sem #"+id);
+}
+assert(html.indexOf("assets/overview-model.js")<html.indexOf("assets/operations.js"),
+ "Modelo de indicadores deve carregar antes da fila");
+assert(get("assets/operations.js").includes("window.PROXITI_OVERVIEW_MODEL.summarize"),
+ "Fila e painel não compartilham critério de contagem");
+assert(get("assets/operations.js").includes("if(state.ticketsReady)publishOverview()"),
+ "Indicadores não devem ser publicados antes da fila estar disponível");
+assert(get("assets/overview.js").includes('setSync("loading")'),
+ "Visão geral sem tentativa de sincronização");
+assert(get("assets/overview.js").includes('status.dataset.phase="restricted"'),
+ "Acesso restrito sem estado explícito");
+const overviewContext={window:{}};
+runInNewContext(get("assets/overview-model.js"),overviewContext);
+const model=overviewContext.window.PROXITI_OVERVIEW_MODEL;
+const tickets=[
+ {id:"new",reference:1,subject:"Novo",status:"new",created_at:"2026-09-25T12:00:00Z"},
+ {id:"progress",reference:2,subject:"Execução",status:"in_progress",created_at:"2026-09-25T11:00:00Z"},
+ {id:"closed",reference:3,subject:"Histórico",status:"closed",created_at:"2026-09-25T10:00:00Z"},
+ {id:"triage",reference:4,subject:"Triagem",status:"triage",created_at:"2026-09-25T09:00:00Z"}
+];
+const options={seen:id=>id!=="new",unread:id=>["new","progress","closed"].includes(id)?1:0,
+ canReadMessages:true,messagesReady:true,activeId:"progress",at:1,sampleLimit:100};
+const complete=model.summarize(tickets,options);
+assert.equal(complete.unread,2,"Chamado novo com mensagem deve contar uma vez");
+assert.equal(complete.active,3,"Chamado encerrado não é ativo");
+assert.equal(complete.open,2);
+assert.equal(complete.progress,1);
+assert.equal(complete.recent.some(t=>t.status==="closed"),false);
+assert.equal(complete.resume.id,"progress");
+assert.equal(model.summarize(tickets,{...options,messagesReady:false}).unread,null,
+ "Sem sincronização das mensagens não pode exibir falso zero");
+assert.equal(model.summarize(tickets,{...options,readIssue:true}).unread,null);
+assert.equal(model.summarize(tickets,{...options,canReadMessages:false}).unread,1,
+ "Sem permissão para chat, só novos chamados devem contar");
+assert.equal(model.attention(tickets[2],()=>false,()=>4,true,true),false,
+ "Encerrados nunca são pendências acionáveis");
+assert(existsSync(new URL("../docs/visao-geral-homologacao.md",import.meta.url)),
+ "Documentação de homologação da Visão Geral ausente");
+assert(get("README.md").includes("docs/visao-geral-homologacao.md"),
+ "Roteiro de homologação não está disponível no README");
+assert(get("assets/operations.js").includes('node.textContent=partial?"?"'),
+ "Badge não distingue atualização parcial");
+console.log("Visão geral: contagens, acesso, estado parcial e retomada testados.");
+

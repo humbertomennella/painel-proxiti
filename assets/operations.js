@@ -2,7 +2,7 @@
   "use strict";
   const el = id => document.getElementById(id);
   const state = { db:null, user:null, profile:null, tickets:[], staff:[], active:null,
-    channel:null, poll:null, heartbeat:null, currentView:"tickets", loading:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),readReceipts:new Map(),receiptsReady:false,readFetch:null,readSaving:new Set(),toastTimer:null };
+    channel:null, poll:null, heartbeat:null, currentView:"tickets", loading:false,accessGeneration:0,ticketsReady:false,ticketError:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,messageCheckPromise:null,messageReady:false,messagesCapped:false,readIssue:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),readReceipts:new Map(),receiptsReady:false,readFetch:null,readSaving:new Set(),toastTimer:null };
   const statusNames = {new:"Aberto",triage:"Em triagem",in_progress:"Em atendimento",
     waiting_customer:"Aguardando cliente",resolved:"Resolvido",closed:"Encerrado"};
   const permNames = {tickets_view:"Consultar chamados",tickets_claim:"Assumir chamados",
@@ -41,14 +41,17 @@
   let presenceCheckedAt=0;
   async function updatePresence(){
     if(!state.db||Date.now()-presenceCheckedAt<20000)return;
+    const db=state.db,uid=state.user?.id,generation=state.accessGeneration;
     presenceCheckedAt=Date.now();
     try{
-      const rows=await query(state.db.from("staff_presence").select("staff_id")
+      const rows=await query(db.from("staff_presence").select("staff_id")
         .gte("last_seen",new Date(Date.now()-60000).toISOString()).limit(50));
+      if(state.db!==db||state.user?.id!==uid||state.accessGeneration!==generation)return;
       el("overview-online").textContent=isAdmin()
         ?(rows.length===1?"1 profissional online":rows.length+" profissionais online")
         :(rows.length?"Você está online":"Disponibilidade em atualização");
-    }catch{el("overview-online").textContent="Presença em atualização";}
+    }catch{if(state.db===db&&state.user?.id===uid&&state.accessGeneration===generation)
+      el("overview-online").textContent="Presença em atualização";}
   }
 
   // Leituras persistidas no Supabase; armazenamento local serve só antes da primeira sincronização.
@@ -58,17 +61,25 @@
   async function loadReadReceipts(){
     if(!state.db||!state.user)return;
     if(state.readFetch)return state.readFetch;
-    const uid=state.user.id;
+    const db=state.db,uid=state.user.id,generation=state.accessGeneration,ids=state.tickets.map(t=>t.id);
+    if(!ids.length){
+      state.readReceipts=new Map();state.receiptsReady=true;state.readIssue=false;return;
+    }
     state.readFetch=(async()=>{
       try{
-        const rows=await query(state.db.from("ticket_read_receipts")
-          .select("ticket_id,first_seen_at,last_read_customer_at").eq("staff_id",uid).limit(250));
-        if(state.user?.id!==uid)return;
+        const rows=await query(db.from("ticket_read_receipts")
+          .select("ticket_id,first_seen_at,last_read_customer_at")
+          .eq("staff_id",uid).in("ticket_id",ids).limit(100));
+        if(state.db!==db||state.user?.id!==uid||state.accessGeneration!==generation)return;
         state.readReceipts=new Map(rows.map(row=>[row.ticket_id,row]));
-        state.receiptsReady=true;
-      }catch(error){
-        if(!state.receiptsReady)el("ops-live").textContent="Leitura entre dispositivos temporariamente indisponível";
-      }finally{state.readFetch=null}
+        state.receiptsReady=true;state.readIssue=false;
+      }catch{
+        if(state.db!==db||state.user?.id!==uid||state.accessGeneration!==generation)return;
+        state.readIssue=true;
+        el("ops-live").textContent="Leitura entre dispositivos temporariamente indisponível";
+      }finally{
+        if(state.db===db&&state.user?.id===uid&&state.accessGeneration===generation)state.readFetch=null;
+      }
     })();
     return state.readFetch;
   }
@@ -90,9 +101,17 @@
     try{return Number(localStorage.getItem(readKey(id))||0)||0}catch{return 0}
   }
   function unreadMessages(id){
+    if(!can("chat")||!state.messageReady)return 0;
     const timestamp=lastRead(id);
     return state.messageRows.filter(m=>m.ticket_id===id&&Date.parse(m.created_at)>timestamp).length;
   }
+  const hasAttention=t=>window.PROXITI_OVERVIEW_MODEL.attention(t,seenTicket,unreadMessages,can("chat"),state.messageReady);
+  const overviewComplete=()=>!state.readIssue&&(!can("chat")||(state.messageReady&&!state.messagesCapped));
+  const overviewStatus=phase=>{
+    const detail={phase,at:Date.now()};
+    window.PROXITI_OVERVIEW_STATUS={userId:state.user?.id, ...detail};
+    document.dispatchEvent(new CustomEvent("proxiti-overview-status",{detail}));
+  };
   async function markMessagesSeen(id,list){
     if(document.hidden||el("operations").hidden||state.currentView!=="tickets"||
        el("ticket-detail").hidden||state.active?.id!==id||state.readSaving.has(id))return;
@@ -176,24 +195,28 @@
     if(!state.user)return;
     const pending=[];
     for(const t of state.tickets){
-      if(["new","triage"].includes(t.status)&&!seenTicket(t.id))
-        pending.push({id:t.id,time:Date.parse(t.created_at)||0,
-          label:"Chamado #"+t.reference+" ainda não visualizado",detail:t.subject,kind:"ticket"});
+      if(t.status==="closed")continue;
+      const fresh=["new","triage"].includes(t.status)&&!seenTicket(t.id);
       const unread=unreadMessages(t.id);
-      if(unread&&t.status!=="closed"){
-        const latest=state.messageRows.find(m=>m.ticket_id===t.id);
-        pending.push({id:t.id,time:Date.parse(latest?.created_at)||0,
-          label:unread+" "+(unread===1?"mensagem não lida":"mensagens não lidas")+" · #"+t.reference,
-          detail:"Resposta do cliente pendente",kind:"message"});
-      }
+      if(!fresh&&!unread)continue;
+      const latest=unread?state.messageRows.find(m=>m.ticket_id===t.id):null;
+      pending.push({id:t.id,time:Date.parse(latest?.created_at||t.created_at)||0,
+        label:unread?(unread+" "+(unread===1?"mensagem não lida":"mensagens não lidas")+" · #"+t.reference):
+          "Chamado #"+t.reference+" ainda não visualizado",
+        detail:fresh&&unread?"Novo chamado com resposta do cliente":unread?
+          "Resposta do cliente pendente":t.subject,kind:unread?"message":"ticket"});
     }
     pending.sort((a,b)=>b.time-a.time);
-    const count=pending.length;
+    // Um chamado com novidade e mensagem continua sendo uma única pendência.
+    const count=pending.length,partial=!overviewComplete();
     for(const id of ["notifications-count","ticket-badge"]){
-      const node=el(id);node.textContent=count>99?"99+":String(count);node.hidden=!count;
+      const node=el(id);node.textContent=partial?"?":count>99?"99+":String(count);
+      node.hidden=!partial&&!count;node.title=partial?"Contagem de pendências incompleta":"";
     }
     const area=el("notifications-list");area.replaceChildren();
-    if(!pending.length)area.append(elem("p","Tudo em dia. Nenhum chamado ou mensagem sem leitura.","notifications-empty"));
+    if(!pending.length)area.append(elem("p",partial?
+      "Conferência incompleta. Atualize a fila para verificar as pendências.":state.ticketsReady?
+      "Nenhum chamado com novidade para revisar.":"Carregando notificações…","notifications-empty"));
     for(const item of pending.slice(0,12)){
       const entry=button(item.label,async()=>{
         el("notifications-panel").hidden=true;
@@ -205,26 +228,20 @@
         elem("strong",item.label),elem("small",item.detail));
       area.append(entry);
     }
-    el("notifications-toggle").setAttribute("aria-label",count?count+" pendências, abrir notificações":"Abrir notificações");
-    publishOverview();
+    el("notifications-toggle").setAttribute("aria-label",partial?
+      "Contagem de pendências incompleta, abrir notificações":
+      count?count+" chamados com pendência, abrir notificações":"Abrir notificações");
+    if(state.ticketsReady)publishOverview();
   }
   function publishOverview(){
-    if(!state.user||!can("tickets_view"))return;
-    const unread=t=>t.status!=="closed"&&((!seenTicket(t.id)&&["new","triage"].includes(t.status))||unreadMessages(t.id)>0);
-    const active=state.tickets.filter(isOpen);
-    const priority=t=>unread(t)?0:["new","triage"].includes(t.status)?1:t.status==="in_progress"?2:3;
-    const relevant=state.tickets.filter(t=>isOpen(t)||(t.status==="resolved"&&unread(t)));
-    const recent=relevant.slice().sort((a,b)=>priority(a)-priority(b)||
-      (Date.parse(b.created_at)||0)-(Date.parse(a.created_at)||0)).slice(0,4).map(t=>({
-       id:t.id,reference:t.reference,subject:t.subject,status:t.status,created_at:t.created_at,unread:unread(t)
-      }));
-    document.dispatchEvent(new CustomEvent("proxiti-overview-updated",{detail:{
-      unread:state.tickets.filter(unread).length,
-      open:state.tickets.filter(t=>["new","triage"].includes(t.status)).length,
-      progress:state.tickets.filter(t=>t.status==="in_progress").length,
-      waiting:state.tickets.filter(t=>t.status==="waiting_customer").length,
-      active:active.length,recent,at:Date.now()
-    }}));
+    if(!state.user||!state.ticketsReady||!can("tickets_view"))return;
+    const summary=window.PROXITI_OVERVIEW_MODEL.summarize(state.tickets,{
+      seen:seenTicket,unread:unreadMessages,canReadMessages:can("chat"),
+      messagesReady:state.messageReady,readIssue:state.readIssue||state.messagesCapped,
+      activeId:state.active?.id,at:Date.now(),sampleLimit:100
+    });
+    window.PROXITI_OVERVIEW_SNAPSHOT={userId:state.user.id,detail:summary};
+    document.dispatchEvent(new CustomEvent("proxiti-overview-updated",{detail:summary}));
   }
 
   function updateMetrics(){
@@ -235,8 +252,7 @@
     el("ticket-metric-resolved").textContent=String(count(t=>t.status==="resolved"));
     el("ticket-metric-closed").textContent=String(count(t=>t.status==="closed"));
     el("ticket-filter-all-count").textContent=String(state.tickets.length);
-    el("ticket-filter-unread-count").textContent=String(state.tickets.filter(t=>
-      t.status!=="closed"&&((!seenTicket(t.id)&&["new","triage"].includes(t.status))||unreadMessages(t.id)>0)).length);
+    el("ticket-filter-unread-count").textContent=String(state.tickets.filter(hasAttention).length);
     for(const node of document.querySelectorAll("[data-ticket-filter]")){
       const active=node.dataset.ticketFilter===state.ticketFilter;
       node.classList.toggle("active",active);node.setAttribute("aria-pressed",String(active));
@@ -247,7 +263,7 @@
     updateMetrics();
     const filter=state.ticketFilter,search=state.ticketSearch.trim().toLocaleLowerCase("pt-BR");
     const rows=state.tickets.filter(t=>{
-      const unread=t.status!=="closed"&&((!seenTicket(t.id)&&["new","triage"].includes(t.status))||unreadMessages(t.id)>0);
+      const unread=hasAttention(t);
       if(filter==="unread"&&!unread)return false;
       if(filter==="open"&&!["new","triage"].includes(t.status))return false;
       if(!["all","unread","open"].includes(filter)&&t.status!==filter)return false;
@@ -265,7 +281,7 @@
     if(!rows.length)list.append(elem("p",state.tickets.length?
       "Nenhum chamado corresponde aos filtros.":"A fila está vazia. Novos chamados aparecerão aqui.","ticket-list-empty"));
     for(const t of rows){
-      const unread=t.status==="closed"?0:unreadMessages(t.id),fresh=t.status!=="closed"&&!seenTicket(t.id)&&["new","triage"].includes(t.status);
+      const unread=unreadMessages(t.id),fresh=t.status!=="closed"&&!seenTicket(t.id)&&["new","triage"].includes(t.status);
       const item=elem("div","","ticket-inbox-item");item.setAttribute("role","listitem");
       const card=button("Abrir chamado #"+t.reference,()=>openTicket(t.id),
         "ticket-inbox-card"+(unread||fresh?" has-unread":"")+(state.active?.id===t.id?" selected":""));
@@ -282,24 +298,44 @@
     el("ticket-table-result").textContent=rows.length+" de "+state.tickets.length;
   }
   async function checkNewMessages(){
-    if(!state.db||!can("chat")||!can("tickets_view")||state.messageCheckBusy)return;
+    if(!state.db||!can("chat")||!can("tickets_view"))return;
+    if(state.messageCheckPromise)return state.messageCheckPromise;
+    const db=state.db,uid=state.user.id,generation=state.accessGeneration;
     state.messageCheckBusy=true;
-    try{
-      const rows=await query(state.db.from("support_messages")
-        .select("id,ticket_id,sender_kind,created_at")
-        .eq("sender_kind","customer").order("created_at",{ascending:false}).limit(250));
-      const ids=new Set(rows.map(m=>m.id));
-      const changed=state.messageIds?rows.filter(m=>!state.messageIds.has(m.id)):[];
-      state.messageRows=rows;
-      state.messageIds=ids;
-      if(changed.length){
-        sound("message");
-        toast(changed.length===1?"Nova mensagem de cliente recebida.":changed.length+" novas mensagens de clientes.");
-        browserNotice("message",changed[0]?.ticket_id);
+    const stillAuthorized=()=>state.db===db&&state.user?.id===uid&&
+      state.accessGeneration===generation&&can("tickets_view")&&can("chat");
+    const work=(async()=>{
+      try{
+        const fetched=await query(db.from("support_messages")
+          .select("id,ticket_id,sender_kind,created_at")
+          .eq("sender_kind","customer").order("created_at",{ascending:false}).limit(251));
+        if(!stillAuthorized())return;
+        const rows=fetched.slice(0,250),ids=new Set(rows.map(m=>m.id));
+        const changed=state.messageIds?rows.filter(m=>!state.messageIds.has(m.id)):[];
+        state.messageRows=rows;state.messageIds=ids;
+        state.messagesCapped=fetched.length>250;state.messageReady=true;
+        if(changed.length){
+          sound("message");
+          toast(changed.length===1?"Nova mensagem de cliente recebida.":changed.length+" novas mensagens de clientes.");
+          browserNotice("message",changed[0]?.ticket_id);
+        }
+        updateInbox();renderTickets();
+        if(state.ticketsReady&&!state.ticketError)overviewStatus(overviewComplete()?"ready":"partial");
+      }catch{
+        if(!stillAuthorized())return;
+        state.messageReady=false;state.messagesCapped=false;
+        if(state.ticketsReady){
+          updateInbox();renderTickets();
+          if(!state.ticketError)overviewStatus("partial");
+        }
+      }finally{
+        if(stillAuthorized()){
+          state.messageCheckBusy=false;state.messageCheckPromise=null;
+        }
       }
-      updateInbox();renderTickets();
-    }catch{/* indisponibilidade temporária não reinicia a interface */}
-    finally{state.messageCheckBusy=false;}
+    })();
+    state.messageCheckPromise=work;
+    return work;
   }
   function showView(view){
     state.currentView=view;
@@ -332,9 +368,32 @@
     for(const tab of el("ops-tabs").querySelectorAll("[data-ops-view]"))
       tab.hidden=!allowed[tab.dataset.opsView];
     el("notifications-toggle").hidden=!can("tickets_view");
+    if(!allowed.tickets){
+      // Revogação deve limpar dados da conta anterior inclusive em memória de interface.
+      state.accessGeneration++;state.loading=false;state.messageCheckBusy=false;
+      state.messageCheckPromise=null;state.readFetch=null;
+      state.tickets=[];state.ticketsReady=false;state.ticketError=false;state.active=null;
+      state.ticketIds=null;state.messageRows=[];state.messageIds=null;
+      state.messageReady=false;state.messagesCapped=false;state.readIssue=false;
+      state.readReceipts.clear();state.receiptsReady=false;state.renderedTable="";
+      window.PROXITI_OVERVIEW_SNAPSHOT=null;window.PROXITI_OVERVIEW_STATUS=null;
+      el("ticket-list").replaceChildren();el("ticket-detail").hidden=true;
+      el("ticket-empty-state").hidden=false;
+      clearTicketPresentation();announceTicket();
+      for(const id of ["ticket-badge","notifications-count"]){
+        const badge=el(id);badge.textContent="";badge.hidden=true;
+      }
+      el("notifications-list").replaceChildren();
+      el("notifications-toggle").setAttribute("aria-label","Notificações indisponíveis para esta conta");
+    }
     const first=Object.keys(allowed).find(key=>allowed[key]);
     el("operations").hidden=!first;
     if(first)showView(allowed[state.currentView]?state.currentView:first);
+    // A Visão Geral deve sincronizar mesmo se a última aba foi Academia ou Ferramentas.
+    if(allowed.tickets){
+      if(!state.ticketsReady)void loadTickets();
+      else if(can("chat")&&!state.messageReady)void checkNewMessages();
+    }
     document.dispatchEvent(new CustomEvent("proxiti-navigation-updated",{detail:{allowed}}));
   }
   async function loadStaff(){
@@ -384,18 +443,34 @@
       }
     }catch(e){notice("Erro ao consultar técnicos: "+e.message,true);}
   }
+  function clearTicketPresentation(){
+    for(const id of ["ticket-code","ticket-subject","ticket-customer",
+      "ticket-description","ticket-audit-list","ticket-current-status"])
+      el(id).replaceChildren();
+    el("staff-messages").replaceChildren();el("staff-reply").value="";
+    el("ticket-search").value="";
+  }
   function announceTicket(){
     window.PROXITI_ACTIVE_TICKET=state.active;
     document.dispatchEvent(new CustomEvent("proxiti-ticket-selected",{detail:{ticket:state.active}}));
   }
   async function loadTickets(){
-    if(!can("tickets_view")||state.loading)return;
+    if(!state.db||!state.user||!can("tickets_view")||state.loading)return;
+    const db=state.db,uid=state.user.id,generation=state.accessGeneration;
+    const same=()=>state.db===db&&state.user?.id===uid&&
+      state.accessGeneration===generation&&can("tickets_view");
     state.loading=true;
+    if(!state.ticketsReady)overviewStatus("loading");
     try{
-      state.tickets=await query(state.db.from("support_tickets")
+      const tickets=await query(db.from("support_tickets")
         .select("id,reference,customer_name,customer_email,customer_phone,subject,description,status,source,assigned_to,created_at")
         .order("created_at",{ascending:false}).limit(100));
+      if(!same())return;
+      state.tickets=tickets;
       await loadReadReceipts();
+      if(!same())return;
+      if(can("chat")&&!state.messageReady)await checkNewMessages();
+      if(!same())return;
       const ids=new Set(state.tickets.map(t=>t.id));
       const newArrivals=state.ticketIds?state.tickets.filter(t=>!state.ticketIds.has(t.id)):[];
       state.ticketIds=ids;
@@ -417,13 +492,21 @@
         if(found){const changed=state.active.status!==found.status||state.active.assigned_to!==found.assigned_to;state.active=found;updateTicketHeading();if(changed)announceTicket();}
         else{state.active=null;announceTicket();remember("ticket","");el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;}
       }
+      if(state.ticketError)notice("");
+      state.ticketsReady=true;state.ticketError=false;
       updateInbox();renderTickets();
+      overviewStatus(overviewComplete()?"ready":"partial");
       if(state.restoreScroll!==null){
         const y=state.restoreScroll;state.restoreScroll=null;
         requestAnimationFrame(()=>window.scrollTo({top:y,behavior:"instant"}));
       }
-    }catch(e){notice("Falha ao carregar chamados: "+e.message,true);}
-    finally{state.loading=false;}
+    }catch{
+      if(same()){
+        state.ticketError=true;
+        notice("Não foi possível atualizar os chamados. Você pode tentar novamente.",true);
+        overviewStatus("error");
+      }
+    }finally{if(same())state.loading=false;}
   }
   function updateTicketHeading(){
     const t=state.active;if(!t)return;
@@ -693,16 +776,18 @@
     }catch(e){notice("Falha ao carregar ferramentas: "+e.message,true);}
   }
   function stop(){
+    const nextGeneration=state.accessGeneration+1;
     if(state.poll)clearInterval(state.poll);
     if(state.heartbeat)clearInterval(state.heartbeat);
     if(state.channel&&state.db)void state.db.removeChannel(state.channel);
     if(state.toastTimer)clearTimeout(state.toastTimer);
-    Object.assign(state,{db:null,user:null,profile:null,tickets:[],staff:[],active:null,channel:null,poll:null,heartbeat:null,loading:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),readReceipts:new Map(),receiptsReady:false,readFetch:null,readSaving:new Set(),toastTimer:null});
+    Object.assign(state,{db:null,user:null,profile:null,tickets:[],staff:[],active:null,channel:null,poll:null,heartbeat:null,loading:false,accessGeneration:nextGeneration,ticketsReady:false,ticketError:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,messageCheckPromise:null,messageReady:false,messagesCapped:false,readIssue:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),readReceipts:new Map(),receiptsReady:false,readFetch:null,readSaving:new Set(),toastTimer:null});
     el("alert-toast").hidden=true;el("notifications-panel").hidden=true;
     el("notifications-toggle").setAttribute("aria-expanded","false");
     el("notifications-count").hidden=true;el("ticket-badge").hidden=true;
-    el("ticket-list").replaceChildren();el("staff-messages").replaceChildren();
-    el("staff-reply").value="";el("notifications-list").replaceChildren();
+    el("ticket-list").replaceChildren();clearTicketPresentation();
+    el("notifications-list").replaceChildren();
+    window.PROXITI_OVERVIEW_SNAPSHOT=null;window.PROXITI_OVERVIEW_STATUS=null;
     el("overview-open").textContent="Chamados: atualizando…";
     el("operations").hidden=true;el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;notice("");announceTicket();
   }
@@ -769,6 +854,7 @@
     void openTicket(id);
   });
   el("reload-tickets").addEventListener("click",()=>void loadTickets());
+  document.addEventListener("proxiti-overview-retry",()=>{if(can("tickets_view"))void loadTickets();});
   el("browser-notifications").addEventListener("click",async()=>{
     if(!("Notification" in window)||Notification.permission!=="default")return;
     try{await Notification.requestPermission()}catch{}
