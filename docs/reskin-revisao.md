@@ -25,7 +25,7 @@ A imagem fornecida é referência estética. Números, clientes, técnicos, prog
 
 ## QA obrigatório: situação e evidência
 
-A evidência automatizada está no job [Interface responsiva · execução de revisão](https://github.com/humbertomennella/painel-proxiti/actions/runs/36219396741). Para as validações que dependem de contas reais, o resultado correto é **pendente**, não “aprovado por simulação”.
+A evidência automatizada está no job [Interface responsiva · execução de revisão](https://github.com/humbertomennella/painel-proxiti/actions/runs/36220082702). Para as validações que dependem de contas reais, o resultado correto é **pendente**, não “aprovado por simulação”.
 
 | Verificação | Situação | Evidência ou pendência |
 |---|---|---|
@@ -41,10 +41,12 @@ A evidência automatizada está no job [Interface responsiva · execução de re
 | Zero regressão de código operacional | **Verificado por diff e CI** | 295 IDs originais e valores dos contratos de navegação preservados; apenas arquivos permitidos alterados; smoke das cinco áreas operacionais atuais passou. |
 | Nenhum segredo ou chave introduzidos | **Verificado no diff** | Caminhos de config/SQL/Edge Functions inalterados e busca preventiva por padrões de chave privada/segredo nas linhas adicionadas. |
 
+**Revisão adicional:** foi corrigido o reconhecimento visual de “1 profissional online”/“2 profissionais online”. O teste de Chromium verifica ambas as mensagens, preserva “Você está online” para conta técnica e cobre os limites das quatro saudações (00, 05, 06, 11, 12, 17, 18 e 23 horas). A suíte integral passou no commit visual testado, sem alteração do código de presença nem de autenticação.
+
 **Limite explícito:** os testes de Chromium usam contas e registros simulados. Não reivindicam homologação de autenticação real, convite/MFA, múltiplas contas, upload, publicação CMS ou entrega de notificações externas. Esses ensaios só podem ser concluídos com autorização e credenciais legítimas, sem compartilhar senhas ou códigos MFA em PRs ou chats.
 
 ## Revisão visual do titular
 
-As capturas do Chromium estão disponíveis no artefato `proxiti-central-visual-smoke` da [execução de revisão](https://github.com/humbertomennella/painel-proxiti/actions/runs/36219396741), incluindo login, shell e Academia em claro/escuro nas larguras principais. Validar o visual em celular e desktop antes de autorizar qualquer merge.
+As capturas do Chromium estão disponíveis no artefato `proxiti-central-visual-smoke` da [execução de revisão](https://github.com/humbertomennella/painel-proxiti/actions/runs/36220082702), incluindo login, shell e Academia em claro/escuro nas larguras principais. Validar o visual em celular e desktop antes de autorizar qualquer merge.
 
 **Regra de publicação:** PR permanece draft. Não há merge automático. A branch só pode ser integrada após sua revisão explícita.
