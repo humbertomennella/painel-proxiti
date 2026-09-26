@@ -199,13 +199,16 @@
     }
   }
   async function loadAudit(ticketId){
-    if(!state.db||!ticketId)return;
+    if(!state.db||!ticketId||!can("tickets_view"))return;
+    const db=state.db,uid=state.user?.id,generation=state.accessGeneration;
+    const valid=()=>state.db===db&&state.user?.id===uid&&
+      state.accessGeneration===generation&&state.active?.id===ticketId&&can("tickets_view");
     const list=el("ticket-audit-list");list.replaceChildren(elem("li","Consultando histórico…"));
     try{
-      const events=await query(state.db.from("ticket_audit")
+      const events=await query(db.from("ticket_audit")
         .select("id,action,actor_id,previous_value,next_value,created_at")
         .eq("ticket_id",ticketId).order("created_at",{ascending:false}).limit(35));
-      if(state.active?.id!==ticketId)return;
+      if(!valid())return;
       list.replaceChildren();
       if(!events.length)list.append(elem("li","Nenhuma movimentação registrada desde a ativação do histórico."));
       const names={created:"Solicitação registrada",claimed:"Atendimento assumido",assigned:"Responsável designado",
@@ -222,7 +225,7 @@
             " → "+(statusNames[event.next_value]||event.next_value||""):"")));
         list.append(item);
       }
-    }catch{list.replaceChildren(elem("li","O histórico está temporariamente indisponível."))}
+    }catch{if(valid())list.replaceChildren(elem("li","O histórico está temporariamente indisponível."))}
   }
 
   function statusPill(value){
