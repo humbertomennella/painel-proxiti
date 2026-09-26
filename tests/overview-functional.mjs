@@ -38,13 +38,13 @@ const messages=baseline.map((t,i)=>({
  id:"00000000-0000-4000-8000-00000000020"+(i+1),
  ticket_id:t.id,sender_kind:"customer",created_at:stamp,body:"Mensagem de teste"
 }));
-async function openScenario({tickets=baseline,chat=true,failTickets=false,failMessages=false,viewer=true}={}){
+async function openScenario({tickets=baseline,chat=true,failTickets=false,failMessages=false,viewer=true,training=false,startView="tickets"}={}){
  const page=await browser.newPage({viewport:{width:375,height:850},deviceScaleFactor:1});
  page.__errors=[];
  page.on("pageerror",error=>page.__errors.push(error.message));
  await page.route("https://cdn.jsdelivr.net/**",route=>route.abort());
  await page.goto(url,{waitUntil:"load",timeout:30000});
- await page.evaluate(({tickets,messages,chat,failTickets,failMessages,viewer})=>{
+ await page.evaluate(({tickets,messages,chat,failTickets,failMessages,viewer,training,startView})=>{
    document.body.classList.add("workspace-mode");
    document.getElementById("auth-screen").hidden=true;
    document.getElementById("panel").hidden=false;
@@ -105,11 +105,12 @@ async function openScenario({tickets=baseline,chat=true,failTickets=false,failMe
    };
    const user={id:"00000000-0000-4000-8000-000000000101",email:"teste@example.invalid"};
    const profile={status:"active",role:"technician",display_name:"Técnico de teste",
-     permissions:{tickets_view:viewer,chat,tickets_claim:viewer,training:!viewer,resources:false}};
+     permissions:{tickets_view:viewer,chat,tickets_claim:viewer,training:training||!viewer,resources:false}};
    const session={client,user,profile};
+   if(startView!=="tickets")sessionStorage.setItem("proxiti-work-v3-"+user.id+"-view",startView);
    window.PROXITI_ACTIVE_SESSION=session;
    document.dispatchEvent(new CustomEvent("proxiti-session-ready",{detail:session}));
- },{tickets,messages: tickets===baseline?messages:[],chat,failTickets,failMessages,viewer});
+ },{tickets,messages: tickets===baseline?messages:[],chat,failTickets,failMessages,viewer,training,startView});
  await page.waitForFunction(()=>["ready","partial","error","restricted"].includes(
    document.getElementById("overview-sync-state").dataset.phase),{timeout:12000});
  return page;
@@ -209,6 +210,14 @@ try{
      assert.equal((await page.textContent("#overview-metric-unread-label")).trim(),"Novos chamados não lidos");
    }finally{await page.close();}
  });
+ await test("Visão geral sincroniza mesmo quando a última área foi Academia",async()=>{
+   const page=await openScenario({training:true,startView:"training"});
+   try{
+     await page.waitForFunction(()=>document.querySelector("#overview-sync-state").dataset.phase==="ready");
+     assert.equal((await page.textContent("#overview-kpi-unread")).trim(),"2");
+     assert(await page.evaluate(()=>window.__fixture.calls.includes("support_tickets")));
+   }finally{await page.close();}
+ });
  await test("Permissão atualizada sem dados visíveis da autorização anterior",async()=>{
    const page=await openScenario();
    try{
@@ -222,7 +231,9 @@ try{
      await page.waitForFunction(()=>document.querySelector("#overview-sync-state").dataset.phase==="restricted");
      assert.equal(await page.isHidden("#overview-metrics-section"),true);
      assert.equal((await page.textContent("#overview-kpi-unread")).trim(),"—");
+     assert.equal(await page.isHidden("#notifications-count"),true);
      assert.equal(await page.evaluate(()=>window.PROXITI_OVERVIEW_SNAPSHOT),null);
+     assert(!(await page.textContent("#overview-resume-detail")).includes("Verificação de rede"));
      await page.evaluate(()=>{
        const active=window.PROXITI_ACTIVE_SESSION;
        active.profile.permissions.tickets_view=true;
@@ -271,7 +282,7 @@ try{
      assert.deepEqual(page.__errors,[],"O navegador registrou erros de JavaScript na Visão Geral");
    }finally{await page.close();}
  });
- console.log("PASS: 8 fluxos funcionais da Visão Geral, incluindo 10 verificações de layout com sessão simulada.");
+ console.log("PASS: 9 fluxos funcionais da Visão Geral, incluindo 10 verificações de layout com sessão simulada.");
 }finally{
  await browser.close();
  await new Promise((done,fail)=>server.close(error=>error?fail(error):done()));
