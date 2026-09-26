@@ -20,6 +20,12 @@ for(const path of changed)
  assert(allowed.has(path),"Fora do escopo visual: "+path);
 for(const path of changed)
  assert(!path.startsWith("supabase/")&&!path.endsWith(".env"),"Arquivo sensível alterado: "+path);
+const patch=execFileSync("git",["diff","--no-ext-diff","--unified=0","origin/main...HEAD"],{
+ cwd:root,encoding:"utf8",maxBuffer:12*1024*1024});
+const addedLines=patch.split("\n").filter(line=>line.startsWith("+")&&!line.startsWith("+++"));
+for(const line of addedLines)
+ assert(!/sk-(?:proj|live|test)-[A-Za-z0-9_-]{10,}|sb_secret_[A-Za-z0-9_-]{10,}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|SUPABASE_SERVICE_ROLE_KEY\s*[:=]\s*[^\s"'\x60]+/i.test(line),
+  "Possível segredo no diff: bloqueio preventivo");
 const html=await read("index.html"),base=original("index.html");
 const oldIds=[...base.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);
 const newIds=[...html.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);
@@ -175,6 +181,31 @@ try{
   console.log("PASS: oito superfícies internas "+width+"px em ambos os temas");
  }
  await page.setViewportSize({width:1366,height:870});
+ await page.evaluate(()=>{
+   document.getElementById("operations").hidden=true;
+   document.getElementById("overview-home").hidden=false;
+   document.documentElement.dataset.theme="light";
+   window.dispatchEvent(new Event("resize"));
+ });
+ await page.waitForTimeout(280);
+ const side=page.locator('#sidebar-nav [data-side-view="training"]');
+ await side.focus();
+ const focus=await side.evaluate(node=>({
+   element:document.activeElement===node,
+   outline:getComputedStyle(node).outlineStyle,
+   color:getComputedStyle(node).outlineColor
+ }));
+ assert(focus.element&&focus.outline!=="none","Menu sem navegação ou foco por teclado");
+ const before=await page.evaluate(()=>getComputedStyle(
+   document.getElementById("app-sidebar")).backgroundImage);
+ await page.click("#theme-toggle-panel");
+ await page.waitForFunction(()=>document.documentElement.dataset.theme==="dark");
+ const after=await page.evaluate(()=>getComputedStyle(
+   document.getElementById("app-sidebar")).backgroundImage);
+ assert.equal(before,after,"Sidebar muda junto com tema de conteúdo");
+ await page.click("#theme-toggle-panel");
+ await page.waitForFunction(()=>document.documentElement.dataset.theme==="light");
+ console.log("PASS: foco de menu por teclado e alternância clara/escura com sidebar fixa.");
  await page.evaluate(()=>{
   document.getElementById("operations").hidden=false;
   document.getElementById("overview-home").hidden=true;
