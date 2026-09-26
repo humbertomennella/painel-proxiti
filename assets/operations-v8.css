@@ -162,3 +162,72 @@ html[data-theme] body.workspace-mode #ops-agenda .agenda-history ol{
  margin:8px 0;padding:0 0 0 21px;min-width:0;overflow-wrap:anywhere
 }
 html[data-theme] body.workspace-mode #ops-agenda .agenda-history li{padding:9px 0}
+
+/* Academia: biblioteca editorial compacta, estados explícitos e histórico privado. */
+html[data-theme] body.workspace-mode #ops-training .academy-filters{
+ grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:12px
+}
+html[data-theme] body.workspace-mode #ops-training .academy-sync-state{
+ display:flex;gap:9px;align-items:center;padding:10px 13px;margin:12px 0 17px;
+ border:1px solid var(--px-line);border-radius:11px;
+ background:var(--px-bg-muted);color:var(--px-text);line-height:1.5;
+ font-size:.9rem;overflow-wrap:anywhere
+}
+html[data-theme] body.workspace-mode #ops-training .academy-sync-state:before{
+ content:"";flex:0 0 8px;width:8px;height:8px;border-radius:50%;
+ background:var(--px-blue)
+}
+html[data-theme] body.workspace-mode #ops-training .academy-sync-state[data-phase="ready"]:before{
+ background:#39946d
+}
+html[data-theme] body.workspace-mode #ops-training .academy-sync-state[data-phase="error"]:before{
+ background:#bd7b35
+}
+html[data-theme] body.workspace-mode #ops-training .academy-entry-head [data-published="false"]{
+ background:var(--px-bg-muted);color:var(--px-muted);border:1px solid var(--px-line)
+}
+html[data-theme] body.workspace-mode #ops-training .academy-actions{
+ gap:9px;flex-wrap:wrap;align-items:center
+}
+html[data-theme] body.workspace-mode #ops-training .academy-actions button,
+html[data-theme] body.workspace-mode #ops-training #training-load-more{
+ min-height:44px;padding:10px 13px;line-height:1.35
+}
+html[data-theme] body.workspace-mode #ops-training .academy-versions{
+ min-width:0;border-top:1px solid var(--px-line);padding-top:6px
+}
+html[data-theme] body.workspace-mode #ops-training .academy-versions summary{
+ cursor:pointer;padding:12px 0;color:var(--px-blue);font-size:.95rem;font-weight:740
+}
+html[data-theme] body.workspace-mode #ops-training .academy-version-list{
+ padding:0 0 0 21px;margin:7px 0 12px;display:grid;gap:12px
+}
+html[data-theme] body.workspace-mode #ops-training .academy-version{
+ min-width:0;padding:12px;border:1px solid var(--px-line);border-radius:10px;
+ background:var(--px-bg-muted);overflow-wrap:anywhere
+}
+html[data-theme] body.workspace-mode #ops-training .academy-version strong,
+html[data-theme] body.workspace-mode #ops-training .academy-version small{
+ display:block;margin-bottom:6px
+}
+html[data-theme] body.workspace-mode #ops-training .academy-version>details{
+ padding:5px 0
+}
+html[data-theme] body.workspace-mode #ops-training .academy-version>button{
+ min-height:44px;margin-top:8px
+}
+html[data-theme] body.workspace-mode #ops-training .academy-entry button:focus-visible,
+html[data-theme] body.workspace-mode #ops-training .academy-versions summary:focus-visible,
+html[data-theme] body.workspace-mode #ops-training #training-load-more:focus-visible{
+ outline:3px solid var(--px-orange);outline-offset:3px
+}
+html[data-theme] body.workspace-mode #ops-training #training-load-more{margin:15px 0}
+@media(max-width:680px){
+ html[data-theme] body.workspace-mode #ops-training .academy-filters{
+  grid-template-columns:minmax(0,1fr)
+ }
+ html[data-theme] body.workspace-mode #ops-training .academy-entry{padding:14px}
+ html[data-theme] body.workspace-mode #ops-training .academy-actions button,
+ html[data-theme] body.workspace-mode #ops-training #training-load-more{width:100%}
+ html[data-theme] body.workspace-mode #ops-training .academy-version{padding:10px}
+}
