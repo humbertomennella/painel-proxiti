@@ -188,24 +188,26 @@
     if(!state.user)return;
     const pending=[];
     for(const t of state.tickets){
-      if(["new","triage"].includes(t.status)&&!seenTicket(t.id))
-        pending.push({id:t.id,time:Date.parse(t.created_at)||0,
-          label:"Chamado #"+t.reference+" ainda não visualizado",detail:t.subject,kind:"ticket"});
+      if(t.status==="closed")continue;
+      const fresh=["new","triage"].includes(t.status)&&!seenTicket(t.id);
       const unread=unreadMessages(t.id);
-      if(unread&&t.status!=="closed"){
-        const latest=state.messageRows.find(m=>m.ticket_id===t.id);
-        pending.push({id:t.id,time:Date.parse(latest?.created_at)||0,
-          label:unread+" "+(unread===1?"mensagem não lida":"mensagens não lidas")+" · #"+t.reference,
-          detail:"Resposta do cliente pendente",kind:"message"});
-      }
+      if(!fresh&&!unread)continue;
+      const latest=unread?state.messageRows.find(m=>m.ticket_id===t.id):null;
+      pending.push({id:t.id,time:Date.parse(latest?.created_at||t.created_at)||0,
+        label:unread?(unread+" "+(unread===1?"mensagem não lida":"mensagens não lidas")+" · #"+t.reference):
+          "Chamado #"+t.reference+" ainda não visualizado",
+        detail:fresh&&unread?"Novo chamado com resposta do cliente":unread?
+          "Resposta do cliente pendente":t.subject,kind:unread?"message":"ticket"});
     }
     pending.sort((a,b)=>b.time-a.time);
+    // Um chamado com novidade e mensagem continua sendo uma única pendência.
     const count=pending.length;
     for(const id of ["notifications-count","ticket-badge"]){
       const node=el(id);node.textContent=count>99?"99+":String(count);node.hidden=!count;
     }
     const area=el("notifications-list");area.replaceChildren();
-    if(!pending.length)area.append(elem("p","Tudo em dia. Nenhum chamado ou mensagem sem leitura.","notifications-empty"));
+    if(!pending.length)area.append(elem("p",state.ticketsReady?
+      "Nenhum chamado com novidade para revisar.":"Carregando notificações…","notifications-empty"));
     for(const item of pending.slice(0,12)){
       const entry=button(item.label,async()=>{
         el("notifications-panel").hidden=true;
@@ -217,26 +219,20 @@
         elem("strong",item.label),elem("small",item.detail));
       area.append(entry);
     }
-    el("notifications-toggle").setAttribute("aria-label",count?count+" pendências, abrir notificações":"Abrir notificações");
-    publishOverview();
+    const partial=!overviewComplete();
+    el("notifications-toggle").setAttribute("aria-label",partial?
+      "Atualização parcial: "+count+" chamados identificados com pendência":
+      count?count+" chamados com pendência, abrir notificações":"Abrir notificações");
+    if(state.ticketsReady)publishOverview();
   }
   function publishOverview(){
-    if(!state.user||!can("tickets_view"))return;
-    const unread=t=>t.status!=="closed"&&((!seenTicket(t.id)&&["new","triage"].includes(t.status))||unreadMessages(t.id)>0);
-    const active=state.tickets.filter(isOpen);
-    const priority=t=>unread(t)?0:["new","triage"].includes(t.status)?1:t.status==="in_progress"?2:3;
-    const relevant=state.tickets.filter(t=>isOpen(t)||(t.status==="resolved"&&unread(t)));
-    const recent=relevant.slice().sort((a,b)=>priority(a)-priority(b)||
-      (Date.parse(b.created_at)||0)-(Date.parse(a.created_at)||0)).slice(0,4).map(t=>({
-       id:t.id,reference:t.reference,subject:t.subject,status:t.status,created_at:t.created_at,unread:unread(t)
-      }));
-    document.dispatchEvent(new CustomEvent("proxiti-overview-updated",{detail:{
-      unread:state.tickets.filter(unread).length,
-      open:state.tickets.filter(t=>["new","triage"].includes(t.status)).length,
-      progress:state.tickets.filter(t=>t.status==="in_progress").length,
-      waiting:state.tickets.filter(t=>t.status==="waiting_customer").length,
-      active:active.length,recent,at:Date.now()
-    }}));
+    if(!state.user||!state.ticketsReady||!can("tickets_view"))return;
+    const summary=window.PROXITI_OVERVIEW_MODEL.summarize(state.tickets,{
+      seen:seenTicket,unread:unreadMessages,canReadMessages:can("chat"),
+      messagesReady:state.messageReady&&!state.messagesCapped,readIssue:state.readIssue,
+      activeId:state.active?.id,at:Date.now(),sampleLimit:100
+    });
+    document.dispatchEvent(new CustomEvent("proxiti-overview-updated",{detail:summary}));
   }
 
   function updateMetrics(){
@@ -247,8 +243,7 @@
     el("ticket-metric-resolved").textContent=String(count(t=>t.status==="resolved"));
     el("ticket-metric-closed").textContent=String(count(t=>t.status==="closed"));
     el("ticket-filter-all-count").textContent=String(state.tickets.length);
-    el("ticket-filter-unread-count").textContent=String(state.tickets.filter(t=>
-      t.status!=="closed"&&((!seenTicket(t.id)&&["new","triage"].includes(t.status))||unreadMessages(t.id)>0)).length);
+    el("ticket-filter-unread-count").textContent=String(state.tickets.filter(hasAttention).length);
     for(const node of document.querySelectorAll("[data-ticket-filter]")){
       const active=node.dataset.ticketFilter===state.ticketFilter;
       node.classList.toggle("active",active);node.setAttribute("aria-pressed",String(active));
@@ -259,7 +254,7 @@
     updateMetrics();
     const filter=state.ticketFilter,search=state.ticketSearch.trim().toLocaleLowerCase("pt-BR");
     const rows=state.tickets.filter(t=>{
-      const unread=t.status!=="closed"&&((!seenTicket(t.id)&&["new","triage"].includes(t.status))||unreadMessages(t.id)>0);
+      const unread=hasAttention(t);
       if(filter==="unread"&&!unread)return false;
       if(filter==="open"&&!["new","triage"].includes(t.status))return false;
       if(!["all","unread","open"].includes(filter)&&t.status!==filter)return false;
@@ -277,7 +272,7 @@
     if(!rows.length)list.append(elem("p",state.tickets.length?
       "Nenhum chamado corresponde aos filtros.":"A fila está vazia. Novos chamados aparecerão aqui.","ticket-list-empty"));
     for(const t of rows){
-      const unread=t.status==="closed"?0:unreadMessages(t.id),fresh=t.status!=="closed"&&!seenTicket(t.id)&&["new","triage"].includes(t.status);
+      const unread=unreadMessages(t.id),fresh=t.status!=="closed"&&!seenTicket(t.id)&&["new","triage"].includes(t.status);
       const item=elem("div","","ticket-inbox-item");item.setAttribute("role","listitem");
       const card=button("Abrir chamado #"+t.reference,()=>openTicket(t.id),
         "ticket-inbox-card"+(unread||fresh?" has-unread":"")+(state.active?.id===t.id?" selected":""));
