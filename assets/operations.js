@@ -52,6 +52,7 @@
     else if(phase==="partial")output.textContent="Exibindo as 150 mensagens mais recentes. Há mensagens anteriores no histórico.";
     else if(phase==="loading")output.textContent="Consultando as mensagens autorizadas…";
     else if(phase==="error")output.textContent="Não foi possível atualizar a conversa. Tente novamente.";
+    else if(phase==="read-error")output.textContent="Conversa carregada, mas não foi possível confirmar a leitura. Tente Atualizar conversa.";
     else output.textContent="Abra um chamado com acesso à conversa para visualizar mensagens.";
   }
   function notice(message,fail=false){
@@ -143,16 +144,27 @@
   async function markMessagesSeen(id,list){
     if(document.hidden||el("operations").hidden||state.currentView!=="tickets"||
        el("ticket-detail").hidden||state.active?.id!==id||state.readSaving.has(id))return;
-    const latest=Math.max(0,...list.filter(m=>m.sender_kind==="customer").map(m=>Date.parse(m.created_at)||0));
+    const db=state.db,uid=state.user?.id,generation=state.accessGeneration;
+    const valid=()=>state.db===db&&state.user?.id===uid&&
+      state.accessGeneration===generation&&state.active?.id===id&&can("tickets_view");
+    const latest=Math.max(0,...list.filter(m=>m.sender_kind==="customer")
+      .map(m=>Date.parse(m.created_at)||0));
     if(state.receiptsReady&&state.readReceipts.has(id)&&latest<=lastRead(id))return;
     state.readSaving.add(id);
     try{
-      await rpc("proxiti_mark_ticket_read",{p_ticket:id});
-      state.readReceipts.set(id,{ticket_id:id,first_seen_at:new Date().toISOString(),
-        last_read_customer_at:latest?new Date(latest).toISOString():null});
-      state.receiptsReady=true;markTicketSeen(id);updateInbox();renderTickets();
-    }catch{/* A marca de leitura só é sincronizada depois da confirmação do banco. */}
-    finally{state.readSaving.delete(id)}
+      await query(db.rpc("proxiti_mark_ticket_read",{p_ticket:id}));
+      if(!valid())return;
+      if(state.receiptsReady){
+        state.readReceipts.set(id,{ticket_id:id,first_seen_at:new Date().toISOString(),
+          last_read_customer_at:latest?new Date(latest).toISOString():null});
+      }else state.readFallback.set(id,latest);
+      markTicketSeen(id);updateInbox();renderTickets();
+    }catch{
+      if(!valid())return;
+      state.readIssue=true;threadSync("read-error");
+      updateInbox();renderTickets();
+      overviewStatus("partial");
+    }finally{state.readSaving.delete(id);}
   }
 
   function toast(message){
@@ -608,14 +620,32 @@
     }
   }
   async function openTicket(id){
-    const t=state.tickets.find(t=>t.id===id);if(!t)return;
-    if(state.active?.id&&state.active.id!==id)remember("draft-"+state.active.id,el("staff-reply").value);
-    state.active=t;remember("ticket",id);markTicketSeen(id);state.renderedThread="";updateTicketHeading();announceTicket();updateInbox();renderTickets();
+    if(!can("tickets_view"))return;
+    const ticket=state.tickets.find(item=>item.id===id);
+    if(!ticket)return;
+    const db=state.db,uid=state.user.id,generation=state.accessGeneration;
+    if(state.active?.id&&state.active.id!==id)
+      remember("draft-"+state.active.id,el("staff-reply").value);
+    state.active=ticket;remember("ticket",id);state.renderedThread="";
+    el("staff-messages").replaceChildren();
+    updateTicketHeading();announceTicket();updateInbox();renderTickets();
     el("staff-reply").value=recalled("draft-"+id)||"";
-    if(can("chat"))await loadMessages();
-    else await rpc("proxiti_mark_ticket_read",{p_ticket:id}).then(()=>{markTicketSeen(id);void loadReadReceipts()}).catch(()=>{});
     void loadAudit(id);
-    if(window.matchMedia("(max-width: 900px)").matches)
+    if(can("chat"))await loadMessages();
+    else{
+      try{
+        await query(db.rpc("proxiti_mark_ticket_read",{p_ticket:id}));
+        if(state.db===db&&state.user?.id===uid&&state.accessGeneration===generation&&
+           state.active?.id===id&&can("tickets_view")){
+          markTicketSeen(id);await loadReadReceipts();
+          updateInbox();renderTickets();
+        }
+      }catch{
+        if(state.db===db&&state.user?.id===uid&&state.accessGeneration===generation&&state.active?.id===id)
+          notice("Não foi possível confirmar a leitura. Use Atualizar na fila para tentar novamente.",true);
+      }
+    }
+    if(state.active?.id===id&&window.matchMedia("(max-width: 900px)").matches)
       el("ticket-detail").scrollIntoView({behavior:"smooth",block:"start"});
   }
   async function loadContent(){
@@ -912,6 +942,9 @@
     void openTicket(id);
   });
   el("reload-tickets").addEventListener("click",()=>void loadTickets());
+  el("ticket-thread-retry").addEventListener("click",()=>{
+    if(state.active&&can("chat"))void loadMessages();
+  });
   document.addEventListener("proxiti-overview-retry",()=>{if(can("tickets_view"))void loadTickets();});
   el("browser-notifications").addEventListener("click",async()=>{
     if(!("Notification" in window)||Notification.permission!=="default")return;
