@@ -87,8 +87,9 @@ for(const rule of ["create or replace function public.proxiti_ticket_access",
  "revoke all on public.ticket_attachments from public,anon,authenticated"]){
  assert(migration.includes(rule),"Permissão ou estrutura ausente: "+rule);
 }
-assert(get("assets/operations.js").includes('const unread=t=>t.status!=="closed"'),
- "Histórico encerrado ainda aparece como pendência");
+assert(get("assets/operations.js").includes("state.tickets.filter(hasAttention)")&&
+ get("assets/overview-model.js").includes('ticket.status!=="closed"'),
+ "Fila e visão geral devem excluir históricos encerrados das pendências");
 assert(techCss.includes("@media(max-width:680px)"),"Ferramentas sem layout móvel");
 for(const id of ["training-search","training-search-status","tools-search","tools-search-status"])
  assert(html.includes('id="'+id+'"'),"Pesquisa sem controle: "+id);
