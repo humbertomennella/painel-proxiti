@@ -83,7 +83,7 @@ function syncAccess(allowed){
  el("overview-guide-tickets").hidden=!canTickets;
  el("overview-focus-toggle").hidden=!canTickets;
  if(!canTickets){
-   setFocus(false);el("overview-metrics-section").hidden=true;
+   setFocus(false);setGuide(false);el("overview-metrics-section").hidden=true;
    el("overview-recent-section").hidden=true;el("overview-resume").hidden=true;
    el("overview-guidance").textContent="Acesse as áreas autorizadas pelo menu ou pelos cartões abaixo.";
    el("overview-hero-state").textContent="Seus recursos estão à mão";
@@ -126,10 +126,7 @@ function render(data){
    active:data.active,recent:data.recent,resume:data.resume,messagesAllowed:data.messagesAllowed,
    messagesAvailable:data.messagesAvailable,sampleSize:data.sampleSize};
  const signature=JSON.stringify(content),time=Number(data.at)||Date.now();
- if(signature===lastSignature){
-   if(data.messagesAvailable&&time-lastSuccess>=30000)el("overview-updated").textContent="Atualizado às "+clock(time);
-   return;
- }
+ if(signature===lastSignature)return;
  lastSignature=signature;
  el("overview-kpi-unread").textContent=data.unread===null?"—":String(data.unread);
  el("overview-kpi-open").textContent=String(data.open);
