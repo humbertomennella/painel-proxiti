@@ -2,7 +2,7 @@
   "use strict";
   const el = id => document.getElementById(id);
   const state = { db:null, user:null, profile:null, tickets:[], staff:[], active:null,
-    channel:null, poll:null, heartbeat:null, currentView:"tickets", loading:false,accessGeneration:0,ticketsReady:false,ticketError:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,messageCheckPromise:null,messageReady:false,messagesCapped:false,readIssue:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),readReceipts:new Map(),receiptsReady:false,readFetch:null,readSaving:new Set(),toastTimer:null };
+    channel:null, poll:null, heartbeat:null, currentView:"tickets", loading:false,accessGeneration:0,ticketsReady:false,ticketError:false,ticketLastUpdated:0,threadRevision:0,threadRows:new Map(),threadExpanded:false,threadHasMore:false,threadOlderBusy:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,messageCheckPromise:null,messageReady:false,messagesCapped:false,readIssue:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),readReceipts:new Map(),receiptsReady:false,readFetch:null,readSaving:new Set(),toastTimer:null };
   const statusNames = {new:"Aberto",triage:"Em triagem",in_progress:"Em atendimento",
     waiting_customer:"Aguardando cliente",resolved:"Resolvido",closed:"Encerrado"};
   const permNames = {tickets_view:"Consultar chamados",tickets_claim:"Assumir chamados",
@@ -26,6 +26,36 @@
     });
     return result;
   };
+  function ticketSync(phase){
+    const output=el("ticket-sync-status"),retry=el("reload-tickets");
+    output.dataset.phase=phase;
+    retry.disabled=phase==="loading"||phase==="restricted";
+    if(phase==="ready"){
+      output.textContent="Fila consultada às "+new Date(state.ticketLastUpdated).toLocaleTimeString("pt-BR",
+        {hour:"2-digit",minute:"2-digit"})+" · "+state.tickets.length+
+        (state.tickets.length===1?" chamado acessível":" chamados acessíveis")+
+        (state.tickets.length===100?" (limite da consulta: 100).":".");
+    }else if(phase==="loading")
+      output.textContent=state.ticketsReady?
+        "Atualizando a fila. Os registros anteriores continuam visíveis.":"Consultando a fila autorizada…";
+    else if(phase==="error")
+      output.textContent=state.ticketsReady?
+        "Falha na atualização. Os registros visíveis são da última consulta; tente Atualizar.":
+        "Não foi possível carregar a fila. Use Atualizar para tentar novamente.";
+    else output.textContent="A consulta à fila não está autorizada para esta conta.";
+  }
+  function threadSync(phase,count=0){
+    const output=el("ticket-thread-status"),retry=el("ticket-thread-retry");
+    output.dataset.phase=phase;
+    retry.disabled=phase==="loading"||phase==="restricted";
+    if(phase==="ready")output.textContent=count?"Conversa atualizada.":"Ainda não há mensagens neste chamado.";
+    else if(phase==="partial")output.textContent="Exibindo as "+count+" mensagens mais recentes. Use Carregar mensagens anteriores para consultar o restante.";
+    else if(phase==="loading")output.textContent="Consultando as mensagens autorizadas…";
+    else if(phase==="error")output.textContent="Não foi possível atualizar a conversa. Tente novamente.";
+    else if(phase==="read-error")output.textContent="Conversa carregada, mas não foi possível confirmar a leitura. Tente Atualizar conversa.";
+    else if(phase==="history-error")output.textContent="Não foi possível carregar mensagens anteriores. Tente novamente.";
+    else output.textContent="Abra um chamado com acesso à conversa para visualizar mensagens.";
+  }
   function notice(message,fail=false){
     const area=el("ops-message");area.hidden=!message;area.textContent=message;
     area.className="message"+(fail?" error":message?" success":"");
@@ -115,16 +145,27 @@
   async function markMessagesSeen(id,list){
     if(document.hidden||el("operations").hidden||state.currentView!=="tickets"||
        el("ticket-detail").hidden||state.active?.id!==id||state.readSaving.has(id))return;
-    const latest=Math.max(0,...list.filter(m=>m.sender_kind==="customer").map(m=>Date.parse(m.created_at)||0));
+    const db=state.db,uid=state.user?.id,generation=state.accessGeneration;
+    const valid=()=>state.db===db&&state.user?.id===uid&&
+      state.accessGeneration===generation&&state.active?.id===id&&can("tickets_view");
+    const latest=Math.max(0,...list.filter(m=>m.sender_kind==="customer")
+      .map(m=>Date.parse(m.created_at)||0));
     if(state.receiptsReady&&state.readReceipts.has(id)&&latest<=lastRead(id))return;
     state.readSaving.add(id);
     try{
-      await rpc("proxiti_mark_ticket_read",{p_ticket:id});
-      state.readReceipts.set(id,{ticket_id:id,first_seen_at:new Date().toISOString(),
-        last_read_customer_at:latest?new Date(latest).toISOString():null});
-      state.receiptsReady=true;markTicketSeen(id);updateInbox();renderTickets();
-    }catch{/* A marca de leitura só é sincronizada depois da confirmação do banco. */}
-    finally{state.readSaving.delete(id)}
+      await query(db.rpc("proxiti_mark_ticket_read",{p_ticket:id}));
+      if(!valid())return;
+      if(state.receiptsReady){
+        state.readReceipts.set(id,{ticket_id:id,first_seen_at:new Date().toISOString(),
+          last_read_customer_at:latest?new Date(latest).toISOString():null});
+      }else state.readFallback.set(id,latest);
+      markTicketSeen(id);updateInbox();renderTickets();
+    }catch{
+      if(!valid())return;
+      state.readIssue=true;threadSync("read-error");
+      updateInbox();renderTickets();
+      overviewStatus("partial");
+    }finally{state.readSaving.delete(id);}
   }
 
   function toast(message){
@@ -159,13 +200,16 @@
     }
   }
   async function loadAudit(ticketId){
-    if(!state.db||!ticketId)return;
+    if(!state.db||!ticketId||!can("tickets_view"))return;
+    const db=state.db,uid=state.user?.id,generation=state.accessGeneration;
+    const valid=()=>state.db===db&&state.user?.id===uid&&
+      state.accessGeneration===generation&&state.active?.id===ticketId&&can("tickets_view");
     const list=el("ticket-audit-list");list.replaceChildren(elem("li","Consultando histórico…"));
     try{
-      const events=await query(state.db.from("ticket_audit")
+      const events=await query(db.from("ticket_audit")
         .select("id,action,actor_id,previous_value,next_value,created_at")
         .eq("ticket_id",ticketId).order("created_at",{ascending:false}).limit(35));
-      if(state.active?.id!==ticketId)return;
+      if(!valid())return;
       list.replaceChildren();
       if(!events.length)list.append(elem("li","Nenhuma movimentação registrada desde a ativação do histórico."));
       const names={created:"Solicitação registrada",claimed:"Atendimento assumido",assigned:"Responsável designado",
@@ -182,7 +226,7 @@
             " → "+(statusNames[event.next_value]||event.next_value||""):"")));
         list.append(item);
       }
-    }catch{list.replaceChildren(elem("li","O histórico está temporariamente indisponível."))}
+    }catch{if(valid())list.replaceChildren(elem("li","O histórico está temporariamente indisponível."))}
   }
 
   function statusPill(value){
@@ -379,7 +423,7 @@
       window.PROXITI_OVERVIEW_SNAPSHOT=null;window.PROXITI_OVERVIEW_STATUS=null;
       el("ticket-list").replaceChildren();el("ticket-detail").hidden=true;
       el("ticket-empty-state").hidden=false;
-      clearTicketPresentation();announceTicket();
+      clearTicketPresentation();ticketSync("restricted");announceTicket();
       for(const id of ["ticket-badge","notifications-count"]){
         const badge=el(id);badge.textContent="";badge.hidden=true;
       }
@@ -447,8 +491,12 @@
     for(const id of ["ticket-code","ticket-subject","ticket-customer",
       "ticket-description","ticket-audit-list","ticket-current-status"])
       el(id).replaceChildren();
+    state.threadRevision++;state.threadRows.clear();state.threadExpanded=false;
+    state.threadHasMore=false;state.threadOlderBusy=false;
     el("staff-messages").replaceChildren();el("staff-reply").value="";
+    el("ticket-thread-older").hidden=true;el("ticket-thread-older").disabled=false;
     el("ticket-search").value="";
+    threadSync("restricted");
   }
   function announceTicket(){
     window.PROXITI_ACTIVE_TICKET=state.active;
@@ -460,6 +508,7 @@
     const same=()=>state.db===db&&state.user?.id===uid&&
       state.accessGeneration===generation&&can("tickets_view");
     state.loading=true;
+    ticketSync("loading");
     if(!state.ticketsReady)overviewStatus("loading");
     try{
       const tickets=await query(db.from("support_tickets")
@@ -490,11 +539,12 @@
       if(state.active){
         const found=state.tickets.find(t=>t.id===state.active.id);
         if(found){const changed=state.active.status!==found.status||state.active.assigned_to!==found.assigned_to;state.active=found;updateTicketHeading();if(changed)announceTicket();}
-        else{state.active=null;announceTicket();remember("ticket","");el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;}
+        else{state.active=null;clearTicketPresentation();announceTicket();remember("ticket","");
+          el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;}
       }
       if(state.ticketError)notice("");
-      state.ticketsReady=true;state.ticketError=false;
-      updateInbox();renderTickets();
+      state.ticketsReady=true;state.ticketError=false;state.ticketLastUpdated=Date.now();
+      ticketSync("ready");updateInbox();renderTickets();
       overviewStatus(overviewComplete()?"ready":"partial");
       if(state.restoreScroll!==null){
         const y=state.restoreScroll;state.restoreScroll=null;
@@ -502,7 +552,10 @@
       }
     }catch{
       if(same()){
-        state.ticketError=true;
+        state.ticketError=true;ticketSync("error");
+        if(!state.ticketsReady)el("ticket-list").replaceChildren(elem("p",
+          "A fila está temporariamente indisponível. Use Atualizar para tentar novamente.",
+          "ticket-list-empty"));
         notice("Não foi possível atualizar os chamados. Você pode tentar novamente.",true);
         overviewStatus("error");
       }
@@ -510,55 +563,152 @@
   }
   function updateTicketHeading(){
     const t=state.active;if(!t)return;
-    el("ticket-detail").hidden=false;
-    el("ticket-empty-state").hidden=true;
+    el("ticket-detail").hidden=false;el("ticket-empty-state").hidden=true;
     el("ticket-detail").dataset.status=t.status;
     el("ticket-code").textContent="CHAMADO #"+t.reference+" · "+shortDate(t.created_at);
     el("ticket-subject").textContent=t.subject;
     el("ticket-current-status").replaceChildren(statusPill(t.status));
-    el("ticket-customer").textContent=t.customer_name+" · "+t.customer_email+(t.customer_phone?" · "+t.customer_phone:"");
+    el("ticket-customer").textContent=t.customer_name+" · "+t.customer_email+
+      (t.customer_phone?" · "+t.customer_phone:"");
     el("ticket-description").textContent=t.description;
     el("ticket-status").value=t.status;
     el("ticket-assignee").value=t.assigned_to||"";
-    const assigned=t.assigned_to===state.user.id,manage=isAdmin()||assigned;
-    el("claim-ticket").hidden=!!t.assigned_to||!can("tickets_claim");
+    const closed=t.status==="closed",assigned=t.assigned_to===state.user.id;
+    const manage=!closed&&(isAdmin()||assigned);
+    el("claim-ticket").hidden=!!t.assigned_to||!can("tickets_claim")||
+      ["closed","resolved"].includes(t.status);
     el("ticket-status").disabled=!manage;
     el("save-status").hidden=!manage;
-    el("staff-reply-form").hidden=!(manage&&can("chat"))||t.status==="closed";
+    el("assign-group").hidden=!isAdmin()||closed;
+    el("save-assignee").hidden=!isAdmin()||closed;
+    el("staff-reply-form").hidden=!(manage&&can("chat"));
+    el("ticket-conversation").hidden=!can("chat");
+    el("ticket-thread-retry").hidden=!can("chat");
+    el("ticket-status-help").textContent=closed?
+      "Histórico encerrado: não é possível alterar situação, responsável ou resposta. Abra um novo atendimento quando necessário.":
+      t.status==="resolved"?
+      "Resolvido: revise o resultado antes do encerramento. A ação de encerrar é definitiva.":
+      "As mudanças de situação ficam registradas no histórico do chamado.";
+  }
+  function renderThread(ticketId,prepend=false){
+    if(state.active?.id!==ticketId)return;
+    const rows=[...state.threadRows.values()].sort((a,b)=>
+      (Date.parse(a.created_at)||0)-(Date.parse(b.created_at)||0)||
+      String(a.id).localeCompare(String(b.id)));
+    const box=el("staff-messages"),previousHeight=box.scrollHeight,previousTop=box.scrollTop;
+    const nearBottom=previousHeight-previousTop-box.clientHeight<130;
+    const signature=JSON.stringify([ticketId,state.threadHasMore,rows.map(item=>item.id)]);
+    el("ticket-thread-older").hidden=!state.threadHasMore;
+    el("ticket-thread-older").disabled=state.threadOlderBusy;
+    threadSync(state.threadHasMore?"partial":"ready",rows.length);
+    if(signature===state.renderedThread)return;
+    box.replaceChildren();
+    if(!rows.length)box.append(elem("p","Ainda não há mensagens.","ops-muted"));
+    for(const message of rows){
+      const bubble=elem("div","","ops-bubble"+(message.sender_kind==="staff"?" own":""));
+      bubble.append(elem("small",(message.sender_kind==="staff"?"Equipe PROXITI":"Cliente")+
+        " · "+shortDate(message.created_at)),elem("div",message.body));
+      box.append(bubble);
+    }
+    if(prepend)box.scrollTop=previousTop+Math.max(0,box.scrollHeight-previousHeight);
+    else if(nearBottom)box.scrollTop=box.scrollHeight;
+    state.renderedThread=signature;
   }
   async function loadMessages(){
-    const t=state.active;
-    if(!t||!can("chat"))return;
+    if(state.threadOlderBusy)return;
+    const ticket=state.active,db=state.db,uid=state.user?.id,generation=state.accessGeneration;
+    const revision=++state.threadRevision;
+    if(!ticket||!db||!can("chat")||!can("tickets_view"))return;
+    const valid=()=>state.db===db&&state.user?.id===uid&&state.accessGeneration===generation&&
+      state.threadRevision===revision&&state.active?.id===ticket.id&&can("chat")&&can("tickets_view");
+    if(!state.threadRows.size)threadSync("loading");
     try{
-      const list=await query(state.db.from("support_messages")
-        .select("id,sender_kind,body,created_at").eq("ticket_id",t.id)
-        .order("created_at",{ascending:true}).limit(150));
-      if(state.active?.id!==t.id)return;
-      const box=el("staff-messages"),signature=JSON.stringify([t.id,list.map(m=>m.id)]);
-      if(signature!==state.renderedThread){
-        const nearBottom=box.scrollHeight-box.scrollTop-box.clientHeight<130;
-        box.replaceChildren();
-        if(!list.length)box.append(elem("p","Ainda não há mensagens.","ops-muted"));
-        for(const m of list){
-          const bubble=elem("div","","ops-bubble"+(m.sender_kind==="staff"?" own":""));
-          bubble.append(elem("small",(m.sender_kind==="staff"?"Equipe PROXITI":"Cliente")+" · "+shortDate(m.created_at)),elem("div",m.body));
-          box.append(bubble);
-        }
-        if(nearBottom)box.scrollTop=box.scrollHeight;
-        state.renderedThread=signature;
+      // Ordenação secundária evita perder ou repetir mensagens com o mesmo horário.
+      const fetched=await query(db.from("support_messages")
+        .select("id,sender_kind,body,created_at").eq("ticket_id",ticket.id)
+        .order("created_at",{ascending:false}).order("id",{ascending:false}).limit(151));
+      if(!valid())return;
+      const latest=fetched.slice(0,150);
+      if(!state.threadExpanded)state.threadRows=new Map(latest.map(item=>[item.id,item]));
+      else for(const item of latest)state.threadRows.set(item.id,item);
+      if(!state.threadExpanded)state.threadHasMore=fetched.length>150;
+      renderThread(ticket.id);
+      await markMessagesSeen(ticket.id,latest);
+    }catch(error){
+      if(!valid())return;
+      threadSync("error");
+      notice("Falha ao consultar conversa: "+error.message,true);
+    }
+  }
+  async function loadEarlierMessages(){
+    const ticket=state.active,db=state.db,uid=state.user?.id,generation=state.accessGeneration;
+    const revision=state.threadRevision;
+    if(!ticket||!db||!can("chat")||!state.threadHasMore||state.threadOlderBusy)return;
+    const valid=()=>state.db===db&&state.user?.id===uid&&state.accessGeneration===generation&&
+      state.threadRevision===revision&&state.active?.id===ticket.id&&can("chat")&&can("tickets_view");
+    const oldest=[...state.threadRows.values()].sort((a,b)=>
+      (Date.parse(a.created_at)||0)-(Date.parse(b.created_at)||0)||
+      String(a.id).localeCompare(String(b.id)))[0];
+    if(!oldest)return;
+    state.threadOlderBusy=true;
+    const button=el("ticket-thread-older");button.disabled=true;
+    try{
+      const ties=await query(db.from("support_messages")
+        .select("id,sender_kind,body,created_at").eq("ticket_id",ticket.id)
+        .eq("created_at",oldest.created_at).lt("id",oldest.id)
+        .order("id",{ascending:false}).limit(151));
+      if(!valid())return;
+      let fetched=ties;
+      if(ties.length<151){
+        const earlier=await query(db.from("support_messages")
+          .select("id,sender_kind,body,created_at").eq("ticket_id",ticket.id)
+          .lt("created_at",oldest.created_at)
+          .order("created_at",{ascending:false}).order("id",{ascending:false})
+          .limit(151-ties.length));
+        if(!valid())return;
+        fetched=ties.concat(earlier);
       }
-      await markMessagesSeen(t.id,list);
-    }catch(e){notice("Falha ao consultar conversa: "+e.message,true);}
+      for(const item of fetched.slice(0,150))state.threadRows.set(item.id,item);
+      state.threadExpanded=true;state.threadHasMore=fetched.length>150;
+      renderThread(ticket.id,true);
+    }catch{
+      if(valid())threadSync("history-error");
+    }finally{
+      if(valid()){state.threadOlderBusy=false;button.disabled=false;}
+    }
   }
   async function openTicket(id){
-    const t=state.tickets.find(t=>t.id===id);if(!t)return;
-    if(state.active?.id&&state.active.id!==id)remember("draft-"+state.active.id,el("staff-reply").value);
-    state.active=t;remember("ticket",id);markTicketSeen(id);state.renderedThread="";updateTicketHeading();announceTicket();updateInbox();renderTickets();
+    if(!can("tickets_view"))return;
+    const ticket=state.tickets.find(item=>item.id===id);
+    if(!ticket)return;
+    const db=state.db,uid=state.user.id,generation=state.accessGeneration;
+    if(state.active?.id&&state.active.id!==id)
+      remember("draft-"+state.active.id,el("staff-reply").value);
+    const changed=state.active?.id!==id;
+    state.active=ticket;remember("ticket",id);
+    if(changed){
+      state.threadRevision++;state.threadRows.clear();state.threadExpanded=false;
+      state.threadHasMore=false;state.threadOlderBusy=false;state.renderedThread="";
+      el("ticket-thread-older").hidden=true;el("staff-messages").replaceChildren();
+    }
+    updateTicketHeading();announceTicket();updateInbox();renderTickets();
     el("staff-reply").value=recalled("draft-"+id)||"";
-    if(can("chat"))await loadMessages();
-    else await rpc("proxiti_mark_ticket_read",{p_ticket:id}).then(()=>{markTicketSeen(id);void loadReadReceipts()}).catch(()=>{});
     void loadAudit(id);
-    if(window.matchMedia("(max-width: 900px)").matches)
+    if(can("chat"))await loadMessages();
+    else{
+      try{
+        await query(db.rpc("proxiti_mark_ticket_read",{p_ticket:id}));
+        if(state.db===db&&state.user?.id===uid&&state.accessGeneration===generation&&
+           state.active?.id===id&&can("tickets_view")){
+          markTicketSeen(id);await loadReadReceipts();
+          updateInbox();renderTickets();
+        }
+      }catch{
+        if(state.db===db&&state.user?.id===uid&&state.accessGeneration===generation&&state.active?.id===id)
+          notice("Não foi possível confirmar a leitura. Use Atualizar na fila para tentar novamente.",true);
+      }
+    }
+    if(state.active?.id===id&&window.matchMedia("(max-width: 900px)").matches)
       el("ticket-detail").scrollIntoView({behavior:"smooth",block:"start"});
   }
   async function loadContent(){
@@ -781,7 +931,7 @@
     if(state.heartbeat)clearInterval(state.heartbeat);
     if(state.channel&&state.db)void state.db.removeChannel(state.channel);
     if(state.toastTimer)clearTimeout(state.toastTimer);
-    Object.assign(state,{db:null,user:null,profile:null,tickets:[],staff:[],active:null,channel:null,poll:null,heartbeat:null,loading:false,accessGeneration:nextGeneration,ticketsReady:false,ticketError:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,messageCheckPromise:null,messageReady:false,messagesCapped:false,readIssue:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),readReceipts:new Map(),receiptsReady:false,readFetch:null,readSaving:new Set(),toastTimer:null});
+    Object.assign(state,{db:null,user:null,profile:null,tickets:[],staff:[],active:null,channel:null,poll:null,heartbeat:null,loading:false,accessGeneration:nextGeneration,ticketsReady:false,ticketError:false,ticketLastUpdated:0,threadRevision:0,threadRows:new Map(),threadExpanded:false,threadHasMore:false,threadOlderBusy:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,messageCheckPromise:null,messageReady:false,messagesCapped:false,readIssue:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),readReceipts:new Map(),receiptsReady:false,readFetch:null,readSaving:new Set(),toastTimer:null});
     el("alert-toast").hidden=true;el("notifications-panel").hidden=true;
     el("notifications-toggle").setAttribute("aria-expanded","false");
     el("notifications-count").hidden=true;el("ticket-badge").hidden=true;
@@ -789,6 +939,7 @@
     el("notifications-list").replaceChildren();
     window.PROXITI_OVERVIEW_SNAPSHOT=null;window.PROXITI_OVERVIEW_STATUS=null;
     el("overview-open").textContent="Chamados: atualizando…";
+    ticketSync("restricted");
     el("operations").hidden=true;el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;notice("");announceTicket();
   }
   async function start(e){
@@ -854,6 +1005,10 @@
     void openTicket(id);
   });
   el("reload-tickets").addEventListener("click",()=>void loadTickets());
+  el("ticket-thread-retry").addEventListener("click",()=>{
+    if(state.active&&can("chat"))void loadMessages();
+  });
+  el("ticket-thread-older").addEventListener("click",()=>void loadEarlierMessages());
   document.addEventListener("proxiti-overview-retry",()=>{if(can("tickets_view"))void loadTickets();});
   el("browser-notifications").addEventListener("click",async()=>{
     if(!("Notification" in window)||Notification.permission!=="default")return;
@@ -908,41 +1063,117 @@
       if(can("chat"))void rpc("proxiti_heartbeat",{}).catch(()=>{});
     }
   });
-  el("claim-ticket").addEventListener("click",async()=>{
-    if(!state.active)return;
+  el("claim-ticket").addEventListener("click",async event=>{
+    if(!state.active||!can("tickets_claim")||!can("tickets_view"))return;
+    const ticket=state.active,db=state.db,uid=state.user.id,generation=state.accessGeneration;
+    const button=event.currentTarget;button.disabled=true;
     try{
-      const ok=await rpc("proxiti_claim_ticket",{p_ticket:state.active.id});
-      if(!ok)throw new Error("O chamado já foi assumido por outro profissional.");
-      notice("Chamado assumido.");await loadTickets();await loadMessages();
-    }catch(e){notice(e.message,true);}
+      const ok=await query(db.rpc("proxiti_claim_ticket",{p_ticket:ticket.id}));
+      if(!ok)throw new Error("O chamado já foi assumido ou mudou de situação. Atualize a fila.");
+      if(state.db!==db||state.user?.id!==uid||state.accessGeneration!==generation)return;
+      if(state.active?.id===ticket.id){
+        state.active.assigned_to=uid;
+        if(state.active.status==="new")state.active.status="triage";
+        updateTicketHeading();announceTicket();
+        notice("Chamado #"+ticket.reference+" assumido.");
+      }
+      await loadTickets();
+      if(state.active?.id===ticket.id&&can("chat"))void loadMessages();
+    }catch(error){
+      if(state.db===db&&state.user?.id===uid&&state.accessGeneration===generation)
+        notice(error.message,true);
+    }finally{button.disabled=false;}
   });
-  el("save-status").addEventListener("click",async()=>{
-    if(!state.active)return;
+  el("save-status").addEventListener("click",async event=>{
+    if(!state.active||!can("tickets_view")||state.active.status==="closed")return;
+    const ticket=state.active,nextStatus=el("ticket-status").value;
+    if(nextStatus===ticket.status){notice("A situação do chamado não mudou.");return;}
+    const db=state.db,uid=state.user.id,generation=state.accessGeneration;
+    const button=event.currentTarget;button.disabled=true;
+    const same=()=>state.db===db&&state.user?.id===uid&&state.accessGeneration===generation;
     try{
-      await rpc("proxiti_change_ticket_status",{p_ticket:state.active.id,p_status:el("ticket-status").value});
-      notice("Situação atualizada.");await loadTickets();
-    }catch(e){notice(e.message,true);}
+      if(nextStatus==="closed"){
+        const [tasks,reports]=await Promise.all([
+          query(db.from("ticket_tasks").select("state").eq("ticket_id",ticket.id).limit(31)),
+          query(db.from("ticket_reports").select("id").eq("ticket_id",ticket.id)
+            .eq("finalized",true).limit(1))
+        ]);
+        if(!same()||state.active?.id!==ticket.id)return;
+        const pending=tasks.filter(item=>item.state==="pending").length;
+        const missingReport=reports.length===0;
+        const warnings=[];
+        if(pending)warnings.push(pending+" etapa(s) do roteiro ainda pendente(s)");
+        if(missingReport)warnings.push("nenhum relatório final registrado");
+        const message="Encerrar o chamado #"+ticket.reference+"? "+
+          "Após o encerramento, os registros técnicos serão somente leitura."+
+          (warnings.length?"\n\nAtenção: "+warnings.join("; ")+".":"")+
+          "\n\nConfirme somente depois de revisar a entrega ao cliente.";
+        if(!window.confirm(message)){
+          el("ticket-status").value=ticket.status;return;
+        }
+      }
+      if(!same()||state.active?.id!==ticket.id)return;
+      await query(db.rpc("proxiti_change_ticket_status",{
+        p_ticket:ticket.id,p_status:nextStatus
+      }));
+      if(!same())return;
+      if(state.active?.id===ticket.id){
+        state.active.status=nextStatus;updateTicketHeading();announceTicket();
+        notice("Situação do chamado #"+ticket.reference+" atualizada.");
+      }
+      await loadTickets();
+    }catch(error){
+      if(same()){
+        if(state.active?.id===ticket.id)el("ticket-status").value=state.active.status;
+        notice("Não foi possível alterar a situação: "+error.message,true);
+      }
+    }finally{button.disabled=false;}
   });
-  el("save-assignee").addEventListener("click",async()=>{
-    if(!state.active||!isAdmin())return;
+  el("save-assignee").addEventListener("click",async event=>{
+    if(!state.active||!isAdmin()||state.active.status==="closed")return;
+    const ticket=state.active,assignee=el("ticket-assignee").value||null;
+    const db=state.db,uid=state.user.id,generation=state.accessGeneration;
+    const button=event.currentTarget;button.disabled=true;
     try{
-      await rpc("proxiti_admin_assign_ticket",{p_ticket:state.active.id,
-        p_staff:el("ticket-assignee").value||null});
-      notice("Responsável atualizado.");await loadTickets();
-    }catch(e){notice(e.message,true);}
+      await query(db.rpc("proxiti_admin_assign_ticket",{
+        p_ticket:ticket.id,p_staff:assignee
+      }));
+      if(state.db!==db||state.user?.id!==uid||state.accessGeneration!==generation)return;
+      if(state.active?.id===ticket.id){
+        state.active.assigned_to=assignee;updateTicketHeading();announceTicket();
+        notice("Responsável pelo chamado #"+ticket.reference+" atualizado.");
+      }
+      await loadTickets();
+    }catch(error){
+      if(state.db===db&&state.user?.id===uid&&state.accessGeneration===generation){
+        if(state.active?.id===ticket.id)el("ticket-assignee").value=state.active.assigned_to||"";
+        notice(error.message,true);
+      }
+    }finally{button.disabled=false;}
   });
-  el("staff-reply-form").addEventListener("submit",async e=>{
-    e.preventDefault();
-    if(!state.active||!can("chat"))return;
-    const field=el("staff-reply");const body=field.value.trim();
+  el("staff-reply-form").addEventListener("submit",async event=>{
+    event.preventDefault();
+    if(!state.active||!can("chat")||!can("tickets_view")||state.active.status==="closed")return;
+    const ticket=state.active,db=state.db,uid=state.user.id,generation=state.accessGeneration;
+    const field=el("staff-reply"),body=field.value.trim();
     if(!body)return;
-    const send=e.currentTarget.querySelector("button[type=submit]");
+    const send=event.currentTarget.querySelector('button[type="submit"]');
     send.disabled=true;
     try{
-      await rpc("proxiti_staff_reply",{p_ticket:state.active.id,p_body:body});
-      field.value="";remember("draft-"+state.active.id,"");await loadMessages();notice("Mensagem enviada.");
-    }catch(error){notice(error.message,true);}
-    finally{send.disabled=false;}
+      await query(db.rpc("proxiti_staff_reply",{p_ticket:ticket.id,p_body:body}));
+      if(state.db!==db||state.user?.id!==uid||state.accessGeneration!==generation)return;
+      if(state.active?.id===ticket.id){
+        if(field.value.trim()===body){
+          field.value="";remember("draft-"+ticket.id,"");
+        }
+        await loadMessages();
+        notice("Resposta enviada no chamado #"+ticket.reference+".");
+      }
+    }catch(error){
+      if(state.db===db&&state.user?.id===uid&&state.accessGeneration===generation)
+        notice("A resposta não foi confirmada. Verifique o histórico antes de reenviar: "+
+          error.message,true);
+    }finally{send.disabled=false;}
   });
   el("invite-form").addEventListener("submit",async e=>{
     e.preventDefault();if(!isAdmin())return;

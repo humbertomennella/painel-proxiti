@@ -83,3 +83,5 @@ As migrações `supabase/central_operations_v8.sql` e `supabase/academy_content_
 Veja o [manual operacional da V8](docs/entrega-operacional-v8.md), o [fluxo privado V7](docs/fluxo-tecnico-v7.md) e a [implantação do domínio opcional](docs/implantacao-operacional.md).
 
 A **Visão Geral** possui agora critérios próprios de contagem e estados de sincronização, com testes de navegador e [roteiro de homologação](docs/visao-geral-homologacao.md). A revisão dos módulos seguintes permanece independente.
+
+A área de **Chamados** agora dispõe de proteção de status no banco, retomada de conversas paginadas e estados claros para falha de consulta e leitura. Consulte o [roteiro de segurança, operação e homologação de Chamados](docs/chamados-homologacao.md), que distingue os testes automatizados da validação com contas reais.

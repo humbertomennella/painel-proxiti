@@ -6,12 +6,16 @@
   const bucket="proxiti-ticket-files";
   const formats={"application/pdf":".pdf","image/png":".png","image/jpeg":".jpg","image/webp":".webp"};
   let selected=null,revision=0,taskRows=[];
+  const noteDrafts=new Map();
   const session=()=>window.PROXITI_ACTIVE_SESSION;
   const database=()=>session()?.client;
   const isAdmin=()=>session()?.profile?.role==="administrator"&&session()?.profile?.status==="active";
-  const canEdit=()=>!!selected&&selected.status!=="closed"&&!!session()?.user&&
+  const canRead=()=>!!selected&&!!session()?.user&&session()?.profile?.status==="active"&&
+    (isAdmin()||(session()?.profile?.permissions?.tickets_view===true&&
+      (selected.assigned_to===session().user.id||selected.assigned_to===null)));
+  const canEdit=()=>canRead()&&selected.status!=="closed"&&
     (isAdmin()||selected.assigned_to===session().user.id);
-  const canReport=()=>!!selected&&!!session()?.user&&(isAdmin()||selected.assigned_to===session().user.id);
+  const canReport=()=>canRead()&&(isAdmin()||selected.assigned_to===session().user.id);
   const stamp=date=>new Date(date).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"});
   const make=(tag,label="",className="")=>{
     const element=document.createElement(tag);
@@ -105,10 +109,13 @@
         make("small",(file.byte_size/1048576).toFixed(2)+" MB · "+stamp(file.created_at)));
       const open=make("button","Baixar","secondary");open.type="button";
       open.addEventListener("click",async()=>{
-        if(selected?.id!==file.ticket_id)return;
+        if(selected?.id!==file.ticket_id||!canRead())return;
+        const db=database(),uid=session().user.id,rev=revision;
         open.disabled=true;note("");
         try{
-          const blob=await query(database().storage.from(bucket).download(file.storage_path));
+          const blob=await query(db.storage.from(bucket).download(file.storage_path));
+          if(rev!==revision||selected?.id!==file.ticket_id||database()!==db||
+             session()?.user?.id!==uid||!canRead())return;
           const objectUrl=URL.createObjectURL(blob),a=make("a");
           a.href=objectUrl;a.download=file.file_name.replace(/[^\p{L}\p{N} .()_\-]/gu,"_");
           document.body.append(a);a.click();a.remove();
@@ -121,8 +128,8 @@
     }
   }
   async function refresh(section,ticketId){
-    const db=database(),rev=revision;
-    if(!db||!ticketId)return;
+    const db=database(),rev=revision,uid=session()?.user?.id;
+    if(!db||!ticketId||!canRead())return;
     const tables={
       notes:["ticket_internal_notes","id,ticket_id,author_id,body,created_at","created_at",false],
       tasks:["ticket_tasks","id,ticket_id,title,position,state,note,updated_at","position",true],
@@ -132,24 +139,32 @@
     try{
       const rows=await query(db.from(table).select(fields).eq("ticket_id",ticketId)
         .order(order,{ascending}).limit(150));
-      if(rev!==revision||selected?.id!==ticketId)return;
+      if(rev!==revision||selected?.id!==ticketId||database()!==db||
+         session()?.user?.id!==uid||!canRead())return;
       if(section==="notes")displayNotes(rows||[]);
       if(section==="tasks")displayTasks(rows||[]);
       if(section==="files")displayFiles(rows||[]);
     }catch(error){
-      if(rev!==revision||selected?.id!==ticketId)return;
+      if(rev!==revision||selected?.id!==ticketId||database()!==db||
+         session()?.user?.id!==uid||!canRead())return;
       note("Não foi possível consultar "+({notes:"as notas",tasks:"o roteiro",files:"os anexos"}[section])+
         ": "+error.message,true);
     }
   }
   function choose(ticket){
+    if(selected?.id&&el("ticket-note-body").value.trim())
+      noteDrafts.set(selected.id,el("ticket-note-body").value);
     revision++;
     const changed=selected?.id!==ticket?.id;
     selected=ticket||null;
-    root.hidden=!selected;
+    root.hidden=!selected||!canRead();
     if(!selected){
-      el("ticket-note-body").value="";
-      el("ticket-report-form").reset();
+      el("ticket-note-body").value="";el("ticket-file-form").reset();
+      el("ticket-report-form").reset();el("ticket-report-panel").open=false;
+      empty(el("ticket-notes-list"),"Selecione um chamado.");
+      empty(el("ticket-tasks-list"),"Selecione um chamado.");
+      empty(el("ticket-files-list"),"Selecione um chamado.");
+      el("ticket-tasks-progress").textContent="Nenhum roteiro iniciado";
       taskRows=[];note("");return;
     }
     const writable=canEdit();
@@ -160,7 +175,7 @@
     el("ticket-tasks-start").hidden=!writable||taskRows.length>0;
     el("ticket-report-panel").hidden=!canReport();
     if(changed){
-      el("ticket-note-body").value="";el("ticket-file-form").reset();
+      el("ticket-note-body").value=noteDrafts.get(selected.id)||"";el("ticket-file-form").reset();
       el("ticket-report-form").reset();el("ticket-report-panel").open=false;
       note("");empty(el("ticket-notes-list"),"Carregando notas…");
       empty(el("ticket-tasks-list"),"Carregando roteiro…");
@@ -180,8 +195,12 @@
     submit.disabled=true;note("");
     try{
       await rpc("proxiti_add_ticket_note",{p_ticket:ticket.id,p_body:body});
+      if(noteDrafts.get(ticket.id)?.trim()===body)noteDrafts.delete(ticket.id);
       if(selected?.id===ticket.id){
-        el("ticket-note-body").value="";note("Nota interna registrada.");
+        if(el("ticket-note-body").value.trim()===body){
+          el("ticket-note-body").value="";noteDrafts.delete(ticket.id);
+        }
+        note("Nota interna registrada.");
         document.dispatchEvent(new CustomEvent("proxiti-ticket-activity",{detail:{id:ticket.id}}));
         await refresh("notes",ticket.id);
       }
@@ -206,6 +225,9 @@
   el("ticket-file-form").addEventListener("submit",async event=>{
     event.preventDefault();if(!canEdit())return;
     const ticket=selected,form=event.currentTarget,send=form.querySelector('[type="submit"]');
+    const db=database(),uid=session().user.id,rev=revision;
+    const valid=()=>database()===db&&session()?.user?.id===uid&&
+      revision===rev&&selected?.id===ticket.id&&canRead();
     const file=el("ticket-file-input").files?.[0];
     if(!file)return;
     const ext=formats[file.type];
@@ -216,20 +238,45 @@
     const path=ticket.id+"/"+crypto.randomUUID()+ext;
     let uploaded=false;
     try{
-      await query(database().storage.from(bucket).upload(path,file,{
+      await query(db.storage.from(bucket).upload(path,file,{
         contentType:file.type,cacheControl:"60",upsert:false
       }));
       uploaded=true;
-      await rpc("proxiti_attach_ticket_file",{
+      if(!valid())throw new Error("O contexto de atendimento mudou durante o envio.");
+      await query(db.rpc("proxiti_attach_ticket_file",{
         p_ticket:ticket.id,p_path:path,p_name:file.name,p_mime:file.type,p_size:file.size
-      });
-      if(selected?.id===ticket.id){
+      }));
+      if(valid()){
         form.reset();note("Anexo privado registrado.");
-        document.dispatchEvent(new CustomEvent("proxiti-ticket-activity",{detail:{id:ticket.id}}));await refresh("files",ticket.id);
+        document.dispatchEvent(new CustomEvent("proxiti-ticket-activity",{detail:{id:ticket.id}}));
+        await refresh("files",ticket.id);
       }
     }catch(error){
-      if(uploaded)try{await database().storage.from(bucket).remove([path]);}catch{}
-      if(selected?.id===ticket.id)note("Falha ao adicionar anexo: "+error.message,true);
+      let verification;
+      if(uploaded){
+        // Uma resposta perdida após o INSERT não significa falha da gravação.
+        try{
+          verification=await query(db.from("ticket_attachments")
+            .select("id").eq("storage_path",path).maybeSingle());
+        }catch{verification=undefined;}
+      }
+      if(verification){
+        if(valid()){
+          form.reset();note("O anexo foi registrado. A confirmação chegou após a verificação.");
+          await refresh("files",ticket.id);
+        }
+      }else if(uploaded&&verification===null){
+        try{
+          await query(db.storage.from(bucket).remove([path]));
+          if(valid())note("O anexo não foi registrado; o envio foi revertido. Tente novamente.",true);
+        }catch{
+          if(valid())note("Não foi possível vincular nem limpar o arquivo privado. "+
+            "Solicite verificação administrativa antes de reenviar.",true);
+        }
+      }else if(valid()){
+        note("Não foi possível confirmar o anexo. Não reenvie até verificar a lista: "+
+          error.message,true);
+      }
     }finally{send.disabled=false;}
   });
   el("ticket-report-form").addEventListener("submit",event=>{
@@ -263,6 +310,15 @@
     note("Relatório aberto para revisão. Nenhuma nota interna foi incluída.");
   });
   document.addEventListener("proxiti-ticket-selected",event=>choose(event.detail?.ticket||null));
-  document.addEventListener("proxiti-session-ended",()=>choose(null));
+  el("ticket-note-body").addEventListener("input",()=>{
+    if(selected?.id)noteDrafts.set(selected.id,el("ticket-note-body").value);
+  });
+  document.addEventListener("proxiti-session-ended",()=>{choose(null);noteDrafts.clear();});
+  document.addEventListener("proxiti-session-ready",event=>{
+    if(event.detail?.profile?.status!=="active"||
+       (event.detail?.profile?.role!=="administrator"&&event.detail?.profile?.permissions?.tickets_view!==true)){
+      choose(null);noteDrafts.clear();
+    }
+  });
   if(window.PROXITI_ACTIVE_TICKET)choose(window.PROXITI_ACTIVE_TICKET);
 })();
