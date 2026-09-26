@@ -6,12 +6,16 @@
   const bucket="proxiti-ticket-files";
   const formats={"application/pdf":".pdf","image/png":".png","image/jpeg":".jpg","image/webp":".webp"};
   let selected=null,revision=0,taskRows=[];
+  const noteDrafts=new Map();
   const session=()=>window.PROXITI_ACTIVE_SESSION;
   const database=()=>session()?.client;
   const isAdmin=()=>session()?.profile?.role==="administrator"&&session()?.profile?.status==="active";
-  const canEdit=()=>!!selected&&selected.status!=="closed"&&!!session()?.user&&
+  const canRead=()=>!!selected&&!!session()?.user&&session()?.profile?.status==="active"&&
+    (isAdmin()||(session()?.profile?.permissions?.tickets_view===true&&
+      (selected.assigned_to===session().user.id||selected.assigned_to===null)));
+  const canEdit=()=>canRead()&&selected.status!=="closed"&&
     (isAdmin()||selected.assigned_to===session().user.id);
-  const canReport=()=>!!selected&&!!session()?.user&&(isAdmin()||selected.assigned_to===session().user.id);
+  const canReport=()=>canRead()&&(isAdmin()||selected.assigned_to===session().user.id);
   const stamp=date=>new Date(date).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"});
   const make=(tag,label="",className="")=>{
     const element=document.createElement(tag);
@@ -143,10 +147,12 @@
     }
   }
   function choose(ticket){
+    if(selected?.id&&el("ticket-note-body").value.trim())
+      noteDrafts.set(selected.id,el("ticket-note-body").value);
     revision++;
     const changed=selected?.id!==ticket?.id;
     selected=ticket||null;
-    root.hidden=!selected;
+    root.hidden=!selected||!canRead();
     if(!selected){
       el("ticket-note-body").value="";
       el("ticket-report-form").reset();
@@ -160,7 +166,7 @@
     el("ticket-tasks-start").hidden=!writable||taskRows.length>0;
     el("ticket-report-panel").hidden=!canReport();
     if(changed){
-      el("ticket-note-body").value="";el("ticket-file-form").reset();
+      el("ticket-note-body").value=noteDrafts.get(selected.id)||"";el("ticket-file-form").reset();
       el("ticket-report-form").reset();el("ticket-report-panel").open=false;
       note("");empty(el("ticket-notes-list"),"Carregando notas…");
       empty(el("ticket-tasks-list"),"Carregando roteiro…");
@@ -181,7 +187,10 @@
     try{
       await rpc("proxiti_add_ticket_note",{p_ticket:ticket.id,p_body:body});
       if(selected?.id===ticket.id){
-        el("ticket-note-body").value="";note("Nota interna registrada.");
+        if(el("ticket-note-body").value.trim()===body){
+          el("ticket-note-body").value="";noteDrafts.delete(ticket.id);
+        }
+        note("Nota interna registrada.");
         document.dispatchEvent(new CustomEvent("proxiti-ticket-activity",{detail:{id:ticket.id}}));
         await refresh("notes",ticket.id);
       }
@@ -263,6 +272,15 @@
     note("Relatório aberto para revisão. Nenhuma nota interna foi incluída.");
   });
   document.addEventListener("proxiti-ticket-selected",event=>choose(event.detail?.ticket||null));
-  document.addEventListener("proxiti-session-ended",()=>choose(null));
+  el("ticket-note-body").addEventListener("input",()=>{
+    if(selected?.id)noteDrafts.set(selected.id,el("ticket-note-body").value);
+  });
+  document.addEventListener("proxiti-session-ended",()=>{choose(null);noteDrafts.clear();});
+  document.addEventListener("proxiti-session-ready",event=>{
+    if(event.detail?.profile?.status!=="active"||
+       (event.detail?.profile?.role!=="administrator"&&event.detail?.profile?.permissions?.tickets_view!==true)){
+      choose(null);noteDrafts.clear();
+    }
+  });
   if(window.PROXITI_ACTIVE_TICKET)choose(window.PROXITI_ACTIVE_TICKET);
 })();
