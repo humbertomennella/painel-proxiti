@@ -6,7 +6,7 @@ A Agenda é a terceira área da conclusão sequencial da Central Técnica PROXIT
 
 1. Abra o chamado autorizado e registre o compromisso como **Planejado**. O horário do formulário segue o fuso local do dispositivo; o banco recebe o instante com fuso explícito (UTC). O registro é vinculado ao chamado, não a uma promessa de horário.
 2. Depois de combinar efetivamente com o cliente, selecione o **canal do contato** e clique em **Registrar confirmação**. A RPC registra quem confirmou, a data da confirmação e o canal informado. O contato não é realizado pela plataforma.
-3. Quando o compromisso for realizado, marque **Concluído**. Um horário planejado não pode ser concluído antes de ser confirmado. O atendimento principal permanece em sua situação atual.
+3. Quando o compromisso for realizado, marque **Concluído**. Um horário planejado não pode ser concluído antes de ser confirmado. O atendimento principal permanece em sua situação atual. **Antes de resolver ou encerrar o chamado, todos os compromissos ativos precisam ser concluídos ou cancelados**; a RPC rejeita a mudança caso contrário.
 4. Se não ocorrerá, use **Cancelar compromisso**, com confirmação explícita. Conclusões e cancelamentos são terminais, não podem ser revertidos por essas ações.
 5. Para um novo dia, horário, duração ou modalidade, use **Reagendar**, preenchendo um motivo técnico breve. Um horário antes confirmado retorna a **Planejado**, pois a confirmação anterior não vale para o novo agendamento. O motivo e as alterações de horário, duração e modalidade ficam no histórico privado de reagendamentos. O contato com o cliente precisa acontecer novamente.
 6. Use **Abrir chamado** para consultar o contexto do atendimento. A interface só mostra os dados de agendamentos e chamados aos quais a sessão tem permissão.
@@ -21,7 +21,7 @@ Os detalhes privados do compromisso são tratados dentro do atendimento autoriza
 
 ## Proteção do banco
 
-A migração `supabase/agenda_integrity_v10.sql` preserva os registros existentes e restringe transições por RPC autenticada e autorização por chamado. As operações bloqueiam o chamado e depois o compromisso para impedir conflito com encerramento ou atualização simultânea. Os motivos de reagendamento são preservados na tabela privada `ticket_appointment_reschedules`, com RLS, sem envio ao cliente. A mudança de situação grava eventos em `ticket_audit`, e a confirmação registra canal, data e profissional. As tabelas operacionais não são graváveis diretamente por visitantes.
+As migrações `supabase/agenda_integrity_v10.sql` e `supabase/agenda_closure_guard_v11.sql` preservam os registros existentes e restringe transições por RPC autenticada e autorização por chamado. As operações bloqueiam o chamado e depois o compromisso para impedir conflito com encerramento ou atualização simultânea. Os motivos de reagendamento são preservados na tabela privada `ticket_appointment_reschedules`, com RLS, sem envio ao cliente. A mudança de situação grava eventos em `ticket_audit`, e a confirmação registra canal, data e profissional. As tabelas operacionais não são graváveis diretamente por visitantes.
 
 **Limites:** a Agenda não verifica a disponibilidade em agendas externas nem envia convites por e-mail, SMS, telefone ou WhatsApp. O horário escolhido precisa ser conferido pela equipe; um compromisso pode coincidir com outro até existir uma política operacional de conflitos e recursos. A indicação de confirmação é uma declaração do profissional após contato, não uma assinatura eletrônica do cliente.
 
