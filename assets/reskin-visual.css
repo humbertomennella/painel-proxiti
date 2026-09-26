@@ -424,7 +424,7 @@ html[data-theme] body.workspace-mode #profile-section .profile-mark{
  background:linear-gradient(135deg,#225dbd,#397cdd);color:#fff;
  border-radius:14px;box-shadow:0 7px 17px rgba(37,98,191,.2)
 }
-/* Academia existente: hero + oito trilhas de dados reais, sem números inventados. */
+/* UniProxiti existente: hero + oito trilhas de dados reais, sem números inventados. */
 html[data-theme] body.workspace-mode #ops-training .academy-learning-hero{
  position:relative;overflow:hidden;min-height:220px;
  background:radial-gradient(circle at 80% 15%,rgba(83,163,248,.39),transparent 49%),
@@ -781,7 +781,7 @@ html[data-theme] body.workspace-mode #ops-agenda .agenda-list{gap:13px}
 html[data-theme] body.workspace-mode #ops-agenda .agenda-entry{border:1px solid var(--px-line);border-top:3px solid var(--c-primary);border-radius:var(--radius);padding:20px;box-shadow:var(--ui-soft-shadow)}
 html[data-theme] body.workspace-mode #ops-agenda .agenda-entry>h4{font-size:17px}
 html[data-theme] body.workspace-mode #ops-agenda :is(.agenda-reschedule,.agenda-history){padding:12px 14px;border:1px solid var(--px-line);border-radius:10px;background:var(--px-bg-muted)}
-/* Academia: hero, progresso real, trilhas ilustradas, biblioteca e editor. */
+/* UniProxiti: hero, progresso real, trilhas ilustradas, biblioteca e editor. */
 html[data-theme] body.workspace-mode #ops-training .academy-intro{margin:0 0 13px;padding:12px 16px;background:var(--ui-accent-soft);border:1px solid var(--px-line);border-left:3px solid var(--c-primary);border-radius:var(--radius-sm)}
 html[data-theme] body.workspace-mode #ops-training .academy-intro strong{font-size:13px}
 html[data-theme] body.workspace-mode #ops-training .academy-intro p{margin:4px 0 0;font-size:12px;line-height:1.55}
