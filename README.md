@@ -94,6 +94,6 @@ A **UniProxiti V13** separa os dez procedimentos de consulta da capacitação: [
 
 ## UniProxiti · Dashboard (Iteração 2)
 
-A área antes denominada UniProxiti foi reorganizada como painel de estudos, com quatro indicadores calculados a partir das tabelas existentes do Supabase, trilhas com a classificação `required` do catálogo, retomada de aula, atividade recente baseada em tentativas registradas e certificado somente após emissão real pelo servidor. A seção de biblioteca técnica, questionários, prova final e PDF mantém os fluxos anteriores. Subtítulo da área: **Programa interno de capacitação PROXITI**.
+A UniProxiti foi reorganizada como painel de estudos, com quatro indicadores calculados a partir das tabelas existentes do Supabase, trilhas com a classificação `required` do catálogo, retomada de aula, atividade recente baseada em tentativas registradas e certificado somente após emissão real pelo servidor. A seção de biblioteca técnica, questionários, prova final e PDF mantém os fluxos anteriores. Subtítulo da área: **Programa interno de capacitação PROXITI**.
 
 O banco registra aulas aprovadas, tentativas e notas, mas **não registra percentual de leitura da aula**. A retomada apresenta o percentual real da trilha, sem inventar conclusão de leitura. Veja [fontes, limites e QA da UniProxiti](docs/uniproxiti-dashboard.md). Branch de revisão: `uniproxiti-dashboard`; nenhuma publicação ou merge sem aprovação.
