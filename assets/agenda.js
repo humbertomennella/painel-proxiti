@@ -186,6 +186,41 @@
        {detail:{id:row.ticket_id}}));
    });
    card.append(open,controlsFor(row,ticket));
+   const history=make("details",null,"agenda-history");
+   history.append(make("summary","Histórico de reagendamentos"));
+   const content=make("ol",null,"ticket-workflow-list");
+   history.append(content);
+   history.addEventListener("toggle",async()=>{
+     if(!history.open||history.dataset.loaded==="true")return;
+     const active=session(),gen=generation;
+     if(!current(gen,active))return;
+     content.replaceChildren(make("li","Consultando histórico autorizado…","ops-muted"));
+     try{
+       const rows=await query(active.client.from("ticket_appointment_reschedules")
+         .select("id,previous_start,new_start,previous_duration,new_duration,previous_modality,new_modality,reason,created_at")
+         .eq("appointment_id",row.id).order("created_at",{ascending:false}).limit(101));
+       if(!current(gen,active)||!history.isConnected)return;
+       content.replaceChildren();
+       if(!rows.length)content.append(make("li","Nenhum reagendamento registrado."));
+       for(const event of rows.slice(0,100)){
+         const entry=make("li",null,"ticket-workflow-entry");
+         entry.append(make("strong",stamp(event.previous_start)+" → "+stamp(event.new_start)),
+           make("small","Registrado em "+stamp(event.created_at)+" · "+
+             event.previous_duration+" → "+event.new_duration+" min · "+
+             (modes[event.previous_modality]||event.previous_modality)+" → "+
+             (modes[event.new_modality]||event.new_modality)),
+           make("p",event.reason));
+         content.append(entry);
+       }
+       if(rows.length>100)
+         content.append(make("li","Exibindo os 100 registros mais recentes de reagendamento.","ops-muted"));
+       history.dataset.loaded="true";
+     }catch{
+       if(current(gen,active)&&history.isConnected)
+         content.replaceChildren(make("li","Histórico indisponível. Feche e abra para tentar novamente."));
+     }
+   });
+   card.append(history);
    return card;
  }
  function render(){
