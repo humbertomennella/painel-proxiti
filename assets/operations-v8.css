@@ -148,3 +148,17 @@ html[data-theme] body.workspace-mode #ops-agenda #agenda-load-more:focus-visible
  html[data-theme] body.workspace-mode #ops-agenda .agenda-confirm button{width:100%}
  html[data-theme] body.workspace-mode #ops-agenda #agenda-load-more{width:100%}
 }
+
+html[data-theme] body.workspace-mode #ops-agenda .agenda-history{
+ border-top:1px solid var(--px-line);padding-top:9px;min-width:0
+}
+html[data-theme] body.workspace-mode #ops-agenda .agenda-history summary{
+ cursor:pointer;color:var(--px-blue);font-size:.91rem;font-weight:700;padding:9px 0
+}
+html[data-theme] body.workspace-mode #ops-agenda .agenda-history summary:focus-visible{
+ outline:3px solid var(--px-orange);outline-offset:3px
+}
+html[data-theme] body.workspace-mode #ops-agenda .agenda-history ol{
+ margin:8px 0;padding:0 0 0 21px;min-width:0;overflow-wrap:anywhere
+}
+html[data-theme] body.workspace-mode #ops-agenda .agenda-history li{padding:9px 0}
