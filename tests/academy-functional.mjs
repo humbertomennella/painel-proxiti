@@ -448,9 +448,14 @@ try{
            return {scroll:document.documentElement.scrollWidth,width:window.innerWidth,
              card:{left:card.left,right:card.right},
              form:{left:form.left,right:form.right},
-             search:{left:search.left,right:search.right}};
+             search:{left:search.left,right:search.right},
+             offenders:[...document.querySelectorAll("#ops-training *")].map(node=>{
+               const rect=node.getBoundingClientRect();
+               return {element:node.tagName.toLowerCase()+(node.id?"#"+node.id:""),
+                 left:Math.round(rect.left),right:Math.round(rect.right),width:Math.round(rect.width)};
+             }).filter(x=>x.right>window.innerWidth+2&&x.width>1).slice(0,18)};
          });
-         assert(geometry.scroll<=width+2,width+"/"+theme+": rolagem horizontal");
+         assert(geometry.scroll<=width+2,width+"/"+theme+": rolagem horizontal "+geometry.scroll+"px, excedentes: "+JSON.stringify(geometry.offenders));
          for(const key of ["card","form","search"])assert(geometry[key].left>=-1&&
            geometry[key].right<=width+1,width+"/"+theme+": "+key+" fora da tela");
          if([375,1366].includes(width))await page.screenshot({
