@@ -300,6 +300,8 @@ async function openScenario({materials=[],admin=false,failTraining=false,deferTr
  },{materials,admin,failTraining,deferTraining,ambiguousSave,conflictSave,startView,progressFixture,failGrade});
  await page.waitForFunction(()=>["ready","partial","error","restricted"].includes(
    document.getElementById("overview-sync-state").dataset.phase),{timeout:12000});
+ await page.evaluate(()=>window.PROXITI_OPEN_VIEW("training"));
+ await page.waitForFunction(()=>!document.getElementById("ops-training").hidden);
  return page;
 }
 
