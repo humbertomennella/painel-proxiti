@@ -41,14 +41,16 @@
   let presenceCheckedAt=0;
   async function updatePresence(){
     if(!state.db||Date.now()-presenceCheckedAt<20000)return;
+    const db=state.db,uid=state.user?.id;
     presenceCheckedAt=Date.now();
     try{
-      const rows=await query(state.db.from("staff_presence").select("staff_id")
+      const rows=await query(db.from("staff_presence").select("staff_id")
         .gte("last_seen",new Date(Date.now()-60000).toISOString()).limit(50));
+      if(state.db!==db||state.user?.id!==uid)return;
       el("overview-online").textContent=isAdmin()
         ?(rows.length===1?"1 profissional online":rows.length+" profissionais online")
         :(rows.length?"Você está online":"Disponibilidade em atualização");
-    }catch{el("overview-online").textContent="Presença em atualização";}
+    }catch{if(state.db===db&&state.user?.id===uid)el("overview-online").textContent="Presença em atualização";}
   }
 
   // Leituras persistidas no Supabase; armazenamento local serve só antes da primeira sincronização.
@@ -104,7 +106,11 @@
   }
   const hasAttention=t=>window.PROXITI_OVERVIEW_MODEL.attention(t,seenTicket,unreadMessages,can("chat"),state.messageReady);
   const overviewComplete=()=>!state.readIssue&&(!can("chat")||(state.messageReady&&!state.messagesCapped));
-  const overviewStatus=phase=>document.dispatchEvent(new CustomEvent("proxiti-overview-status",{detail:{phase,at:Date.now()}}));
+  const overviewStatus=phase=>{
+    const detail={phase,at:Date.now()};
+    window.PROXITI_OVERVIEW_STATUS={userId:state.user?.id, ...detail};
+    document.dispatchEvent(new CustomEvent("proxiti-overview-status",{detail}));
+  };
   async function markMessagesSeen(id,list){
     if(document.hidden||el("operations").hidden||state.currentView!=="tickets"||
        el("ticket-detail").hidden||state.active?.id!==id||state.readSaving.has(id))return;
@@ -232,6 +238,7 @@
       messagesReady:state.messageReady&&!state.messagesCapped,readIssue:state.readIssue,
       activeId:state.active?.id,at:Date.now(),sampleLimit:100
     });
+    window.PROXITI_OVERVIEW_SNAPSHOT={userId:state.user.id,detail:summary};
     document.dispatchEvent(new CustomEvent("proxiti-overview-updated",{detail:summary}));
   }
 
@@ -450,6 +457,7 @@
         if(found){const changed=state.active.status!==found.status||state.active.assigned_to!==found.assigned_to;state.active=found;updateTicketHeading();if(changed)announceTicket();}
         else{state.active=null;announceTicket();remember("ticket","");el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;}
       }
+      if(state.ticketError)notice("");
       state.ticketsReady=true;state.ticketError=false;
       updateInbox();renderTickets();
       overviewStatus(overviewComplete()?"ready":"partial");
@@ -743,6 +751,7 @@
     el("notifications-count").hidden=true;el("ticket-badge").hidden=true;
     el("ticket-list").replaceChildren();el("staff-messages").replaceChildren();
     el("staff-reply").value="";el("notifications-list").replaceChildren();
+    window.PROXITI_OVERVIEW_SNAPSHOT=null;window.PROXITI_OVERVIEW_STATUS=null;
     el("overview-open").textContent="Chamados: atualizando…";
     el("operations").hidden=true;el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;notice("");announceTicket();
   }
