@@ -27,7 +27,7 @@ A imagem fornecida é referência estética. Números, clientes, técnicos, prog
 
 ## QA obrigatório: situação e evidência
 
-A evidência automatizada está no job [Interface responsiva · execução de revisão](https://github.com/humbertomennella/painel-proxiti/actions/runs/36220082702). Para as validações que dependem de contas reais, o resultado correto é **pendente**, não “aprovado por simulação”.
+A evidência automatizada está no job [Interface responsiva · execução de revisão](https://github.com/humbertomennella/painel-proxiti/actions/runs/36220414369). Para as validações que dependem de contas reais, o resultado correto é **pendente**, não “aprovado por simulação”.
 
 | Verificação | Situação | Evidência ou pendência |
 |---|---|---|
@@ -50,6 +50,6 @@ A evidência automatizada está no job [Interface responsiva · execução de re
 
 ## Revisão visual do titular
 
-As capturas do Chromium estão disponíveis no artefato `proxiti-central-visual-smoke` da [execução de revisão](https://github.com/humbertomennella/painel-proxiti/actions/runs/36220082702), incluindo login, shell e Academia em claro/escuro nas larguras principais. Validar o visual em celular e desktop antes de autorizar qualquer merge.
+As capturas do Chromium estão disponíveis no artefato `proxiti-central-visual-smoke` da [execução de revisão](https://github.com/humbertomennella/painel-proxiti/actions/runs/36220414369), incluindo login, shell e Academia em claro/escuro nas larguras principais. Validar o visual em celular e desktop antes de autorizar qualquer merge.
 
 **Regra de publicação:** PR permanece draft. Não há merge automático. A branch só pode ser integrada após sua revisão explícita.
