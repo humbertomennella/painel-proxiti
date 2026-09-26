@@ -56,13 +56,14 @@ async function openScenario({tickets=baseline,appointmentsFixture=[],failAppoint
      failTickets:false,failMessages:false,failReceipts:false,failRead:false,deferReply:false,
      attachAmbiguous:false,failAppointments,deferAppointments,
      read:[],staff_presence:[],notes:[],tasks:[],reports:[],attachments:[],devices:[],
-     appointments:structuredClone(appointmentsFixture),audit:[],stored:new Map(),calls:[]
+     appointments:structuredClone(appointmentsFixture),appointmentReschedules:[],audit:[],stored:new Map(),calls:[]
    };
    const tables={
      support_tickets:"tickets",support_messages:"messages",
      ticket_read_receipts:"read",staff_presence:"staff_presence",
      ticket_internal_notes:"notes",ticket_tasks:"tasks",ticket_reports:"reports",
-     ticket_attachments:"attachments",ticket_devices:"devices",ticket_appointments:"appointments",ticket_audit:"audit"
+     ticket_attachments:"attachments",ticket_devices:"devices",ticket_appointments:"appointments",ticket_audit:"audit",
+     ticket_appointment_reschedules:"appointmentReschedules"
    };
    const client={
      from(table){
@@ -172,6 +173,13 @@ async function openScenario({tickets=baseline,appointmentsFixture=[],failAppoint
          const appointment=fixture.appointments.find(x=>x.id===args.p_id);
          if(!appointment||!["planned","confirmed"].includes(appointment.status))
            return error("Compromisso finalizado");
+         fixture.appointmentReschedules.push({
+           id:fixture.appointmentReschedules.length+1,appointment_id:appointment.id,
+           previous_start:appointment.starts_at,new_start:args.p_starts_at,
+           previous_duration:appointment.duration_minutes,new_duration:args.p_duration,
+           previous_modality:appointment.modality,new_modality:args.p_modality,
+           reason:args.p_reason,created_at:new Date().toISOString()
+         });
          appointment.starts_at=args.p_starts_at;appointment.duration_minutes=args.p_duration;
          appointment.modality=args.p_modality;appointment.status="planned";
          appointment.confirmation_channel=null;appointment.confirmed_at=null;
@@ -243,6 +251,7 @@ try{
  await test("Falha de consulta é distinguida de agenda vazia e permite recuperação",async()=>{
   const page=await openScenario({appointmentsFixture:[appointment(1)],failAppointments:true});
   try{
+   await page.evaluate(()=>window.PROXITI_OPEN_VIEW("agenda"));
    await page.waitForFunction(()=>document.getElementById("agenda-sync-state").dataset.phase==="error");
    assert(!(await page.textContent("#agenda-sync-state")).includes("consultada às"));
    await page.evaluate(()=>window.__fixture.failAppointments=false);
@@ -300,6 +309,9 @@ try{
    assert.equal(await page.evaluate(()=>window.__fixture.appointments[0].confirmation_channel),null);
    assert.equal(await page.evaluate(()=>window.__fixture.audit.includes("rescheduled")),true);
    await page.waitForFunction(()=>document.getElementById("agenda-list").textContent.includes("confirmação do cliente pendente"));
+   await page.locator(".agenda-history summary").click();
+   await page.waitForFunction(()=>document.getElementById("agenda-list").textContent.includes("Cliente solicitou novo horário."));
+   assert.equal(await page.evaluate(()=>window.__fixture.appointmentReschedules.length),1);
   }finally{await page.close();}
  });
  await test("Histórico pagina 61 itens sem inventar total global",async()=>{
