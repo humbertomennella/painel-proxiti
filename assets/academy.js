@@ -21,7 +21,8 @@ const query=async request=>{
  return data;
 };
 const shortDate=value=>{
- const d=new Date(/^\\d{4}-\\d{2}-\\d{2}$/.test(String(value))?value+"T12:00:00":value);
+ const v=String(value),dateOnly=v.length===10&&v[4]==="-"&&v[7]==="-";
+ const d=new Date(dateOnly?v+"T12:00:00":value);
  return Number.isNaN(d.getTime())?"Sem revisão registrada":
    d.toLocaleDateString("pt-BR");
 };
