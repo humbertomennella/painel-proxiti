@@ -1,0 +1,53 @@
+/* PROXITI visual reskin · Fase 1 · tokens. Só apresentação. */
+:root{
+ --c-bg-sidebar:#0d1a2b;--c-bg-sidebar-deep:#081322;
+ --c-bg-content:#f2f5f9;--c-primary:#2f7de1;
+ --c-primary-grad:linear-gradient(135deg,#2563eb,#4f9dff);
+ --c-success:#22c55e;--c-warning:#f59e0b;--c-danger:#ef4444;--c-info:#3b82f6;
+ --c-text:#16233a;--c-text-muted:#5b6b82;--c-border:#e3e9f2;
+ --c-surface:#fff;--c-surface-soft:#f8faff;
+ --c-sidebar-text:#dce7f7;--c-sidebar-muted:#b5c6dd;
+ --radius:14px;--radius-sm:10px;
+ --shadow-card:0 1px 2px rgba(16,35,66,.06),0 8px 24px rgba(16,35,66,.06);
+ --font:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+ --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;
+ --space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;
+ --fs-1:12px;--fs-2:13px;--fs-3:14px;--fs-4:16px;--fs-5:20px;--fs-6:28px;--fs-7:40px;
+ --status-new:#357ce6;--status-triage:#9272d9;
+ --status-in_progress:#3184df;--status-waiting_customer:#d58c12;
+ --status-resolved:#16855a;--status-closed:#65748b;
+ --reskin-focus:#115ac6;
+ --px-font:var(--font);--px-radius:var(--radius);--px-radius-sm:var(--radius-sm);
+}
+html[data-theme="light"]{
+ --px-bg:var(--c-bg-content);--px-bg-muted:#edf2f8;
+ --px-surface:var(--c-surface);--px-surface-soft:var(--c-surface-soft);
+ --px-ink:var(--c-text);--px-text:#283b56;--px-muted:var(--c-text-muted);
+ --px-line:var(--c-border);--px-line-strong:#c6d2e3;
+ --px-blue:#1f64c8;--px-orange:#a14b10;--px-focus:var(--reskin-focus);
+ --px-shadow:var(--shadow-card);
+ --bg:var(--c-bg-content);--surface:var(--c-surface);--line:var(--c-border);
+ --txt:var(--c-text);--muted:var(--c-text-muted);--blue:#1f64c8;--amber:#a14b10;
+ color-scheme:light;
+}
+html[data-theme="dark"]{
+ --c-bg-content:#101827;--c-surface:#1a2639;--c-surface-soft:#202e43;
+ --c-text:#edf3fd;--c-text-muted:#bdcbe0;--c-border:#31435e;
+ --px-bg:#101827;--px-bg-muted:#152239;--px-surface:#1a2639;--px-surface-soft:#202e43;
+ --px-ink:#edf3fd;--px-text:#dbe7f8;--px-muted:#bdcbe0;
+ --px-line:#31435e;--px-line-strong:#4e6281;
+ --px-blue:#95c3ff;--px-orange:#ffb47a;--px-focus:#a6ceff;
+ --px-shadow:0 1px 2px rgba(0,0,0,.15),0 12px 30px rgba(0,0,0,.17);
+ --bg:var(--c-bg-content);--surface:var(--c-surface);--line:var(--c-border);
+ --txt:var(--c-text);--muted:var(--c-text-muted);--blue:var(--px-blue);--amber:var(--px-orange);
+ color-scheme:dark;
+}
+html[data-theme] body.workspace-mode{
+ --theme-bg:var(--c-bg-content);--theme-panel:var(--c-surface);
+ --theme-surface:var(--c-surface);--theme-deep:var(--px-bg-muted);
+ --theme-border:var(--c-border);--theme-text:var(--c-text);
+ --theme-muted:var(--c-text-muted);--theme-accent:var(--px-blue);
+ --theme-marker:var(--px-blue);
+}
+html[data-theme] body,html[data-theme] button,
+html[data-theme] input,html[data-theme] select,html[data-theme] textarea{font-family:var(--font)}
