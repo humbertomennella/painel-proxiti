@@ -16,6 +16,32 @@ alter table public.ticket_audit add constraint ticket_audit_action_check check(a
   'appointment_created','appointment_updated','appointment_rescheduled',
   'device_updated','report_saved'));
 
+-- Motivos de reagendamento são privados, preservados por evento e nunca enviados ao cliente.
+create table if not exists public.ticket_appointment_reschedules(
+ id bigint generated always as identity primary key,
+ appointment_id uuid not null references public.ticket_appointments(id) on delete cascade,
+ ticket_id uuid not null references public.support_tickets(id) on delete cascade,
+ actor_id uuid references public.profiles(id) on delete set null,
+ previous_start timestamptz not null,
+ new_start timestamptz not null,
+ previous_duration integer not null,
+ new_duration integer not null,
+ previous_modality text not null,
+ new_modality text not null,
+ reason text not null check(length(btrim(reason)) between 5 and 400),
+ created_at timestamptz not null default now()
+);
+create index if not exists proxiti_appointment_reschedules_idx
+ on public.ticket_appointment_reschedules(appointment_id,created_at desc);
+alter table public.ticket_appointment_reschedules enable row level security;
+revoke all on public.ticket_appointment_reschedules from public,anon,authenticated;
+grant select on public.ticket_appointment_reschedules to authenticated;
+drop policy if exists appointment_reschedules_staff_read
+ on public.ticket_appointment_reschedules;
+create policy appointment_reschedules_staff_read
+ on public.ticket_appointment_reschedules for select to authenticated
+ using(public.proxiti_ticket_access(ticket_id,false));
+
 -- O chamado é bloqueado antes de inserir o compromisso para não agendar após encerramento.
 create or replace function public.proxiti_schedule_appointment(
  p_ticket uuid,p_title text,p_starts_at timestamptz,p_duration integer,
@@ -109,6 +135,7 @@ create or replace function public.proxiti_reschedule_appointment(
  p_id uuid,p_starts_at timestamptz,p_duration integer,p_modality text,p_reason text)
 returns void language plpgsql security definer set search_path='' as $$
 declare target uuid; current_status text; old_status text; previous_start timestamptz;
+ previous_duration integer; previous_modality text;
 begin
  select ticket_id into target from public.ticket_appointments where id=p_id;
  if target is null then raise exception 'Compromisso inexistente'; end if;
@@ -122,18 +149,23 @@ begin
    or p_modality not in ('remote','on_site','phone')
    or p_reason is null or length(btrim(p_reason)) not between 5 and 400
  then raise exception 'Revise horário, duração, modalidade e motivo do reagendamento'; end if;
- select status,starts_at into old_status,previous_start
+ select status,starts_at,duration_minutes,modality
+ into old_status,previous_start,previous_duration,previous_modality
  from public.ticket_appointments where id=p_id for update;
  if old_status not in ('planned','confirmed') then
    raise exception 'Compromisso finalizado. Atualize a agenda'; end if;
- if previous_start=p_starts_at and
-   (select duration_minutes=p_duration and modality=p_modality
-    from public.ticket_appointments where id=p_id) then
+ if previous_start=p_starts_at and previous_duration=p_duration
+   and previous_modality=p_modality then
    raise exception 'O novo horário e os detalhes são iguais aos anteriores'; end if;
  update public.ticket_appointments
  set starts_at=p_starts_at,duration_minutes=p_duration,modality=p_modality,
      status='planned',confirmed_at=null,confirmed_by=null,confirmation_channel=null,
      updated_at=now() where id=p_id;
+ insert into public.ticket_appointment_reschedules(
+  appointment_id,ticket_id,actor_id,previous_start,new_start,
+  previous_duration,new_duration,previous_modality,new_modality,reason)
+ values(p_id,target,(select auth.uid()),previous_start,p_starts_at,
+  previous_duration,p_duration,previous_modality,p_modality,btrim(p_reason));
  insert into public.ticket_audit(ticket_id,actor_id,action,previous_value,next_value)
  values(target,(select auth.uid()),'appointment_rescheduled',
    to_char(previous_start at time zone 'UTC','YYYY-MM-DD"T"HH24:MI"Z"'),
