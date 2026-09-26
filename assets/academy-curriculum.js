@@ -1,4 +1,6 @@
-(()=>{\n"use strict";\nwindow.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
+(()=>{
+"use strict";
+window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
   "version": "2026-09-v1",
   "name": "Fundamentos Operacionais PROXITI",
   "description": "Capacitação interna em suporte, redes, atendimento, infraestrutura, segurança preventiva e privacidade.",
@@ -748,4 +750,5 @@
       "references": []
     }
   ]
-});\n})();\n
+});
+})();
