@@ -11,6 +11,7 @@ on:
       - "tests/agenda-functional.mjs"
       - "tests/academy-functional.mjs"
       - "tests/academy-learning-functional.mjs"
+      - "tests/reskin-visual.mjs"
       - ".github/workflows/browser-smoke.yml"
   push:
     branches: [main]
@@ -23,6 +24,7 @@ on:
       - "tests/agenda-functional.mjs"
       - "tests/academy-functional.mjs"
       - "tests/academy-learning-functional.mjs"
+      - "tests/reskin-visual.mjs"
       - ".github/workflows/browser-smoke.yml"
   workflow_dispatch:
 permissions:
@@ -33,6 +35,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
@@ -52,6 +56,9 @@ jobs:
         run: node tests/academy-functional.mjs
       - name: Verificar aulas, prova final, nota e certificado interno
         run: node tests/academy-learning-functional.mjs
+      - name: Auditoria visual sem alterações em auth, dados ou permissões
+        if: github.event_name == 'pull_request' && github.head_ref == 'reskin-visual'
+        run: node tests/reskin-visual.mjs
       - name: Guardar capturas para revisão
         if: always()
         uses: actions/upload-artifact@v4
