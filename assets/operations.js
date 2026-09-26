@@ -414,13 +414,21 @@
     document.dispatchEvent(new CustomEvent("proxiti-ticket-selected",{detail:{ticket:state.active}}));
   }
   async function loadTickets(){
-    if(!can("tickets_view")||state.loading)return;
+    if(!state.db||!state.user||!can("tickets_view")||state.loading)return;
+    const db=state.db,uid=state.user.id;
+    const same=()=>state.db===db&&state.user?.id===uid;
     state.loading=true;
+    if(!state.ticketsReady)overviewStatus("loading");
     try{
-      state.tickets=await query(state.db.from("support_tickets")
+      const tickets=await query(db.from("support_tickets")
         .select("id,reference,customer_name,customer_email,customer_phone,subject,description,status,source,assigned_to,created_at")
         .order("created_at",{ascending:false}).limit(100));
+      if(!same())return;
+      state.tickets=tickets;
       await loadReadReceipts();
+      if(!same())return;
+      if(can("chat")&&!state.messageReady)await checkNewMessages();
+      if(!same())return;
       const ids=new Set(state.tickets.map(t=>t.id));
       const newArrivals=state.ticketIds?state.tickets.filter(t=>!state.ticketIds.has(t.id)):[];
       state.ticketIds=ids;
@@ -442,13 +450,20 @@
         if(found){const changed=state.active.status!==found.status||state.active.assigned_to!==found.assigned_to;state.active=found;updateTicketHeading();if(changed)announceTicket();}
         else{state.active=null;announceTicket();remember("ticket","");el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;}
       }
+      state.ticketsReady=true;state.ticketError=false;
       updateInbox();renderTickets();
+      overviewStatus(overviewComplete()?"ready":"partial");
       if(state.restoreScroll!==null){
         const y=state.restoreScroll;state.restoreScroll=null;
         requestAnimationFrame(()=>window.scrollTo({top:y,behavior:"instant"}));
       }
-    }catch(e){notice("Falha ao carregar chamados: "+e.message,true);}
-    finally{state.loading=false;}
+    }catch{
+      if(same()){
+        state.ticketError=true;
+        notice("Não foi possível atualizar os chamados. Você pode tentar novamente.",true);
+        overviewStatus("error");
+      }
+    }finally{if(same())state.loading=false;}
   }
   function updateTicketHeading(){
     const t=state.active;if(!t)return;
@@ -794,6 +809,7 @@
     void openTicket(id);
   });
   el("reload-tickets").addEventListener("click",()=>void loadTickets());
+  document.addEventListener("proxiti-overview-retry",()=>{if(can("tickets_view"))void loadTickets();});
   el("browser-notifications").addEventListener("click",async()=>{
     if(!("Notification" in window)||Notification.permission!=="default")return;
     try{await Notification.requestPermission()}catch{}
