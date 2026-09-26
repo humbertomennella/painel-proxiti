@@ -8,6 +8,7 @@ on:
       - "tests/browser-smoke.mjs"
       - "tests/overview-functional.mjs"
       - "tests/tickets-functional.mjs"
+      - "tests/agenda-functional.mjs"
       - ".github/workflows/browser-smoke.yml"
   push:
     branches: [main]
@@ -17,6 +18,7 @@ on:
       - "tests/browser-smoke.mjs"
       - "tests/overview-functional.mjs"
       - "tests/tickets-functional.mjs"
+      - "tests/agenda-functional.mjs"
       - ".github/workflows/browser-smoke.yml"
   workflow_dispatch:
 permissions:
@@ -40,6 +42,8 @@ jobs:
         run: node tests/overview-functional.mjs
       - name: Verificar fluxos completos de chamados e falhas com dados simulados
         run: node tests/tickets-functional.mjs
+      - name: Verificar agenda com confirmação, paginação, reagendamento e permissões
+        run: node tests/agenda-functional.mjs
       - name: Guardar capturas para revisão
         if: always()
         uses: actions/upload-artifact@v4
