@@ -228,8 +228,8 @@
     <button type="button" id="agenda-load-more" class="secondary" hidden>Carregar mais compromissos</button>
   </div>
   <div id="ops-training" class="ops-view px-panel" hidden>
-    <div class="uniproxiti-update-strip"><button id="academy-learning-refresh" type="button" class="secondary">Atualizar progresso</button><button type="button" id="reload-training" class="secondary">Atualizar ↻</button></div>
-    <p id="training-sync-state" class="academy-sync-state" role="status" aria-live="polite">Consultando a biblioteca autorizada…</p>
+    
+    
     
     <section id="academy-learning-root" class="academy-learning" aria-labelledby="academy-learning-heading">
       <div class="academy-learning-hero">
@@ -262,7 +262,8 @@
       <div id="academy-learning-summary" class="academy-learning-summary" role="status" aria-live="polite">
         <p>Consultando seu progresso individual…</p>
       </div>
-      <div class="academy-learning-actions">
+      <div class="uniproxiti-update-strip"><button id="academy-learning-refresh" type="button" class="secondary">Atualizar progresso</button><button type="button" id="reload-training" class="secondary">Atualizar ↻</button></div>
+<div class="academy-learning-actions">
         <button id="academy-learning-show-tracks" type="button" class="secondary">Ver trilhas</button>
         <button id="academy-learning-show-certificate" type="button" class="secondary">Meu certificado</button>
         <button id="academy-learning-open-exam" type="button" class="primary" disabled>Prova final · concluir 16 cursos</button>
@@ -296,7 +297,8 @@
       </section>
     </section>
     <div class="academy-library-heading"><h4>Biblioteca técnica</h4><p>Procedimentos internos e arquivos privados para consulta rápida, com revisão e histórico editorial.</p></div>
-    <div class="academy-filters">
+    <p id="training-sync-state" class="academy-sync-state" role="status" aria-live="polite">Consultando a biblioteca autorizada…</p>
+<div class="academy-filters">
       <div class="ops-inline-search"><label for="training-search">Pesquisar na UniProxiti</label><input id="training-search" type="search" placeholder="Título, assunto ou conteúdo técnico" autocomplete="off" maxlength="120"><p id="training-search-status" role="status" aria-live="polite"></p></div>
       <label for="training-category-filter">Especialidade <select id="training-category-filter"><option value="">Todas as áreas</option><option>Atendimento</option><option>Computadores</option><option>Redes</option><option>Backup</option><option>Segurança</option><option>Infraestrutura</option><option>Geral</option></select></label>
       <label for="training-status-filter" data-admin-only>Publicação <select id="training-status-filter"><option value="all">Publicados e rascunhos</option><option value="published">Publicados</option><option value="draft">Rascunhos</option></select></label>

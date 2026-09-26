@@ -66,7 +66,7 @@ html[data-theme] button:disabled{opacity:.65;cursor:not-allowed}
 html[data-theme] body.workspace-mode .wrap{width:100%;max-width:none;margin:0}
 html[data-theme] body.workspace-mode .panel{--side-width:240px;display:grid;grid-template-columns:var(--side-width) minmax(0,1fr);gap:0;min-height:100dvh;background:var(--px-bg)}
 html[data-theme] body.workspace-mode .panel.sidebar-collapsed{--side-width:72px}
-html[data-theme] body.workspace-mode .app-sidebar{position:sticky;top:0;align-self:start;height:100dvh;width:100%;min-height:0;padding:22px 10px 16px;overflow-y:auto;overflow-x:hidden;z-index:50;border:0;border-right:1px solid #182b42;background:linear-gradient(165deg,#081421,#0c1b2a)!important;scrollbar-width:thin;scrollbar-color:#456080 transparent}
+html[data-theme] body.workspace-mode .app-sidebar{position:fixed;top:0;left:0;align-self:start;height:100dvh;width:var(--side-width);min-height:0;padding:22px 10px 16px;overflow-y:auto;overflow-x:hidden;z-index:50;border:0;border-right:1px solid #182b42;background:linear-gradient(165deg,#081421,#0c1b2a)!important;scrollbar-width:thin;scrollbar-color:#456080 transparent}
 html[data-theme] body.workspace-mode .sidebar-top{display:flex;align-items:center;gap:5px;padding:0 6px 25px;min-height:76px;border:0}
 html[data-theme] body.workspace-mode .sidebar-brand{color:#fff;letter-spacing:-.06em;font-size:28px;font-weight:850;gap:0}
 html[data-theme] body.workspace-mode .sidebar-brand .blue{color:#fff}
@@ -90,7 +90,7 @@ html[data-theme] body.workspace-mode .reskin-help-link{padding:8px;background:#1
 html[data-theme] body.workspace-mode .panel.sidebar-collapsed :is(.side-label,.side-count,.reskin-help-copy){display:none}
 html[data-theme] body.workspace-mode .panel.sidebar-collapsed .sidebar-top{flex-direction:column;padding:0 0 16px}
 html[data-theme] body.workspace-mode .panel.sidebar-collapsed :is(.side-link,.side-home,.reskin-help){justify-content:center;padding:10px 5px}
-html[data-theme] body.workspace-mode .panel-main{min-width:0;width:100%;max-width:none;padding:0 24px 32px;background:var(--px-bg)}
+html[data-theme] body.workspace-mode .panel-main{grid-column:2;min-width:0;width:100%;max-width:none;padding:0 24px 32px;background:var(--px-bg)}
 html[data-theme] body.workspace-mode .panel-head{position:relative;z-index:40;display:flex;flex-wrap:nowrap;align-items:center;justify-content:space-between;gap:14px;min-height:68px;margin:0 -24px 20px;padding:10px 24px;border:0;border-radius:0;background:radial-gradient(ellipse at 79% 90%,#155a8b,transparent 48%),linear-gradient(100deg,#0c1b2e,#10233a);color:#fff;box-shadow:none}
 html[data-theme] body.workspace-mode .panel-head-greeting{min-width:0}
 html[data-theme] body.workspace-mode .panel-head .kicker{font-size:9px;letter-spacing:.11em;color:#bbcee4;margin:0 0 4px}
@@ -110,6 +110,7 @@ html[data-theme] body.workspace-mode .reskin-user-initials{display:grid;place-it
 html[data-theme] body.workspace-mode .mobile-nav-toggle{display:none}
 html[data-theme] body.workspace-mode .notifications-panel{background:var(--px-surface);color:var(--px-ink);border:1px solid var(--px-line);border-radius:12px;box-shadow:0 15px 45px #06152b44;max-width:calc(100vw - 24px)}
 html[data-theme] body.workspace-mode .notifications-panel button{background:var(--px-surface-soft);color:var(--px-ink);border-color:var(--px-line)}
+html[data-theme] body.workspace-mode .notification-trigger svg{color:#eef6ff}
 html[data-theme] body.workspace-mode .notification-count{background:#c72443;color:#fff}
 html[data-theme] body.workspace-mode .reskin-nav-scrim{position:fixed;inset:0;z-index:79;border:0;border-radius:0;background:#031020aa;width:100vw;height:100dvh}
 /* Shared content architecture. */
@@ -174,6 +175,7 @@ html[data-theme] body.workspace-mode #ops-tickets .ops-bubble.own{margin-left:au
 html[data-theme] body.workspace-mode #ops-tickets .ticket-workflow{border-top:1px solid var(--px-line);padding-top:20px}
 html[data-theme] body.workspace-mode #ops-tickets .ticket-workflow-grid{grid-template-columns:minmax(0,1fr);gap:12px}
 html[data-theme] body.workspace-mode #ops-tickets .ticket-workflow-card{padding:15px;background:var(--px-surface-soft)}
+html[data-theme] body.workspace-mode #staff-reply-form label{color:var(--px-text)}
 /* Técnicos, CMS e agenda. */
 html[data-theme] body.workspace-mode .central-staff-layout{display:grid;grid-template-columns:minmax(260px,.7fr) minmax(0,1.3fr);gap:18px;align-items:start}
 html[data-theme] body.workspace-mode .central-invite-panel{padding:22px;border:1px solid var(--px-line);border-radius:12px;background:var(--px-surface)}

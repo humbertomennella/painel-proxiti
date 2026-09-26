@@ -1,11 +1,12 @@
 /* UniProxiti: composição de capacitação. Dados e emissão continuam nos scripts originais. */
 html[data-theme] body.workspace-mode .ops:has(#ops-training:not([hidden]))>.ops-title{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 html[data-theme] body.workspace-mode #ops-training{position:relative}
+html[data-theme] body.workspace-mode .panel-main:has(#ops-training:not([hidden])) .panel-head{margin-bottom:0}
 html[data-theme] body.workspace-mode #ops-training .uniproxiti-update-strip{display:flex;justify-content:flex-end;gap:8px;position:relative;z-index:2;margin:0 0 10px}
 html[data-theme] body.workspace-mode #ops-training .uniproxiti-update-strip button{min-height:32px;padding:5px 9px;font-size:11px}
 html[data-theme] body.workspace-mode #ops-training #training-sync-state{margin:0 0 8px;font-size:11px}
 html[data-theme] body.workspace-mode #ops-training .academy-learning{display:grid;gap:16px;margin:0 0 28px;min-width:0}
-html[data-theme] body.workspace-mode #ops-training .academy-learning-hero{position:relative;isolation:isolate;overflow:hidden;display:block;min-height:224px;margin:0 -24px;padding:28px 24px;border:0;border-radius:0;background:#07162b;box-shadow:none}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-hero{position:relative;isolation:isolate;overflow:hidden;display:block;min-height:224px;margin:0 -24px;width:calc(100% + 48px);padding:28px 24px;border:0;border-radius:0;background:#07162b;box-shadow:none}
 html[data-theme] body.workspace-mode #ops-training .learning-hero-photo{position:absolute;inset:0;z-index:-2}
 html[data-theme] body.workspace-mode #ops-training .learning-hero-photo img{width:100%;height:100%;max-height:none;object-fit:cover;object-position:right 58%;border:0;border-radius:0;opacity:.85}
 html[data-theme] body.workspace-mode #ops-training .academy-learning-hero:after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#06152bfa 0%,#06152bd9 42%,#06152b11 100%)}
@@ -92,7 +93,7 @@ html[data-theme] body.workspace-mode #ops-training .academy-assessment-form fiel
 html[data-theme] body.workspace-mode #ops-training .academy-certificate-card{background:var(--px-surface);color:var(--px-ink);border-color:#b89b5d}
 /* Os chips dinâmicos devem usar fundo escuro em ambos os temas. */
 html[data-theme] body.workspace-mode #overview-home .overview-hero-status .overview-quick span{background:#102d4e!important;color:#f2f8ff!important;border-color:#8cb9e9!important;text-shadow:none!important}
-@media(min-width:1700px){
+@media(min-width:1280px){
  html[data-theme] body.workspace-mode #ops-training .academy-track-list{grid-template-columns:repeat(8,minmax(0,1fr))}
  html[data-theme] body.workspace-mode #ops-training .academy-track-copy>p{min-height:49px}
  html[data-theme] body.workspace-mode #ops-training .academy-track-summary>img{height:108px}
@@ -110,7 +111,7 @@ html[data-theme] body.workspace-mode #overview-home .overview-hero-status .overv
  html[data-theme] body.workspace-mode #ops-training .uniproxiti-dashboard-columns{grid-template-columns:minmax(0,1fr)}
 }
 @media(max-width:767px){
- html[data-theme] body.workspace-mode #ops-training .academy-learning-hero{margin:0 -14px;padding:24px 20px;min-height:260px}
+ html[data-theme] body.workspace-mode #ops-training .academy-learning-hero{margin:0 -14px;width:calc(100% + 28px);padding:24px 20px;min-height:260px}
  html[data-theme] body.workspace-mode #ops-training .academy-learning-hero h4{font-size:39px}
  html[data-theme] body.workspace-mode #ops-training .academy-learning-hero-copy>p:not(.kicker){font-size:14px;max-width:28ch}
  html[data-theme] body.workspace-mode #ops-training .learning-principles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px 8px}

@@ -51,8 +51,10 @@ async function openScenario({materials=[],admin=false,failTraining=false,deferTr
    document.getElementById("workspace").hidden=false;
    document.getElementById("setup").hidden=true;
    const fixture=window.__fixture={
-     tickets:[],
+     tickets:structuredClone(window.__visualTickets||[]),
      messages:[],
+     site_content:[{content_key:"home.example",label:"Bloco de teste",value:"Texto de teste <strong>literal</strong>",is_published:false}],
+     staff:[{id:"00000000-0000-4000-8000-000000000101",display_name:"Conta de teste",role:"administrator",status:"active",permissions:{}},{id:"00000000-0000-4000-8000-000000000102",display_name:"Técnico de teste",role:"technician",status:"pending",permissions:{}}],
      failTickets:false,failMessages:false,failReceipts:false,failRead:false,deferReply:false,
      attachAmbiguous:false,failAppointments:false,deferAppointments:false,
      failTraining,deferTraining,ambiguousSave,conflictSave,
@@ -88,6 +90,8 @@ async function openScenario({materials=[],admin=false,failTraining=false,deferTr
          range(from,to){skip=from;max=to-from+1;return chain;},
          limit(value){max=value;return chain;},
          textSearch(field,value){search=String(value).toLowerCase();return chain;},
+         upsert(value){op="upsert";payload=value;return chain;},
+         delete(){op="delete";return chain;},
          insert(value){op="insert";payload=value;return chain;},
          update(value){op="update";payload=value;return chain;},
          maybeSingle(){
@@ -110,6 +114,14 @@ async function openScenario({materials=[],admin=false,failTraining=false,deferTr
              if(kind==="in")rows=rows.filter(row=>value.includes(row[field]));
              if(kind==="gte")rows=rows.filter(row=>row[field]>=value);
              if(kind==="lt")rows=rows.filter(row=>row[field]<value);
+           }
+           if(table==="site_content"&&op==="upsert"){
+             const existing=fixture.site_content.find(r=>r.content_key===payload.content_key);
+             if(existing)Object.assign(existing,payload);else fixture.site_content.push({...payload});
+             return {data:[payload],error:null};
+           }
+           if(table==="site_content"&&op==="delete"){
+             fixture.site_content=fixture.site_content.filter(r=>!rows.includes(r));return {data:[],error:null};
            }
            if(op==="update"){
              if(profile.role!=="administrator")return {data:null,error:{message:"Sem permissão"}};
@@ -327,6 +339,7 @@ try{
    await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);
    for(const view of surfaces){
     await page.evaluate(v=>window.PROXITI_OPEN_VIEW(v),view);
+    assert(await page.locator(view==="overview"?"#overview-home":view==="profile"?"#profile-section":"#ops-"+view).isVisible(),`View not selected: ${view}`);
     await page.waitForTimeout(300); // Wait for the existing 220ms sidebar transition.
     const size=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,side:document.getElementById("app-sidebar").getBoundingClientRect().width}));
     if(width===1366){
@@ -347,6 +360,26 @@ try{
    console.log(`PASS: eight areas at ${width}px, ${theme}, no overflow`);
   }
  }
+ await page.evaluate(()=>window.PROXITI_OPEN_VIEW("content"));
+ await page.locator("#content-list button").first().click();
+ assert.equal(await page.inputValue("#content-value"),"Texto de teste <strong>literal</strong>");
+ assert.equal(await page.locator("#content-list strong strong").count(),0);
+ await page.fill("#content-value","Conteúdo revisado no teste");
+ await page.locator("#content-form button[type=submit]").click();
+ await page.waitForFunction(()=>document.getElementById("content-list").textContent.includes("Conteúdo revisado no teste"));
+ page.once("dialog",d=>d.accept());await page.click("#content-delete");
+ await page.waitForFunction(()=>document.getElementById("content-list").textContent.includes("Nenhuma personalização"));
+ await page.evaluate(()=>window.PROXITI_OPEN_VIEW("profile"));
+ await page.fill("#profile-name-input","Nome de teste");await page.locator("#profile-name-form button").click();
+ await page.waitForFunction(()=>document.getElementById("person-name").textContent==="Nome de teste");
+ await page.evaluate(()=>window.PROXITI_OPEN_VIEW("tools"));
+ await page.fill("#subnet-ip","10.0.0.0");await page.fill("#subnet-cidr","31");await page.locator("#subnet-form button").click();
+ assert((await page.textContent("#subnet-result")).includes("10.0.0."));
+ await page.locator("#hash-file").setInputFiles({name:"test.txt",mimeType:"text/plain",buffer:Buffer.from("abc")});
+ await page.fill("#hash-reference","ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+ await page.locator("#hash-form button").click();
+ await page.waitForFunction(()=>document.getElementById("hash-result").textContent.includes("igual ao valor informado"));
+ console.log("PASS: CMS literal text/edit/save/delete, profile name, CIDR /31 and SHA-256");
  await page.setViewportSize({width:375,height:850});
  await page.click("#mobile-nav-toggle");
  await page.waitForFunction(()=>document.activeElement.closest("#app-sidebar"));
@@ -362,6 +395,7 @@ try{
  await page.locator(".academy-course-card").first().click();
  await page.waitForFunction(()=>document.querySelectorAll("#academy-quiz-form fieldset").length===4);
  assert.deepEqual(page.__errors,[],"JavaScript errors");
+ assert.equal(contrastReports.reduce((n,r)=>n+r.violations.length,0),0,"Rendered contrast violations");
  await page.close();
  console.log("CONTRAST",JSON.stringify(contrastReports.map(r=>({view:r.view,theme:r.theme,failures:r.violations.reduce((n,v)=>n+v.nodes.length,0)}))));
  const login=await browser.newPage();await login.route("https://cdn.jsdelivr.net/**",r=>r.abort());await login.goto(url);

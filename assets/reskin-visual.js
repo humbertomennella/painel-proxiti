@@ -121,7 +121,9 @@
  function drawer(){
   const open=innerWidth<768&&panel.classList.contains('mobile-side-open');
   main.inert=open;
-  if(open&&!wasOpen){side.querySelector('button:not([hidden])')?.focus();}
+  if(open&&!wasOpen){requestAnimationFrame(()=>{
+   if(wasOpen)side.querySelector('.side-link:not([hidden])')?.focus();
+  });}
   if(!open&&wasOpen){trigger.focus();}
   wasOpen=open;
  }
