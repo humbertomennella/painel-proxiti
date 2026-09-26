@@ -159,8 +159,12 @@
     selected=ticket||null;
     root.hidden=!selected||!canRead();
     if(!selected){
-      el("ticket-note-body").value="";
-      el("ticket-report-form").reset();
+      el("ticket-note-body").value="";el("ticket-file-form").reset();
+      el("ticket-report-form").reset();el("ticket-report-panel").open=false;
+      empty(el("ticket-notes-list"),"Selecione um chamado.");
+      empty(el("ticket-tasks-list"),"Selecione um chamado.");
+      empty(el("ticket-files-list"),"Selecione um chamado.");
+      el("ticket-tasks-progress").textContent="Nenhum roteiro iniciado";
       taskRows=[];note("");return;
     }
     const writable=canEdit();
@@ -191,6 +195,7 @@
     submit.disabled=true;note("");
     try{
       await rpc("proxiti_add_ticket_note",{p_ticket:ticket.id,p_body:body});
+      if(noteDrafts.get(ticket.id)?.trim()===body)noteDrafts.delete(ticket.id);
       if(selected?.id===ticket.id){
         if(el("ticket-note-body").value.trim()===body){
           el("ticket-note-body").value="";noteDrafts.delete(ticket.id);
