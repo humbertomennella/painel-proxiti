@@ -247,6 +247,12 @@ assert(agendaJs.includes('from("ticket_appointment_reschedules")'),
 assert(get("README.md").includes("docs/agenda-homologacao.md")&&
  existsSync(new URL("../docs/agenda-homologacao.md",import.meta.url)),
  "Roteiro operacional de Agenda não está publicado");
+const agendaClosure=get("supabase/agenda_closure_guard_v11.sql");
+assert(agendaClosure.includes("p_status in ('resolved','closed')")&&
+ agendaClosure.includes("status in ('planned','confirmed')")&&
+ agendaClosure.includes("for update"),"Chamado pode finalizar com compromissos pendentes");
+assert(get("assets/operations.js").includes("Finalize ou cancele os compromissos pendentes na Agenda"),
+ "Encerramento não orienta a concluir compromissos ativos");
 assert(existsSync(new URL("../tests/agenda-functional.mjs",import.meta.url)),
  "Testes funcionais da Agenda não foram adicionados");
 console.log("Agenda: migração, permissões, paginação e testes funcionais verificados.");
