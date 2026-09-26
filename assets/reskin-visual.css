@@ -674,3 +674,228 @@ html[data-theme] body.workspace-mode #agenda-sync-state[data-phase="loading"]::a
   animation:none
  }
 }
+
+
+/* Fase 3 complementar: superfícies independentes. 100% CSS, sem alterar fluxos. */
+html[data-theme] body.workspace-mode{--ui-soft-shadow:0 2px 5px rgba(11,33,64,.04),0 16px 40px rgba(11,33,64,.045);--ui-accent-soft:color-mix(in srgb,var(--px-blue) 9%,var(--px-surface))}
+html[data-theme] body.workspace-mode .panel-head{min-height:72px;padding-top:9px;padding-bottom:9px;margin-bottom:22px;background:linear-gradient(112deg,#0c1b2d 2%,#153659 72%,#205b91)}
+html[data-theme] body.workspace-mode .panel-head .panel-head-greeting .kicker{font-size:10px;letter-spacing:.1em}
+html[data-theme] body.workspace-mode .panel-head #welcome{font-size:clamp(16px,1.35vw,20px);letter-spacing:-.025em;line-height:1.2}
+html[data-theme] body.workspace-mode .panel-head .head-subtitle{display:none}
+html[data-theme] body.workspace-mode .panel-head .panel-account{gap:7px}
+html[data-theme] body.workspace-mode .panel-head .profile-trigger{max-width:225px;min-height:44px;padding:3px 9px 3px 4px}
+html[data-theme] body.workspace-mode .panel-account-name strong{font-size:12px}
+html[data-theme] body.workspace-mode .panel-head :is(.theme-switch,.notification-trigger,.sound-toggle,#logout){min-height:40px;padding:9px 10px;font-size:12px}
+html[data-theme] body.workspace-mode .panel-head .notification-trigger-label{display:none}
+html[data-theme] body.workspace-mode .panel-head .notification-trigger{position:relative;width:42px;padding:8px;justify-content:center}
+html[data-theme] body.workspace-mode .notification-count{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;border-radius:99px;font-size:10px;display:grid;place-items:center}
+html[data-theme] body.workspace-mode .notification-count[hidden]{display:none!important}
+html[data-theme] body.workspace-mode .notifications-panel{width:min(390px,calc(100vw - 30px));max-height:min(72dvh,620px);overflow:auto}
+html[data-theme] body.workspace-mode .sidebar-top{min-height:69px}
+html[data-theme] body.workspace-mode .sidebar-nav{gap:4px}
+html[data-theme] body.workspace-mode .side-link{border-radius:11px;min-height:43px;font-size:13px;padding:9px 11px}
+html[data-theme] body.workspace-mode .side-icon svg{width:20px;height:20px}
+html[data-theme] body.workspace-mode .panel-main{padding-bottom:44px;background:var(--px-bg)}
+html[data-theme] body.workspace-mode .ops{margin:0;border:0;padding:0;min-width:0}
+html[data-theme] body.workspace-mode .ops-title{align-items:end;min-height:54px;margin:0 0 8px}
+html[data-theme] body.workspace-mode .ops-title .kicker{margin:0 0 4px;font-size:10px;letter-spacing:.11em}
+html[data-theme] body.workspace-mode .ops-title h2{font-size:clamp(23px,2.4vw,30px);margin:0 0 4px;line-height:1.18}
+html[data-theme] body.workspace-mode .ops-title #ops-description{margin:0;color:var(--px-muted);font-size:13px}
+html[data-theme] body.workspace-mode .ops-live{align-self:center;padding:6px 10px;background:var(--px-surface);border:1px solid var(--px-line);border-radius:999px;color:var(--px-muted);font-size:11px;white-space:normal}
+html[data-theme] body.workspace-mode .ops-tabs{gap:5px;margin:12px 0 17px;padding:4px;border:1px solid var(--px-line);width:max-content;max-width:100%;border-radius:12px;background:var(--px-surface);box-shadow:var(--ui-soft-shadow)}
+html[data-theme] body.workspace-mode .ops-tabs button{min-height:35px;padding:7px 10px;font-size:12px;line-height:1.25}
+html[data-theme] body.workspace-mode .ops-view.px-panel{padding:0;border:0;border-radius:0;box-shadow:none;background:transparent;min-width:0;overflow:visible}
+html[data-theme] body.workspace-mode .ops-view>.ops-section-head{padding:14px 18px;margin:0 0 10px;border:1px solid var(--px-line);border-radius:var(--radius);background:var(--px-surface);box-shadow:var(--ui-soft-shadow)}
+html[data-theme] body.workspace-mode .ops-view>.ops-section-head h3{font-size:17px;font-weight:780;letter-spacing:-.025em}
+html[data-theme] body.workspace-mode .ops-view>.ops-muted{margin:6px 3px 11px;font-size:12px;line-height:1.5}
+html[data-theme] body.workspace-mode .ops-view :is(.ops-form,.ops-list-item,.ticket-workflow-card,.agenda-entry){box-shadow:var(--ui-soft-shadow)}
+html[data-theme] body.workspace-mode .ops-view :is(input,textarea,select){background:var(--px-surface);border-color:var(--px-line-strong);color:var(--px-ink)}
+html[data-theme] body.workspace-mode .ops-view :is(input,textarea,select)::placeholder{color:var(--px-muted);opacity:.9}
+html[data-theme] body.workspace-mode .ops-view :is(input,select){min-height:42px}
+html[data-theme] body.workspace-mode .ops-view textarea{line-height:1.55}
+html[data-theme] body.workspace-mode .ops-view label{color:var(--px-text);font-size:12px;line-height:1.45}
+html[data-theme] body.workspace-mode .ops-view :is(.primary,.secondary){border-radius:9px;min-height:40px;font-size:12px;font-weight:740}
+html[data-theme] body.workspace-mode .ops-view .primary{background:var(--c-primary-grad)}
+html[data-theme] body.workspace-mode .ops-view .ops-check{display:flex;align-items:flex-start;gap:10px;max-width:100%;min-height:44px;padding:11px 12px;border:1px solid var(--px-line);border-radius:var(--radius-sm);background:var(--px-bg-muted);font-size:12px;line-height:1.45}
+html[data-theme] body.workspace-mode :is(.ops-view,.profile-card,.academy-learning) input[type="checkbox"],
+html[data-theme] body.workspace-mode :is(.ops-view,.profile-card,.academy-learning) input[type="radio"]{width:18px;height:18px;min-width:18px;min-height:18px!important;max-width:18px;max-height:18px;flex:0 0 18px;padding:0;margin:2px 0 0;accent-color:var(--px-blue);cursor:pointer}
+/* Login: hero e formulários preservados, densidade e hierarquia renovadas. */
+html[data-theme] body:not(.workspace-mode) .wrap{max-width:1390px}
+html[data-theme] body:not(.workspace-mode) .header{height:76px}
+html[data-theme] .auth-layout{grid-template-columns:minmax(0,1.08fr) minmax(355px,.77fr);gap:clamp(26px,4vw,58px);padding:clamp(24px,4vw,60px) 0}
+html[data-theme] .auth-layout .intro{min-height:540px;display:flex;flex-direction:column;justify-content:center;background:radial-gradient(circle at 85% 15%,rgba(71,151,248,.26),transparent 43%),linear-gradient(133deg,#08192d 0%,#112d4f 55%,#174d88 100%);border:1px solid rgba(128,187,252,.24)}
+html[data-theme] .auth-layout .intro h1{font-size:clamp(38px,5vw,67px);letter-spacing:-.06em;margin:12px 0}
+html[data-theme] .auth-layout .intro>p:not(.kicker){font-size:15px;line-height:1.6;margin:0 0 17px}
+html[data-theme] .auth-layout .login-art{margin:14px 0 0;border-radius:15px;padding:10px;background:rgba(255,255,255,.065);border:1px solid rgba(206,228,255,.22)}
+html[data-theme] .auth-layout .login-art img{max-height:285px;width:100%;object-fit:contain}
+html[data-theme] .auth-layout .login-card{padding:clamp(23px,3vw,38px)}
+html[data-theme] .auth-layout .login-card .card-top{padding-bottom:15px;margin-bottom:24px}
+html[data-theme] .auth-layout .login-card input{min-height:48px}
+html[data-theme] .auth-layout .login-card .primary{background:var(--c-primary-grad)}
+/* Visão geral: o banner reúne ações e o restante é independente. */
+html[data-theme] body.workspace-mode #overview-home .overview-banner{min-height:268px;padding:clamp(21px,2.8vw,38px);background:radial-gradient(circle at 91% 17%,rgba(92,179,255,.3),transparent 42%),linear-gradient(112deg,#0b1b32,#153e6d 69%,#1b5d9c)}
+html[data-theme] body.workspace-mode #overview-home .overview-banner-copy h3{max-width:19ch;font-size:clamp(25px,3vw,37px);letter-spacing:-.045em}
+html[data-theme] body.workspace-mode #overview-home .overview-banner-copy>p:not(.kicker){max-width:62ch;font-size:14px;line-height:1.65}
+html[data-theme] body.workspace-mode #overview-home .overview-metric{min-height:155px;border:1px solid var(--px-line);border-top:3px solid var(--c-primary);box-shadow:var(--ui-soft-shadow);border-radius:var(--radius)}
+html[data-theme] body.workspace-mode #overview-home .overview-metric:nth-child(2){border-top-color:#8561ce}
+html[data-theme] body.workspace-mode #overview-home .overview-metric:nth-child(3){border-top-color:#2695aa}
+html[data-theme] body.workspace-mode #overview-home .overview-metric:nth-child(4){border-top-color:#cb8e24}
+html[data-theme] body.workspace-mode #overview-home .modules article{position:relative;min-height:145px;padding:16px 18px}
+html[data-theme] body.workspace-mode #overview-home .overview-recent,
+html[data-theme] body.workspace-mode #overview-home .overview-resources{border:1px solid var(--px-line);box-shadow:var(--ui-soft-shadow)}
+/* Chamados: cinco status, filtros, fila e conversa separados. */
+html[data-theme] body.workspace-mode #ops-tickets .ticket-metrics{gap:11px;margin:0 0 15px}
+html[data-theme] body.workspace-mode #ops-tickets .ticket-metric{min-height:104px;padding:14px;border:1px solid var(--px-line);border-top:3px solid var(--status-new);border-left-width:1px;border-radius:var(--radius);background:var(--px-surface);box-shadow:var(--ui-soft-shadow)}
+html[data-theme] body.workspace-mode #ops-tickets .ticket-metric[data-ticket-filter="in_progress"]{border-top-color:var(--status-in_progress)}
+html[data-theme] body.workspace-mode #ops-tickets .ticket-metric[data-ticket-filter="waiting_customer"]{border-top-color:var(--status-waiting_customer)}
+html[data-theme] body.workspace-mode #ops-tickets .ticket-metric[data-ticket-filter="resolved"]{border-top-color:var(--status-resolved)}
+html[data-theme] body.workspace-mode #ops-tickets .ticket-metric[data-ticket-filter="closed"]{border-top-color:var(--status-closed)}
+html[data-theme] body.workspace-mode #ops-tickets .ticket-metric[aria-pressed="true"]{box-shadow:0 0 0 2px color-mix(in srgb,var(--px-blue) 28%,transparent),var(--ui-soft-shadow)}
+html[data-theme] body.workspace-mode #ops-tickets .ticket-toolbar{margin:0 0 12px;padding:9px 12px;border:1px solid var(--px-line);border-radius:var(--radius);background:var(--px-surface);box-shadow:var(--ui-soft-shadow)}
+html[data-theme] body.workspace-mode #ops-tickets .ticket-workspace{gap:14px;margin-top:0;align-items:start}
+html[data-theme] body.workspace-mode #ops-tickets :is(.ticket-list-pane,.ticket-detail-pane){border:1px solid var(--px-line);border-radius:var(--radius);background:var(--px-surface);box-shadow:var(--ui-soft-shadow)}
+html[data-theme] body.workspace-mode #ops-tickets .ticket-inbox-card{border-left:3px solid transparent;border-radius:10px}
+html[data-theme] body.workspace-mode #ops-tickets .ticket-inbox-card[aria-current="true"]{border-left-color:var(--px-blue);background:var(--ui-accent-soft)}
+html[data-theme] body.workspace-mode #ops-tickets .ops-conversation{border-radius:var(--radius);padding:15px}
+html[data-theme] body.workspace-mode #ops-tickets .ops-messages{padding:12px;background:var(--px-bg-muted);border-radius:12px}
+html[data-theme] body.workspace-mode #ops-tickets .ops-bubble.own{background:color-mix(in srgb,var(--px-blue) 12%,var(--px-surface))}
+/* Técnicos: convite com entrada ampla e contas em cartões responsivos. */
+html[data-theme] body.workspace-mode #ops-staff #invite-form{display:flex;flex-wrap:wrap;gap:10px;align-items:end;padding:19px;border:1px solid var(--px-line);border-top:3px solid var(--c-primary);border-radius:var(--radius);background:var(--px-surface);box-shadow:var(--ui-soft-shadow)}
+html[data-theme] body.workspace-mode #ops-staff #invite-form label{flex:0 0 100%;font-weight:760}
+html[data-theme] body.workspace-mode #ops-staff #invite-form input{flex:1 1 270px;min-width:0}
+html[data-theme] body.workspace-mode #ops-staff #invite-form button{flex:0 0 auto;margin:0}
+html[data-theme] body.workspace-mode #ops-staff #staff-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+html[data-theme] body.workspace-mode #ops-staff #staff-list .ops-list-item{padding:17px;border:1px solid var(--px-line);border-radius:var(--radius)}
+/* CMS: editor e lista lado a lado no desktop. Nenhum evento de publicação alterado. */
+html[data-theme] body.workspace-mode #ops-content{display:grid;grid-template-columns:minmax(300px,.9fr) minmax(0,1.1fr);gap:13px;align-items:start}
+html[data-theme] body.workspace-mode #ops-content>.ops-section-head,
+html[data-theme] body.workspace-mode #ops-content>.ops-muted{grid-column:1/-1}
+html[data-theme] body.workspace-mode #ops-content #content-form{grid-column:1;padding:20px;border:1px solid var(--px-line);border-top:3px solid var(--c-primary);border-radius:var(--radius);background:var(--px-surface);box-shadow:var(--ui-soft-shadow)}
+html[data-theme] body.workspace-mode #ops-content #content-list{grid-column:2;align-content:start;max-height:min(75dvh,760px);overflow-y:auto;padding:2px 3px 7px 2px}
+html[data-theme] body.workspace-mode #ops-content #content-list .ops-list-item{border:1px solid var(--px-line);border-radius:var(--radius);padding:17px}
+html[data-theme] body.workspace-mode #ops-content #content-form textarea{min-height:140px}
+/* Agenda: cada compromisso tem estado, ações e histórico na própria superfície. */
+html[data-theme] body.workspace-mode #ops-agenda .agenda-toolbar{display:flex;gap:13px;flex-wrap:wrap;align-items:end;margin:0 0 13px;padding:12px 15px;border:1px solid var(--px-line);background:var(--px-surface);border-radius:var(--radius);box-shadow:var(--ui-soft-shadow)}
+html[data-theme] body.workspace-mode #ops-agenda .agenda-toolbar select{width:min(390px,100%)}
+html[data-theme] body.workspace-mode #ops-agenda .agenda-list{gap:13px}
+html[data-theme] body.workspace-mode #ops-agenda .agenda-entry{border:1px solid var(--px-line);border-top:3px solid var(--c-primary);border-radius:var(--radius);padding:20px;box-shadow:var(--ui-soft-shadow)}
+html[data-theme] body.workspace-mode #ops-agenda .agenda-entry>h4{font-size:17px}
+html[data-theme] body.workspace-mode #ops-agenda :is(.agenda-reschedule,.agenda-history){padding:12px 14px;border:1px solid var(--px-line);border-radius:10px;background:var(--px-bg-muted)}
+/* Academia: hero, progresso real, trilhas ilustradas, biblioteca e editor. */
+html[data-theme] body.workspace-mode #ops-training .academy-intro{margin:0 0 13px;padding:12px 16px;background:var(--ui-accent-soft);border:1px solid var(--px-line);border-left:3px solid var(--c-primary);border-radius:var(--radius-sm)}
+html[data-theme] body.workspace-mode #ops-training .academy-intro strong{font-size:13px}
+html[data-theme] body.workspace-mode #ops-training .academy-intro p{margin:4px 0 0;font-size:12px;line-height:1.55}
+html[data-theme] body.workspace-mode #ops-training .academy-learning{margin:0 0 28px;gap:14px}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-hero{min-height:260px;padding:clamp(20px,2.8vw,38px);gap:clamp(18px,2.4vw,36px);grid-template-columns:minmax(0,1.13fr) minmax(270px,.87fr);border-radius:17px;box-shadow:0 12px 26px rgba(10,34,72,.12)}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-hero h4{max-width:21ch;font-size:clamp(25px,3.1vw,39px);line-height:1.1;letter-spacing:-.045em}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-hero-copy>p:not(.kicker){max-width:60ch;font-size:13px;line-height:1.6}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-hero img{height:208px;max-height:none;width:100%;aspect-ratio:960/440;object-fit:cover;border:1px solid rgba(221,237,255,.34);background:rgba(5,22,44,.3);border-radius:14px;box-shadow:0 17px 29px rgba(4,18,40,.2)}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-hero .academy-learning-status{color:#d1e8ff!important;font-size:12px;line-height:1.45}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-summary{padding:15px;border:1px solid var(--px-line);border-radius:var(--radius);background:var(--px-surface);box-shadow:var(--ui-soft-shadow)}
+html[data-theme] body.workspace-mode #ops-training .academy-progress-panel{gap:12px}
+html[data-theme] body.workspace-mode #ops-training .academy-progress-metric{min-height:116px;padding:17px;border:1px solid var(--px-line);border-top:3px solid var(--c-primary);border-radius:var(--radius);background:var(--px-surface);box-shadow:var(--ui-soft-shadow)}
+html[data-theme] body.workspace-mode #ops-training .academy-progress-metric:nth-child(2){border-top-color:#16a57e}
+html[data-theme] body.workspace-mode #ops-training .academy-progress-metric:nth-child(3){border-top-color:#d99522}
+html[data-theme] body.workspace-mode #ops-training .academy-progress-metric strong{font-size:clamp(21px,2.25vw,29px)}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-policy{padding:10px 13px;background:var(--px-surface);border:1px solid var(--px-line);border-radius:var(--radius-sm);font-size:11px}
+html[data-theme] body.workspace-mode #ops-training .academy-track-list{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+html[data-theme] body.workspace-mode #ops-training .academy-track-card{align-self:start;min-width:0;overflow:hidden;border:1px solid var(--px-line);border-radius:var(--radius);box-shadow:var(--ui-soft-shadow)}
+html[data-theme] body.workspace-mode #ops-training .academy-track-card[open]{grid-column:span 2;border-color:color-mix(in srgb,var(--px-blue) 55%,var(--px-line))}
+html[data-theme] body.workspace-mode #ops-training .academy-track-summary{display:flex;flex-direction:column;align-items:stretch;gap:9px;padding:9px}
+html[data-theme] body.workspace-mode #ops-training .academy-track-summary img{width:100%;height:104px;max-height:none;aspect-ratio:auto;object-fit:cover;border-radius:9px;border:1px solid var(--px-line)}
+html[data-theme] body.workspace-mode #ops-training .academy-track-copy{gap:5px;padding:1px 4px 5px}
+html[data-theme] body.workspace-mode #ops-training .academy-track-copy small{font-size:10px}
+html[data-theme] body.workspace-mode #ops-training .academy-track-copy h5{font-size:14px;line-height:1.25}
+html[data-theme] body.workspace-mode #ops-training .academy-track-copy p{font-size:11px;line-height:1.4}
+html[data-theme] body.workspace-mode #ops-training .academy-track-courses{padding:0 9px 10px;gap:8px}
+html[data-theme] body.workspace-mode #ops-training .academy-course-card{padding:10px;border-radius:9px}
+html[data-theme] body.workspace-mode #ops-training .academy-course-card strong{font-size:12px}
+html[data-theme] body.workspace-mode #ops-training .academy-library-heading{margin:5px 0 13px;padding:16px 3px 0;border-top:1px solid var(--px-line)}
+html[data-theme] body.workspace-mode #ops-training .academy-filters{grid-template-columns:minmax(0,1.3fr) repeat(2,minmax(145px,.55fr));align-items:end;gap:12px;padding:13px 15px;margin:0 0 14px;border:1px solid var(--px-line);border-radius:var(--radius);background:var(--px-surface);box-shadow:var(--ui-soft-shadow)}
+html[data-theme] body.workspace-mode #ops-training #training-form{max-width:none;width:100%;padding:20px;border:1px solid var(--px-line);border-top:3px solid var(--c-primary);border-radius:var(--radius);background:var(--px-surface);box-shadow:var(--ui-soft-shadow)}
+html[data-theme] body.workspace-mode #ops-training #training-list{gap:12px;align-content:start}
+html[data-theme] body.workspace-mode #ops-training #training-list .ops-list-item{border:1px solid var(--px-line);border-radius:var(--radius);background:var(--px-surface);padding:16px}
+html[data-theme] body.workspace-mode #ops-training #training-body{min-height:240px}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-detail{box-shadow:var(--ui-soft-shadow)}
+html[data-theme] body.workspace-mode #ops-training .academy-certificate-card{background:var(--px-surface);border-color:var(--px-blue)}
+/* Ferramentas: calculadoras locais e inventário separados. */
+html[data-theme] body.workspace-mode #ops-tools .digital-toolkit{padding:17px;border:1px solid var(--px-line);border-radius:var(--radius);background:var(--px-surface);box-shadow:var(--ui-soft-shadow)}
+html[data-theme] body.workspace-mode #ops-tools .digital-toolkit>.ops-section-head{padding:0 0 12px;margin:0 0 13px}
+html[data-theme] body.workspace-mode #ops-tools .digital-toolkit .ticket-workflow-grid{gap:13px}
+html[data-theme] body.workspace-mode #ops-tools .ticket-workflow-card{padding:18px;border:1px solid var(--px-line);border-top:3px solid var(--c-primary);border-radius:var(--radius);background:var(--px-surface-soft)}
+html[data-theme] body.workspace-mode #ops-tools .toolkit-result{padding:13px;background:var(--px-surface);font-variant-numeric:tabular-nums}
+html[data-theme] body.workspace-mode #ops-tools>#tool-form{border:1px solid var(--px-line);border-radius:var(--radius);background:var(--px-surface);box-shadow:var(--ui-soft-shadow)}
+/* Meu perfil: identidade, foto, MFA e senha em painéis legíveis. */
+html[data-theme] body.workspace-mode #profile-section .profile-page-head{min-height:145px;padding:24px;border:1px solid rgba(133,195,255,.25);border-radius:17px;background:linear-gradient(118deg,#0d2038,#174677 75%,#1d5e96);color:#fff;box-shadow:0 13px 29px rgba(9,40,85,.1)}
+html[data-theme] body.workspace-mode #profile-section .profile-page-head :is(h2,p,.kicker){color:#f0f7ff}
+html[data-theme] body.workspace-mode #profile-section .profile-page-head h2{font-size:clamp(24px,3vw,35px)}
+html[data-theme] body.workspace-mode #profile-section .profile-page-head .profile-mark{width:72px;height:72px;border:1px solid rgba(255,255,255,.38);background:rgba(255,255,255,.13);font-size:37px}
+html[data-theme] body.workspace-mode #profile-section .profile-grid{gap:13px;margin-top:15px}
+html[data-theme] body.workspace-mode #profile-section .profile-card{min-width:0;padding:20px;border:1px solid var(--px-line);border-top:3px solid var(--c-primary);border-radius:var(--radius);background:var(--px-surface);box-shadow:var(--ui-soft-shadow)}
+html[data-theme] body.workspace-mode #profile-section .profile-card h3{font-size:18px;margin:0 0 9px}
+html[data-theme] body.workspace-mode #profile-section .profile-card p{font-size:12px;line-height:1.65}
+html[data-theme] body.workspace-mode #profile-section .avatar-preview-box{padding:12px;border:1px solid var(--px-line);border-radius:var(--radius-sm);background:var(--px-bg-muted)}
+/* Breakpoints: nenhuma ação desaparece na topbar móvel; apenas textos viram ícones. */
+@media(min-width:1200px){
+ html[data-theme] body.workspace-mode .panel:not(.sidebar-collapsed) .sidebar-brand .mark{display:none}
+ html[data-theme] body.workspace-mode .panel:not(.sidebar-collapsed) .sidebar-brand>.side-label{display:block;font-size:25px;font-weight:850;line-height:1.05;letter-spacing:-.06em}
+ html[data-theme] body.workspace-mode .panel:not(.sidebar-collapsed) .sidebar-brand small{display:block;margin-top:6px;letter-spacing:.2em;font-size:9px}
+}
+@media(max-width:1399px){
+ html[data-theme] body.workspace-mode #ops-training .academy-track-list{grid-template-columns:repeat(3,minmax(0,1fr))}
+ html[data-theme] body.workspace-mode #ops-training .academy-track-card[open]{grid-column:span 2}
+}
+@media(max-width:1199px){
+ html[data-theme] body.workspace-mode #ops-content{grid-template-columns:minmax(0,1fr)}
+ html[data-theme] body.workspace-mode #ops-content #content-form,
+ html[data-theme] body.workspace-mode #ops-content #content-list{grid-column:1;max-height:none}
+ html[data-theme] body.workspace-mode #ops-training .academy-track-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+ html[data-theme] body.workspace-mode #ops-training .academy-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+ html[data-theme] body.workspace-mode #ops-training .academy-filters>.ops-inline-search{grid-column:1/-1}
+ html[data-theme] body.workspace-mode #ops-staff #staff-list{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:767px){
+ html[data-theme] body.workspace-mode .panel-head{display:grid;grid-template-columns:minmax(0,1fr);row-gap:8px;min-height:64px;margin-bottom:15px;padding-top:9px;padding-bottom:9px}
+ html[data-theme] body.workspace-mode .panel-head .panel-head-greeting{grid-column:1;grid-row:1;order:0!important;min-width:0}
+ html[data-theme] body.workspace-mode .panel-head .panel-head-greeting .kicker{display:none}
+ html[data-theme] body.workspace-mode .panel-head #welcome{font-size:16px;max-width:32ch}
+ html[data-theme] body.workspace-mode .panel-head .panel-account{grid-column:1;grid-row:2;order:1!important;display:flex;width:100%;gap:5px;justify-content:space-between;flex-wrap:nowrap;min-width:0}
+ html[data-theme] body.workspace-mode .panel-head :is(.profile-trigger,.theme-switch,.notification-trigger,.sound-toggle,#logout,.mobile-nav-toggle){flex:0 1 42px;min-height:40px;width:42px;max-width:42px;padding:6px;justify-content:center}
+ html[data-theme] body.workspace-mode .panel-head .profile-trigger{display:flex}
+ html[data-theme] body.workspace-mode .panel-head .panel-account-name,
+ html[data-theme] body.workspace-mode .panel-head .theme-switch-label{display:none}
+ html[data-theme] body.workspace-mode .panel-head .sound-toggle,
+ html[data-theme] body.workspace-mode .panel-head #logout{font-size:0;line-height:1}
+ html[data-theme] body.workspace-mode .panel-head .sound-toggle::before{content:"♫";font-size:19px}
+ html[data-theme] body.workspace-mode .panel-head #logout::before{content:"↪";font-size:19px}
+ html[data-theme] body.workspace-mode .ops-title h2{font-size:23px}
+ html[data-theme] body.workspace-mode .ops-title{align-items:start;gap:8px}
+ html[data-theme] body.workspace-mode .ops-live{font-size:10px}
+ html[data-theme] body.workspace-mode .ops-tabs{width:100%;overflow-x:auto;flex-wrap:nowrap}
+ html[data-theme] body.workspace-mode .ops-tabs button{flex:0 0 auto;white-space:nowrap}
+ html[data-theme] body.workspace-mode .ops-view>.ops-section-head{padding:11px 13px}
+ html[data-theme] body.workspace-mode #ops-tickets .ticket-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+ html[data-theme] body.workspace-mode #ops-tickets .ticket-metric{min-height:95px;padding:10px}
+ html[data-theme] body.workspace-mode #ops-staff #invite-form{padding:13px}
+ html[data-theme] body.workspace-mode #ops-staff #invite-form button{width:100%}
+ html[data-theme] body.workspace-mode #ops-training .academy-learning-hero{display:grid;grid-template-columns:minmax(0,1fr);min-height:0;padding:19px}
+ html[data-theme] body.workspace-mode #ops-training .academy-learning-hero img{display:block;width:100%;height:auto;max-height:150px;object-fit:cover}
+ html[data-theme] body.workspace-mode #ops-training .academy-track-list{grid-template-columns:minmax(0,1fr)}
+ html[data-theme] body.workspace-mode #ops-training .academy-track-card[open]{grid-column:auto}
+ html[data-theme] body.workspace-mode #ops-training .academy-track-summary img{height:148px}
+ html[data-theme] body.workspace-mode #ops-training .academy-filters{grid-template-columns:minmax(0,1fr)}
+ html[data-theme] body.workspace-mode #ops-training .academy-filters>.ops-inline-search{grid-column:1}
+ html[data-theme] body.workspace-mode #ops-training .academy-progress-panel{grid-template-columns:minmax(0,1fr)}
+ html[data-theme] body.workspace-mode #profile-section .profile-page-head{padding:17px;min-height:130px}
+ html[data-theme] body.workspace-mode #profile-section .profile-card{padding:16px}
+ html[data-theme] .auth-layout{grid-template-columns:minmax(0,1fr);gap:16px;padding:18px 0 30px}
+ html[data-theme] .auth-layout .intro{min-height:0;padding:22px}
+ html[data-theme] .auth-layout .intro h1{font-size:clamp(30px,8vw,47px)}
+ html[data-theme] .auth-layout .login-art img{max-height:180px}
+ html[data-theme] .auth-layout .login-card{padding:22px}
+}
+@media(max-width:390px){
+ html[data-theme] body.workspace-mode .panel-head .panel-account{gap:4px}
+ html[data-theme] body.workspace-mode .ops-title .ops-live{max-width:136px}
+ html[data-theme] body.workspace-mode #ops-training .academy-learning-hero img{max-height:124px}
+}
