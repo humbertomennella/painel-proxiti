@@ -286,6 +286,8 @@ try{
    await page.getByRole("button",{name:"Concluir compromisso"}).click();
    await page.waitForFunction(()=>window.__fixture.appointments[0].status==="done");
    assert.equal(await page.getByRole("button",{name:"Concluir compromisso"}).count(),0);
+   await page.selectOption("#agenda-filter","all");
+   await page.waitForFunction(()=>document.getElementById("agenda-list").textContent.includes("Concluído"));
    assert((await page.textContent("#agenda-list")).includes("Concluído"));
   }finally{await page.close();}
  });
