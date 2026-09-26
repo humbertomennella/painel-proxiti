@@ -539,7 +539,8 @@
       if(state.active){
         const found=state.tickets.find(t=>t.id===state.active.id);
         if(found){const changed=state.active.status!==found.status||state.active.assigned_to!==found.assigned_to;state.active=found;updateTicketHeading();if(changed)announceTicket();}
-        else{state.active=null;announceTicket();remember("ticket","");el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;}
+        else{state.active=null;clearTicketPresentation();announceTicket();remember("ticket","");
+          el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;}
       }
       if(state.ticketError)notice("");
       state.ticketsReady=true;state.ticketError=false;state.ticketLastUpdated=Date.now();
