@@ -201,8 +201,11 @@ assert(ticketSafety.includes("revoke all on function public.proxiti_claim_ticket
  "Assumir chamado exposto ao público");
 assert(ticketSafety.includes("revoke all on function public.proxiti_change_ticket_status(uuid,text) from public,anon"),
  "Mudança de situação exposta ao público");
-assert(get("assets/operations.js").includes('order("created_at",{ascending:false}).limit(151)'),
- "Chat não carrega as mensagens mais recentes");
+assert(get("assets/operations.js").includes('order("created_at",{ascending:false}).order("id",{ascending:false}).limit(151)'),
+ "Chat não carrega mensagens recentes com ordenação estável");
+assert(html.includes('id="ticket-thread-older"')&&
+ get("assets/operations.js").includes('async function loadEarlierMessages()'),
+ "Conversa sem acesso ao histórico anterior");
 assert(get("assets/operations.js").includes('threadSync("read-error")'),
  "Falha na confirmação de leitura não é comunicada");
 assert(techJs.includes("verification=await query(db.from(\"ticket_attachments\")"),
