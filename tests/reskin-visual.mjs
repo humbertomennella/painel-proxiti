@@ -206,7 +206,10 @@ try{
  assert.equal(before,after,"Sidebar muda junto com tema de conteúdo");
  await page.click("#theme-toggle-panel");
  await page.waitForFunction(()=>document.documentElement.dataset.theme==="light");
- console.log("PASS: foco de menu por teclado e alternância clara/escura com sidebar fixa.");
+ await page.click("#reskin-help");
+ await page.waitForFunction(()=>document.getElementById("overview-guide").hidden===false);
+ assert.equal(await page.getAttribute("#overview-guide-toggle","aria-expanded"),"true");
+ console.log("PASS: foco, alternância de tema e Central de Ajuda operante.");
  await page.evaluate(()=>{
   document.getElementById("operations").hidden=false;
   document.getElementById("overview-home").hidden=true;
