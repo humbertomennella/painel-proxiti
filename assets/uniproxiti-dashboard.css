@@ -1,220 +1,135 @@
-/* UniProxiti · dashboard isolado. Não altera estados, consultas ou privilégios. */
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-update-strip{
-  display:flex;justify-content:flex-end;align-items:center;margin:0 0 12px
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-update-strip #reload-training{
-  min-height:40px;padding:9px 15px
-}
-html[data-theme] body.workspace-mode #ops-training .academy-learning{gap:16px;margin-top:14px}
-html[data-theme] body.workspace-mode #ops-training .academy-learning-hero{
-  min-height:190px;grid-template-columns:minmax(0,1.35fr) minmax(160px,.65fr);
-  background:radial-gradient(circle at 78% 10%,rgba(88,158,255,.40),transparent 46%),
-    linear-gradient(116deg,#091a31,#153d69 68%,#205891);border-color:#486b96
-}
-html[data-theme] body.workspace-mode #ops-training .academy-learning-hero img{
-  max-height:190px;object-fit:contain;border:0;background:transparent
-}
-html[data-theme] body.workspace-mode #ops-training .academy-learning-hero h4{
-  font-size:clamp(24px,2.6vw,37px);max-width:20ch
-}
-html[data-theme] body.workspace-mode #ops-training .academy-learning-hero p{max-width:65ch}
-html[data-theme] body.workspace-mode #ops-training #academy-learning-summary{
-  position:absolute!important;width:1px!important;height:1px!important;padding:0!important;
-  margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;
-  white-space:nowrap!important;border:0!important;box-shadow:none!important
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-dashboard{display:grid;gap:16px;min-width:0}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-dashboard[hidden],
-html[data-theme] body.workspace-mode #ops-training #uniproxiti-certificate-card[hidden],
-html[data-theme] body.workspace-mode #ops-training #uniproxiti-resume-track[hidden]{display:none!important}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-dashboard-heading,
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-tracks-heading{
-  display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between
-}
-html[data-theme] body.workspace-mode #ops-training :is(.uniproxiti-dashboard-heading,.uniproxiti-tracks-heading) h5{
-  margin:2px 0 0;font-size:clamp(18px,1.6vw,23px);letter-spacing:-.025em
-}
-html[data-theme] body.workspace-mode #ops-training :is(.uniproxiti-dashboard-heading,.uniproxiti-tracks-heading) .kicker{
-  margin:0;color:var(--px-blue);font-size:12px
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-dashboard-heading button{
-  min-height:44px;border-radius:10px;padding:10px 18px
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-stats{
-  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat{
-  display:grid;align-content:center;gap:7px;min-width:0;min-height:135px;
-  padding:18px;border:1px solid var(--px-line);border-top:3px solid #2f7de1;
-  border-radius:14px;background:var(--px-surface);box-shadow:var(--shadow-card)
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat:nth-child(2){border-top-color:#168d73}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat:nth-child(3){border-top-color:#9869ba}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat:nth-child(4){border-top-color:#c48627}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat>span,
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat>div>span{
-  font-size:13px;font-weight:740;color:var(--px-text)
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat>strong{
-  font-size:clamp(23px,2.3vw,35px);line-height:1.15;letter-spacing:-.03em;
-  color:var(--px-ink);font-variant-numeric:tabular-nums;overflow-wrap:anywhere
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat small{
-  font-size:12px;line-height:1.5;color:var(--px-muted)
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat-progress{
-  display:flex;align-items:center;gap:14px
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat-progress>div{
-  display:grid;gap:5px;min-width:0;align-content:center
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat-progress>div span,
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat-progress>div small{
-  display:block;line-height:1.45;overflow-wrap:anywhere
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-ring{
-  --up-progress:0%;position:relative;isolation:isolate;flex:0 0 86px;
-  display:grid;place-items:center;width:86px;height:86px;border-radius:50%;
-  background:conic-gradient(#2f7de1 var(--up-progress),var(--px-line) 0)
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-ring:before{
-  content:"";position:absolute;inset:10px;border-radius:50%;background:var(--px-surface)
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-ring strong{
-  position:relative;z-index:1;color:var(--px-ink);font-size:20px;font-variant-numeric:tabular-nums
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-dashboard-columns{
-  display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:14px
-}
-html[data-theme] body.workspace-mode #ops-training :is(.uniproxiti-resume,.uniproxiti-activity){
-  min-width:0;padding:20px;border:1px solid var(--px-line);border-radius:14px;
-  background:var(--px-surface);box-shadow:var(--shadow-card)
-}
-html[data-theme] body.workspace-mode #ops-training :is(.uniproxiti-resume,.uniproxiti-activity) .kicker{
-  margin:0;color:var(--px-blue);font-size:12px
-}
-html[data-theme] body.workspace-mode #ops-training :is(.uniproxiti-resume,.uniproxiti-activity) h5{
-  margin:5px 0 15px;font-size:19px
-}
-html[data-theme] body.workspace-mode #ops-training #uniproxiti-resume-title{
-  display:block;color:var(--px-ink);font-size:17px;overflow-wrap:anywhere
-}
-html[data-theme] body.workspace-mode #ops-training #uniproxiti-resume-note{
-  color:var(--px-muted);font-size:13px;line-height:1.55
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-resume-track{
-  display:grid;gap:7px;margin:13px 0
-}
-html[data-theme] body.workspace-mode #ops-training #uniproxiti-resume-progress{
-  color:var(--px-text);font-size:12px;font-weight:720
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-resume-bar{
-  height:8px;overflow:hidden;border-radius:999px;background:var(--px-line)
-}
-html[data-theme] body.workspace-mode #ops-training #uniproxiti-resume-fill{
-  display:block;height:100%;width:0;background:#2f7de1;border-radius:999px
-}
-html[data-theme] body.workspace-mode #ops-training #uniproxiti-resume-action{
-  margin:12px 0 7px;min-height:44px
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-reading-note{
-  display:block;color:var(--px-muted);font-size:12px;line-height:1.55
-}
-html[data-theme] body.workspace-mode #ops-training #uniproxiti-activity-list{
-  list-style:none;display:grid;gap:0;margin:0;padding:0
-}
-html[data-theme] body.workspace-mode #ops-training #uniproxiti-activity-list li{
-  display:grid;gap:4px;padding:11px 0 11px 17px;border-left:2px solid #6395d1;
-  border-bottom:1px solid var(--px-line);color:var(--px-text);font-size:13px;
-  overflow-wrap:anywhere
-}
-html[data-theme] body.workspace-mode #ops-training #uniproxiti-activity-list li strong{
-  color:var(--px-ink);font-size:13px
-}
-html[data-theme] body.workspace-mode #ops-training #uniproxiti-activity-list li small,
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-note{
-  color:var(--px-muted);font-size:12px
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-certificate{
-  display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;
-  padding:22px;border:1px solid #3b8a75;border-radius:14px;
-  background:var(--px-surface-soft);box-shadow:var(--shadow-card)
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-certificate .kicker{color:var(--px-blue)}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-certificate h5{margin:4px 0;font-size:21px}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-certificate p{margin:3px 0}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-certificate small{color:var(--px-muted)}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-rules{
-  padding:12px 15px;border:1px solid var(--px-line);border-radius:11px;
-  background:var(--px-surface-soft);color:var(--px-text)
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-rules summary{font-weight:730;cursor:pointer}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-rules .academy-learning-policy{margin:12px 0 0}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-tracks-heading>p{
-  margin:0;color:var(--px-muted);font-size:13px;max-width:48ch
-}
-html[data-theme] body.workspace-mode #ops-training .academy-track-list{
-  grid-template-columns:repeat(auto-fit,minmax(min(100%,265px),1fr));gap:14px
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-track-tile{
-  display:grid;grid-template-rows:minmax(0,1fr) auto;min-width:0;
-  border:1px solid var(--px-line);border-radius:14px;overflow:hidden;
-  background:var(--px-surface);box-shadow:var(--shadow-card)
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-track-tile .academy-track-card{
-  grid-column:auto!important;border:0;border-radius:0;box-shadow:none;
-  background:transparent;min-width:0
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-track-tile .academy-track-summary{
-  grid-template-columns:minmax(0,1fr);align-content:start;gap:9px;padding:15px
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-track-tile .academy-track-summary img{
-  width:100%;max-height:125px;object-fit:cover
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-track-category{
-  display:inline-flex;align-self:start;justify-self:start;width:fit-content;
-  padding:4px 9px;border-radius:999px;border:1px solid var(--px-line-strong);
-  background:var(--px-bg-muted);color:var(--px-text);font-size:12px;font-weight:780
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-track-progress{
-  display:grid;gap:5px;margin-top:7px;font-size:12px;color:var(--px-muted)
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-track-progress .bar{
-  display:block;height:7px;border-radius:999px;overflow:hidden;background:var(--px-line)
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-track-progress .bar span{
-  display:block;height:100%;background:#2f7de1;border-radius:999px
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-track-footer{
-  display:flex;justify-content:flex-end;align-items:center;padding:12px 15px;
-  border-top:1px solid var(--px-line)
-}
-html[data-theme] body.workspace-mode #ops-training .uniproxiti-track-footer button{
-  width:100%;min-height:44px
-}
-html[data-theme] body.workspace-mode #ops-training :is(.uniproxiti-stat,.uniproxiti-resume,.uniproxiti-activity,.uniproxiti-track-tile) :is(button,summary):focus-visible{
-  outline:3px solid var(--px-focus)!important;outline-offset:3px!important
-}
-/* Os chips dinâmicos devem usar fundo escuro em ambos os temas: branco sobre branco é ilegível. */
-html[data-theme] body.workspace-mode #overview-home .overview-hero-status .overview-quick span{
-  background:#102d4e!important;color:#f2f8ff!important;
-  border-color:#8cb9e9!important;text-shadow:none!important
+/* UniProxiti: composição de capacitação. Dados e emissão continuam nos scripts originais. */
+html[data-theme] body.workspace-mode .ops:has(#ops-training:not([hidden]))>.ops-title{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+html[data-theme] body.workspace-mode #ops-training{position:relative}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-update-strip{display:flex;justify-content:flex-end;gap:8px;position:relative;z-index:2;margin:0 0 10px}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-update-strip button{min-height:32px;padding:5px 9px;font-size:11px}
+html[data-theme] body.workspace-mode #ops-training #training-sync-state{margin:0 0 8px;font-size:11px}
+html[data-theme] body.workspace-mode #ops-training .academy-learning{display:grid;gap:16px;margin:0 0 28px;min-width:0}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-hero{position:relative;isolation:isolate;overflow:hidden;display:block;min-height:224px;margin:0 -24px;padding:28px 24px;border:0;border-radius:0;background:#07162b;box-shadow:none}
+html[data-theme] body.workspace-mode #ops-training .learning-hero-photo{position:absolute;inset:0;z-index:-2}
+html[data-theme] body.workspace-mode #ops-training .learning-hero-photo img{width:100%;height:100%;max-height:none;object-fit:cover;object-position:right 58%;border:0;border-radius:0;opacity:.85}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-hero:after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#06152bfa 0%,#06152bd9 42%,#06152b11 100%)}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-hero-copy{max-width:850px}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-hero .kicker{color:#c4e4fc;font-size:10px;letter-spacing:.15em;margin:0 0 8px}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-hero h4{font-size:clamp(36px,3.7vw,58px);line-height:1.08;font-weight:820;letter-spacing:-.045em;color:#fff;margin:0 0 10px;max-width:none}
+html[data-theme] body.workspace-mode #ops-training .hero-blue{color:#64caff}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-hero-copy>p:not(.kicker){color:#f0f6ff;font-size:16px;line-height:1.5;margin:0 0 20px}
+html[data-theme] body.workspace-mode #ops-training .learning-principles{display:flex;gap:26px;list-style:none;padding:0;margin:0 0 12px;max-width:820px}
+html[data-theme] body.workspace-mode #ops-training .learning-principles li{display:flex;gap:10px;align-items:center;color:#fff;min-width:0}
+html[data-theme] body.workspace-mode #ops-training .learning-principles li>span{width:32px;height:36px;flex:none;display:grid;place-items:center;background:#0c3057;border:1px solid #315d86;border-radius:8px;font-size:21px}
+html[data-theme] body.workspace-mode #ops-training .learning-principles strong{font-size:12px;display:block;font-weight:650}
+html[data-theme] body.workspace-mode #ops-training .learning-principles small{display:block;font-size:10px;color:#e2edf9;line-height:1.5}
+html[data-theme] body.workspace-mode #ops-training #academy-learning-status{color:#cfe5fa;font-size:11px;line-height:1.4;margin:8px 0 0}
+html[data-theme] body.workspace-mode #ops-training #academy-learning-summary{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-dashboard{display:grid;gap:18px;min-width:0}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-indicator-row{display:grid;grid-template-columns:minmax(0,4fr) minmax(155px,.95fr);gap:12px}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat{display:grid;align-content:center;gap:7px;min-height:112px;min-width:0;padding:13px;border:1px solid var(--px-line);border-radius:9px;background:var(--px-surface);box-shadow:var(--shadow-card)}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat>span{font-size:11px;color:var(--px-text);font-weight:600}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat>strong{font-size:23px;line-height:1.1;color:var(--px-ink);letter-spacing:-.03em;overflow-wrap:anywhere}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat:last-child>strong{font-size:18px;color:var(--px-orange)}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat small{font-size:10px;line-height:1.4;color:var(--px-muted)}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat-progress{display:flex;gap:10px;align-items:center}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat-progress>div:last-child{display:grid;gap:5px;min-width:0}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat-progress>div>span{font-size:11px;font-weight:600}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-ring{--up-progress:0%;position:relative;flex:0 0 63px;display:grid;place-items:center;width:63px;height:63px;border-radius:50%;background:conic-gradient(#086cdf var(--up-progress),var(--px-line) 0)}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-ring:before{content:'';position:absolute;inset:7px;background:var(--px-surface);border-radius:50%}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-ring strong{position:relative;color:var(--px-ink);font-size:17px;font-variant-numeric:tabular-nums}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-continue-card{display:grid;grid-template-columns:35px minmax(0,1fr);gap:7px;align-content:center;align-items:center;padding:14px 10px;background:linear-gradient(120deg,#0656c2,#086bd8);color:#fff;border:1px solid #377fdc;border-radius:9px}
+html[data-theme] body.workspace-mode #ops-training .continue-play{grid-row:span 2;display:grid;place-items:center;border-radius:50%;background:#287fdf;width:33px;height:33px;font-size:20px}
+html[data-theme] body.workspace-mode #ops-training #uniproxiti-continue{font-size:12px;padding:0;min-height:30px;border:0;background:transparent!important;text-align:left;box-shadow:none;color:#fff}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-continue-card small{font-size:10px;color:#e6f1ff;line-height:1.5}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-tracks-heading{display:flex;align-items:end;justify-content:space-between;gap:15px;margin:0}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-tracks-heading .kicker{display:none}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-tracks-heading h5{font-size:21px;letter-spacing:-.025em;margin:0}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-tracks-heading>p{font-size:11px;line-height:1.5;color:var(--px-muted);margin:0;max-width:43ch}
+html[data-theme] body.workspace-mode #ops-training .academy-track-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:start}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-track-tile{display:grid;grid-template-rows:1fr auto;min-width:0;position:relative;background:var(--px-surface);border:1px solid var(--px-line);border-radius:9px;box-shadow:var(--shadow-card)}
+html[data-theme] body.workspace-mode #ops-training .academy-track-card{min-width:0;grid-column:auto;border:0;box-shadow:none;background:transparent;border-radius:9px;overflow:visible}
+html[data-theme] body.workspace-mode #ops-training .academy-track-summary{display:flex;flex-direction:column;align-items:stretch;gap:0;padding:0;list-style:none;cursor:pointer}
+html[data-theme] body.workspace-mode #ops-training .academy-track-summary::-webkit-details-marker{display:none}
+html[data-theme] body.workspace-mode #ops-training .academy-track-summary>img{width:100%;height:116px;object-fit:cover;border:0;border-radius:8px 8px 0 0;aspect-ratio:auto;max-height:none}
+html[data-theme] body.workspace-mode #ops-training .academy-track-copy{display:grid;gap:7px;padding:11px;min-width:0}
+html[data-theme] body.workspace-mode #ops-training .academy-track-copy>small{font-size:9px;letter-spacing:.1em;color:var(--px-muted)}
+html[data-theme] body.workspace-mode #ops-training .academy-track-copy h5{font-size:13px;line-height:1.4;min-height:36px;margin:0;letter-spacing:-.02em;color:var(--px-ink)}
+html[data-theme] body.workspace-mode #ops-training .academy-track-copy>p{font-size:11px;line-height:1.5;margin:0;color:var(--px-muted)}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-track-category{position:absolute;top:9px;left:9px;max-width:calc(100% - 18px);padding:4px 7px;border:1px solid #4896ee;border-radius:5px;background:#075fc8;color:#fff;font-size:10px;font-weight:600}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-track-progress{display:grid;gap:6px;font-size:10px;color:var(--px-muted)}
+html[data-theme] body.workspace-mode #ops-training .bar,html[data-theme] body.workspace-mode #ops-training .uniproxiti-resume-bar{height:6px;overflow:hidden;background:var(--px-line);border-radius:5px}
+html[data-theme] body.workspace-mode #ops-training .bar span,html[data-theme] body.workspace-mode #ops-training #uniproxiti-resume-fill{display:block;height:100%;background:linear-gradient(90deg,#086cdf,#45a3fa);border-radius:5px}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-track-footer{padding:0 10px 10px;display:block;border:0}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-track-footer button{width:100%;min-height:33px;font-size:11px;background:var(--px-bg-muted);border-color:var(--px-line);color:var(--px-text)}
+html[data-theme] body.workspace-mode #ops-training .academy-track-courses{display:grid;gap:8px;padding:0 10px 10px}
+html[data-theme] body.workspace-mode #ops-training .academy-course-card{padding:10px;font-size:11px;background:var(--px-surface-soft);border-radius:6px}
+html[data-theme] body.workspace-mode #ops-training .academy-course-card strong{font-size:12px}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-dashboard-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:14px}
+html[data-theme] body.workspace-mode #ops-training :is(.uniproxiti-resume,.uniproxiti-activity){padding:20px;background:var(--px-surface);border:1px solid var(--px-line);border-radius:10px;box-shadow:var(--shadow-card);min-width:0}
+html[data-theme] body.workspace-mode #ops-training :is(.uniproxiti-resume,.uniproxiti-activity) .kicker{font-size:9px;letter-spacing:.12em;color:var(--px-muted);margin:0 0 6px}
+html[data-theme] body.workspace-mode #ops-training :is(.uniproxiti-resume,.uniproxiti-activity) h5{font-size:18px;margin:0 0 15px;letter-spacing:-.02em}
+html[data-theme] body.workspace-mode #ops-training #uniproxiti-resume-title{font-size:14px;color:var(--px-ink)}
+html[data-theme] body.workspace-mode #ops-training #uniproxiti-resume-note{font-size:12px;color:var(--px-muted);line-height:1.5}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-resume-track{display:grid;gap:8px;font-size:11px;margin:12px 0}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-reading-note{display:block;margin-top:9px;font-size:10px;line-height:1.5;color:var(--px-muted)}
+html[data-theme] body.workspace-mode #ops-training #uniproxiti-activity-list{list-style:none;margin:0;padding:0;display:grid}
+html[data-theme] body.workspace-mode #ops-training #uniproxiti-activity-list li{display:grid;gap:5px;padding:12px 0 12px 17px;border-left:2px solid #2787d8;border-bottom:1px solid var(--px-line);font-size:12px;overflow-wrap:anywhere;color:var(--px-text)}
+html[data-theme] body.workspace-mode #ops-training #uniproxiti-activity-list small,html[data-theme] body.workspace-mode #ops-training .uniproxiti-note{font-size:11px;color:var(--px-muted)}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-certificate{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:25px;border:1px solid #b89b5d;outline:3px double #b89b5d55;outline-offset:-8px;border-radius:8px;background:var(--px-surface);color:var(--px-ink)}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-certificate h5{font-size:22px;margin:5px 0}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-certificate :is(p,small){font-size:12px;color:var(--px-muted)}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-actions{display:flex;flex-wrap:wrap;gap:9px;margin:0;padding:0}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-rules{padding:13px 16px;border:1px solid var(--px-line);border-radius:8px;background:var(--px-surface);color:var(--px-text);font-size:12px}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-rules summary{cursor:pointer;font-weight:650}
+html[data-theme] body.workspace-mode #ops-training .academy-library-heading{border-top:1px solid var(--px-line);margin:0;padding:24px 0 10px}
+html[data-theme] body.workspace-mode #ops-training .academy-library-heading h4{font-size:22px;margin:0 0 7px}
+html[data-theme] body.workspace-mode #ops-training .academy-library-heading p{font-size:12px;color:var(--px-muted)}
+html[data-theme] body.workspace-mode #ops-training .academy-filters{display:grid;grid-template-columns:minmax(0,1.5fr) repeat(2,minmax(0,1fr));gap:14px;align-items:start;margin:0 0 15px;padding:16px;background:var(--px-surface);border:1px solid var(--px-line);border-radius:10px}
+html[data-theme] body.workspace-mode #ops-training .academy-filters label{font-size:12px}
+html[data-theme] body.workspace-mode #ops-training .central-editor-zone{margin-top:25px;padding-top:20px;border-top:1px solid var(--px-line)}
+html[data-theme] body.workspace-mode #ops-training .central-editor-zone>h4{font-size:20px;margin:0 0 8px}
+html[data-theme] body.workspace-mode #ops-training #training-form{width:100%;max-width:none;margin-top:12px}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-detail{padding:22px;background:var(--px-surface);border:1px solid var(--px-line);border-radius:12px;color:var(--px-ink)}
+html[data-theme] body.workspace-mode #ops-training .academy-assessment-form fieldset{background:var(--px-surface-soft);border:1px solid var(--px-line);border-radius:10px;color:var(--px-ink)}
+html[data-theme] body.workspace-mode #ops-training .academy-certificate-card{background:var(--px-surface);color:var(--px-ink);border-color:#b89b5d}
+/* Os chips dinâmicos devem usar fundo escuro em ambos os temas. */
+html[data-theme] body.workspace-mode #overview-home .overview-hero-status .overview-quick span{background:#102d4e!important;color:#f2f8ff!important;border-color:#8cb9e9!important;text-shadow:none!important}
+@media(min-width:1700px){
+ html[data-theme] body.workspace-mode #ops-training .academy-track-list{grid-template-columns:repeat(8,minmax(0,1fr))}
+ html[data-theme] body.workspace-mode #ops-training .academy-track-copy>p{min-height:49px}
+ html[data-theme] body.workspace-mode #ops-training .academy-track-summary>img{height:108px}
 }
 @media(max-width:1399px){
- html[data-theme] body.workspace-mode #ops-training .academy-track-list{
-  grid-template-columns:repeat(auto-fit,minmax(min(100%,265px),1fr))
- }
+ html[data-theme] body.workspace-mode #ops-training .uniproxiti-indicator-row{grid-template-columns:minmax(0,1fr)}
+ html[data-theme] body.workspace-mode #ops-training .uniproxiti-continue-card{grid-template-columns:33px auto 1fr;padding:9px 14px}
+ html[data-theme] body.workspace-mode #ops-training .continue-play{grid-row:1}
+ html[data-theme] body.workspace-mode #ops-training .uniproxiti-continue-card small{text-align:right}
 }
-@media(max-width:1050px){
+@media(max-width:1000px){
  html[data-theme] body.workspace-mode #ops-training .uniproxiti-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ html[data-theme] body.workspace-mode #ops-training .academy-track-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+ html[data-theme] body.workspace-mode #ops-training .learning-principles{gap:15px;flex-wrap:wrap}
  html[data-theme] body.workspace-mode #ops-training .uniproxiti-dashboard-columns{grid-template-columns:minmax(0,1fr)}
 }
-@media(max-width:620px){
- html[data-theme] body.workspace-mode #ops-training .uniproxiti-stats{grid-template-columns:minmax(0,1fr)}
- html[data-theme] body.workspace-mode #ops-training .uniproxiti-dashboard-heading button{width:100%}
- html[data-theme] body.workspace-mode #ops-training .academy-learning-hero{grid-template-columns:minmax(0,1fr)}
- html[data-theme] body.workspace-mode #ops-training .academy-learning-hero img{max-height:130px}
- html[data-theme] body.workspace-mode #ops-training .uniproxiti-update-strip{justify-content:flex-start}
- html[data-theme] body.workspace-mode #ops-training .uniproxiti-resume,
- html[data-theme] body.workspace-mode #ops-training .uniproxiti-activity{padding:16px}
+@media(max-width:767px){
+ html[data-theme] body.workspace-mode #ops-training .academy-learning-hero{margin:0 -14px;padding:24px 20px;min-height:260px}
+ html[data-theme] body.workspace-mode #ops-training .academy-learning-hero h4{font-size:39px}
+ html[data-theme] body.workspace-mode #ops-training .academy-learning-hero-copy>p:not(.kicker){font-size:14px;max-width:28ch}
+ html[data-theme] body.workspace-mode #ops-training .learning-principles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px 8px}
+ html[data-theme] body.workspace-mode #ops-training .learning-hero-photo img{object-position:67% center;opacity:.55}
+ html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat{padding:12px;min-height:115px}
+ html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat-progress{display:grid;grid-template-columns:1fr}
+ html[data-theme] body.workspace-mode #ops-training .uniproxiti-ring{width:50px;height:50px}
+ html[data-theme] body.workspace-mode #ops-training .uniproxiti-stat>strong{font-size:24px}
+ html[data-theme] body.workspace-mode #ops-training .uniproxiti-tracks-heading{display:block}
+ html[data-theme] body.workspace-mode #ops-training .uniproxiti-tracks-heading>p{margin-top:6px}
+ html[data-theme] body.workspace-mode #ops-training .academy-track-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ html[data-theme] body.workspace-mode #ops-training .academy-track-summary>img{height:100px}
+ html[data-theme] body.workspace-mode #ops-training .academy-track-copy{padding:9px;gap:6px}
+ html[data-theme] body.workspace-mode #ops-training .academy-track-copy h5{font-size:12px}
+ html[data-theme] body.workspace-mode #ops-training .academy-track-copy>p{font-size:10px}
+ html[data-theme] body.workspace-mode #ops-training .academy-filters{grid-template-columns:minmax(0,1fr)}
+ html[data-theme] body.workspace-mode #ops-training .uniproxiti-certificate{display:grid}
+ html[data-theme] body.workspace-mode #ops-training .uniproxiti-continue-card{grid-template-columns:33px 1fr}
+ html[data-theme] body.workspace-mode #ops-training .continue-play{grid-row:span 2}
+ html[data-theme] body.workspace-mode #ops-training .uniproxiti-continue-card small{text-align:left}
 }
+@media(max-width:360px){html[data-theme] body.workspace-mode #ops-training .academy-track-list{grid-template-columns:minmax(0,1fr)}html[data-theme] body.workspace-mode #ops-training .academy-track-summary>img{height:145px}}
