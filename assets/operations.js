@@ -2,7 +2,7 @@
   "use strict";
   const el = id => document.getElementById(id);
   const state = { db:null, user:null, profile:null, tickets:[], staff:[], active:null,
-    channel:null, poll:null, heartbeat:null, currentView:"tickets", loading:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),readReceipts:new Map(),receiptsReady:false,readFetch:null,readSaving:new Set(),toastTimer:null };
+    channel:null, poll:null, heartbeat:null, currentView:"tickets", loading:false,ticketsReady:false,ticketError:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,messageCheckPromise:null,messageReady:false,messagesCapped:false,readIssue:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),readReceipts:new Map(),receiptsReady:false,readFetch:null,readSaving:new Set(),toastTimer:null };
   const statusNames = {new:"Aberto",triage:"Em triagem",in_progress:"Em atendimento",
     waiting_customer:"Aguardando cliente",resolved:"Resolvido",closed:"Encerrado"};
   const permNames = {tickets_view:"Consultar chamados",tickets_claim:"Assumir chamados",
@@ -58,17 +58,25 @@
   async function loadReadReceipts(){
     if(!state.db||!state.user)return;
     if(state.readFetch)return state.readFetch;
-    const uid=state.user.id;
+    const db=state.db,uid=state.user.id,ids=state.tickets.map(t=>t.id);
+    if(!ids.length){
+      state.readReceipts=new Map();state.receiptsReady=true;state.readIssue=false;return;
+    }
     state.readFetch=(async()=>{
       try{
-        const rows=await query(state.db.from("ticket_read_receipts")
-          .select("ticket_id,first_seen_at,last_read_customer_at").eq("staff_id",uid).limit(250));
-        if(state.user?.id!==uid)return;
+        const rows=await query(db.from("ticket_read_receipts")
+          .select("ticket_id,first_seen_at,last_read_customer_at")
+          .eq("staff_id",uid).in("ticket_id",ids).limit(100));
+        if(state.db!==db||state.user?.id!==uid)return;
         state.readReceipts=new Map(rows.map(row=>[row.ticket_id,row]));
-        state.receiptsReady=true;
-      }catch(error){
-        if(!state.receiptsReady)el("ops-live").textContent="Leitura entre dispositivos temporariamente indisponível";
-      }finally{state.readFetch=null}
+        state.receiptsReady=true;state.readIssue=false;
+      }catch{
+        if(state.db!==db||state.user?.id!==uid)return;
+        state.readIssue=true;
+        el("ops-live").textContent="Leitura entre dispositivos temporariamente indisponível";
+      }finally{
+        if(state.db===db&&state.user?.id===uid)state.readFetch=null;
+      }
     })();
     return state.readFetch;
   }
@@ -90,9 +98,13 @@
     try{return Number(localStorage.getItem(readKey(id))||0)||0}catch{return 0}
   }
   function unreadMessages(id){
+    if(!can("chat")||!state.messageReady)return 0;
     const timestamp=lastRead(id);
     return state.messageRows.filter(m=>m.ticket_id===id&&Date.parse(m.created_at)>timestamp).length;
   }
+  const hasAttention=t=>window.PROXITI_OVERVIEW_MODEL.attention(t,seenTicket,unreadMessages,can("chat"),state.messageReady);
+  const overviewComplete=()=>!state.readIssue&&(!can("chat")||(state.messageReady&&!state.messagesCapped));
+  const overviewStatus=phase=>document.dispatchEvent(new CustomEvent("proxiti-overview-status",{detail:{phase,at:Date.now()}}));
   async function markMessagesSeen(id,list){
     if(document.hidden||el("operations").hidden||state.currentView!=="tickets"||
        el("ticket-detail").hidden||state.active?.id!==id||state.readSaving.has(id))return;
@@ -697,7 +709,7 @@
     if(state.heartbeat)clearInterval(state.heartbeat);
     if(state.channel&&state.db)void state.db.removeChannel(state.channel);
     if(state.toastTimer)clearTimeout(state.toastTimer);
-    Object.assign(state,{db:null,user:null,profile:null,tickets:[],staff:[],active:null,channel:null,poll:null,heartbeat:null,loading:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),readReceipts:new Map(),receiptsReady:false,readFetch:null,readSaving:new Set(),toastTimer:null});
+    Object.assign(state,{db:null,user:null,profile:null,tickets:[],staff:[],active:null,channel:null,poll:null,heartbeat:null,loading:false,ticketsReady:false,ticketError:false,ticketIds:null,messageIds:null,restoreTicketId:null,restoreScroll:null,messageCheckBusy:false,messageCheckPromise:null,messageReady:false,messagesCapped:false,readIssue:false,ticketFilter:"all",ticketSearch:"",messageRows:[],renderedTable:"",renderedThread:"",seenFallback:new Set(),readFallback:new Map(),readReceipts:new Map(),receiptsReady:false,readFetch:null,readSaving:new Set(),toastTimer:null});
     el("alert-toast").hidden=true;el("notifications-panel").hidden=true;
     el("notifications-toggle").setAttribute("aria-expanded","false");
     el("notifications-count").hidden=true;el("ticket-badge").hidden=true;
