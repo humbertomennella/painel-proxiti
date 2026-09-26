@@ -220,6 +220,9 @@
   el("ticket-file-form").addEventListener("submit",async event=>{
     event.preventDefault();if(!canEdit())return;
     const ticket=selected,form=event.currentTarget,send=form.querySelector('[type="submit"]');
+    const db=database(),uid=session().user.id,rev=revision;
+    const valid=()=>database()===db&&session()?.user?.id===uid&&
+      revision===rev&&selected?.id===ticket.id&&canRead();
     const file=el("ticket-file-input").files?.[0];
     if(!file)return;
     const ext=formats[file.type];
@@ -230,20 +233,45 @@
     const path=ticket.id+"/"+crypto.randomUUID()+ext;
     let uploaded=false;
     try{
-      await query(database().storage.from(bucket).upload(path,file,{
+      await query(db.storage.from(bucket).upload(path,file,{
         contentType:file.type,cacheControl:"60",upsert:false
       }));
       uploaded=true;
-      await rpc("proxiti_attach_ticket_file",{
+      if(!valid())throw new Error("O contexto de atendimento mudou durante o envio.");
+      await query(db.rpc("proxiti_attach_ticket_file",{
         p_ticket:ticket.id,p_path:path,p_name:file.name,p_mime:file.type,p_size:file.size
-      });
-      if(selected?.id===ticket.id){
+      }));
+      if(valid()){
         form.reset();note("Anexo privado registrado.");
-        document.dispatchEvent(new CustomEvent("proxiti-ticket-activity",{detail:{id:ticket.id}}));await refresh("files",ticket.id);
+        document.dispatchEvent(new CustomEvent("proxiti-ticket-activity",{detail:{id:ticket.id}}));
+        await refresh("files",ticket.id);
       }
     }catch(error){
-      if(uploaded)try{await database().storage.from(bucket).remove([path]);}catch{}
-      if(selected?.id===ticket.id)note("Falha ao adicionar anexo: "+error.message,true);
+      let verification;
+      if(uploaded){
+        // Uma resposta perdida após o INSERT não significa falha da gravação.
+        try{
+          verification=await query(db.from("ticket_attachments")
+            .select("id").eq("storage_path",path).maybeSingle());
+        }catch{verification=undefined;}
+      }
+      if(verification){
+        if(valid()){
+          form.reset();note("O anexo foi registrado. A confirmação chegou após a verificação.");
+          await refresh("files",ticket.id);
+        }
+      }else if(uploaded&&verification===null){
+        try{
+          await query(db.storage.from(bucket).remove([path]));
+          if(valid())note("O anexo não foi registrado; o envio foi revertido. Tente novamente.",true);
+        }catch{
+          if(valid())note("Não foi possível vincular nem limpar o arquivo privado. "+
+            "Solicite verificação administrativa antes de reenviar.",true);
+        }
+      }else if(valid()){
+        note("Não foi possível confirmar o anexo. Não reenvie até verificar a lista: "+
+          error.message,true);
+      }
     }finally{send.disabled=false;}
   });
   el("ticket-report-form").addEventListener("submit",event=>{
