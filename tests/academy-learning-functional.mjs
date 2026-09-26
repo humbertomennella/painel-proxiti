@@ -381,6 +381,37 @@ try{
      const requests=await page.evaluate(()=>window.__fixture.calls.filter(name=>
        ["academy_courses","academy_course_progress","academy_certificates","academy_quiz_attempts"].includes(name)));
      assert(requests.includes("academy_quiz_attempts")&&requests.includes("academy_courses"));
+     await mkdir(resolve(root,"artifacts"),{recursive:true});
+     for(const width of [320,375,1366]){
+       await page.setViewportSize({width,height:850});
+       for(const theme of ["light","dark"]){
+         await page.evaluate(value=>document.documentElement.dataset.theme=value,theme);
+         const audit=await page.evaluate(()=>{
+           const rgb=value=>String(value).match(/[0-9.]+/g).slice(0,3).map(Number);
+           const lum=value=>{
+             const [r,g,b]=rgb(value).map(v=>{
+               const x=v/255;return x<=.04045?x/12.92:((x+.055)/1.055)**2.4;
+             });
+             return .2126*r+.7152*g+.0722*b;
+           };
+           const ratio=(a,b)=>{const x=lum(a),y=lum(b);
+             return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);};
+           const stat=document.querySelector(".uniproxiti-stat");
+           const muted=stat.querySelector("small");
+           const chip=document.querySelector("#overview-home .overview-quick span");
+           return {
+             scroll:document.documentElement.scrollWidth,
+             statContrast:ratio(getComputedStyle(muted).color,getComputedStyle(stat).backgroundColor),
+             chipContrast:ratio(getComputedStyle(chip).color,getComputedStyle(chip).backgroundColor)
+           };
+         });
+         assert(audit.scroll<=width+2,"Dashboard com rolagem horizontal: "+width+"/"+theme+" "+JSON.stringify(audit));
+         assert(audit.statContrast>=4.5&&audit.chipContrast>=4.5,
+           "Contraste AA insuficiente: "+width+"/"+theme+" "+JSON.stringify(audit));
+         if([375,1366].includes(width))
+           await page.screenshot({path:resolve(root,"artifacts","uniproxiti-dashboard-"+width+"-"+theme+".png"),fullPage:true});
+       }
+     }
      await page.click("#uniproxiti-resume-action");
      await page.waitForFunction(()=>document.getElementById("academy-lesson-content").textContent
        .includes("Computadores e notebooks"));
