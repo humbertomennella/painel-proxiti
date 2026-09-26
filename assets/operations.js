@@ -6,7 +6,7 @@
   const statusNames = {new:"Aberto",triage:"Em triagem",in_progress:"Em atendimento",
     waiting_customer:"Aguardando cliente",resolved:"Resolvido",closed:"Encerrado"};
   const permNames = {tickets_view:"Consultar chamados",tickets_claim:"Assumir chamados",
-    chat:"Chat com clientes",training:"Academia PROXITI",resources:"Ferramentas"};
+    chat:"Chat com clientes",training:"UniProxiti",resources:"Ferramentas"};
   const isAdmin = () => state.profile?.role === "administrator" && state.profile?.status === "active";
   const can = name => isAdmin() || (state.profile?.status === "active" && state.profile?.permissions?.[name] === true);
   const elem = (tag,text="",className="") => {
@@ -386,7 +386,7 @@
     const names={tickets:["Chamados","Prioridades, responsáveis e histórico dos atendimentos."],
       staff:["Equipe e permissões","Convites, aprovações e acesso individual."],
       content:["Conteúdo do site","Textos publicados e personalizações autorizadas."],
-      training:["Academia PROXITI","Materiais técnicos e capacitação privada."],
+      training:["UniProxiti","Materiais técnicos e capacitação privada."],
       agenda:["Agenda","Retornos, visitas e horários planejados por chamado."],
       tools:["Ferramentas","Inventário e equipamentos atribuídos."]};
     el("ops-heading").textContent=names[view]?.[0]||"Operação";
@@ -433,7 +433,7 @@
     const first=Object.keys(allowed).find(key=>allowed[key]);
     el("operations").hidden=!first;
     if(first)showView(allowed[state.currentView]?state.currentView:first);
-    // A Visão Geral deve sincronizar mesmo se a última aba foi Academia ou Ferramentas.
+    // A Visão Geral deve sincronizar mesmo se a última aba foi UniProxiti ou Ferramentas.
     if(allowed.tickets){
       if(!state.ticketsReady)void loadTickets();
       else if(can("chat")&&!state.messageReady)void checkNewMessages();
