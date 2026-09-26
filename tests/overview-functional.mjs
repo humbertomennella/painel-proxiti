@@ -38,13 +38,13 @@ const messages=baseline.map((t,i)=>({
  id:"00000000-0000-4000-8000-00000000020"+(i+1),
  ticket_id:t.id,sender_kind:"customer",created_at:stamp,body:"Mensagem de teste"
 }));
-async function openScenario({tickets=baseline,chat=true,failTickets=false,failMessages=false,viewer=true,training=false,startView="tickets"}={}){
+async function openScenario({tickets=baseline,chat=true,failTickets=false,failMessages=false,failReceipts=false,messagesFixture=null,viewer=true,training=false,startView="tickets"}={}){
  const page=await browser.newPage({viewport:{width:375,height:850},deviceScaleFactor:1});
  page.__errors=[];
  page.on("pageerror",error=>page.__errors.push(error.message));
  await page.route("https://cdn.jsdelivr.net/**",route=>route.abort());
  await page.goto(url,{waitUntil:"load",timeout:30000});
- await page.evaluate(({tickets,messages,chat,failTickets,failMessages,viewer,training,startView})=>{
+ await page.evaluate(({tickets,messages,chat,failTickets,failMessages,failReceipts,viewer,training,startView})=>{
    document.body.classList.add("workspace-mode");
    document.getElementById("auth-screen").hidden=true;
    document.getElementById("panel").hidden=false;
@@ -53,7 +53,7 @@ async function openScenario({tickets=baseline,chat=true,failTickets=false,failMe
    const fixture=window.__fixture={
      tickets:structuredClone(tickets),
      messages:structuredClone(messages),
-     failTickets,failMessages,
+     failTickets,failMessages,failReceipts,
      read:[],staff_presence:[],calls:[]
    };
    const tables={
@@ -75,6 +75,7 @@ async function openScenario({tickets=baseline,chat=true,failTickets=false,failMe
            fixture.calls.push(table);
            if(table==="support_tickets"&&fixture.failTickets)return {data:null,error:{message:"Falha de teste na fila"}};
            if(table==="support_messages"&&fixture.failMessages)return {data:null,error:{message:"Falha de teste nas mensagens"}};
+           if(table==="ticket_read_receipts"&&fixture.failReceipts)return {data:null,error:{message:"Falha de teste na leitura"}};
            let rows=[...(fixture[tables[table]||table]||[])];
            for(const [kind,field,value]of filters){
              if(kind==="eq")rows=rows.filter(row=>row[field]===value);
@@ -110,7 +111,7 @@ async function openScenario({tickets=baseline,chat=true,failTickets=false,failMe
    if(startView!=="tickets")sessionStorage.setItem("proxiti-work-v3-"+user.id+"-view",startView);
    window.PROXITI_ACTIVE_SESSION=session;
    document.dispatchEvent(new CustomEvent("proxiti-session-ready",{detail:session}));
- },{tickets,messages: tickets===baseline?messages:[],chat,failTickets,failMessages,viewer,training,startView});
+ },{tickets,messages:messagesFixture??(tickets===baseline?messages:[]),chat,failTickets,failMessages,failReceipts,viewer,training,startView});
  await page.waitForFunction(()=>["ready","partial","error","restricted"].includes(
    document.getElementById("overview-sync-state").dataset.phase),{timeout:12000});
  return page;
@@ -191,6 +192,31 @@ try{
      await page.click("#overview-retry");
      await page.waitForFunction(()=>document.querySelector("#overview-sync-state").dataset.phase==="ready");
      assert.equal((await page.textContent("#overview-kpi-unread")).trim(),"2");
+   }finally{await page.close();}
+ });
+ await test("Recibos indisponíveis não produzem contagem aparentemente exata",async()=>{
+   const page=await openScenario({failReceipts:true});
+   try{
+     await page.waitForFunction(()=>document.querySelector("#overview-sync-state").dataset.phase==="partial");
+     assert.equal((await page.textContent("#overview-kpi-unread")).trim(),"—");
+     assert.equal((await page.textContent("#notifications-count")).trim(),"?");
+     await page.evaluate(()=>{window.__fixture.failReceipts=false;});
+     await page.click("#overview-retry");
+     await page.waitForFunction(()=>document.querySelector("#overview-sync-state").dataset.phase==="ready");
+     assert.equal((await page.textContent("#overview-kpi-unread")).trim(),"2");
+   }finally{await page.close();}
+ });
+ await test("Limite de mensagens indica conferência parcial sem esconder a fila",async()=>{
+   const many=Array.from({length:251},(_,i)=>({
+     id:"message-"+i,ticket_id:baseline[0].id,sender_kind:"customer",
+     created_at:new Date(Date.now()-i*1000).toISOString(),body:"Mensagem de teste"
+   }));
+   const page=await openScenario({messagesFixture:many});
+   try{
+     await page.waitForFunction(()=>document.querySelector("#overview-sync-state").dataset.phase==="partial");
+     assert.equal((await page.textContent("#overview-kpi-unread")).trim(),"—");
+     assert.equal((await page.textContent("#notifications-count")).trim(),"?");
+     assert.equal((await page.textContent("#overview-kpi-open")).trim(),"1");
    }finally{await page.close();}
  });
  await test("Fila vazia diferencia zero confirmado de falha",async()=>{
@@ -295,7 +321,7 @@ try{
      assert.deepEqual(page.__errors,[],"O navegador registrou erros de JavaScript na Visão Geral");
    }finally{await page.close();}
  });
- console.log("PASS: 9 fluxos funcionais da Visão Geral, incluindo 10 verificações de layout com sessão simulada.");
+ console.log("PASS: 11 fluxos funcionais da Visão Geral, incluindo 10 verificações de layout com sessão simulada.");
 }finally{
  await browser.close();
  await new Promise((done,fail)=>server.close(error=>error?fail(error):done()));
