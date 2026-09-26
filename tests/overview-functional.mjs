@@ -171,6 +171,7 @@ try{
    try{
      await page.waitForFunction(()=>document.querySelector("#overview-sync-state").dataset.phase==="partial");
      assert.equal((await page.textContent("#overview-kpi-unread")).trim(),"—");
+     assert.equal((await page.textContent("#notifications-count")).trim(),"?");
      assert.equal((await page.textContent("#overview-kpi-open")).trim(),"1");
      await page.evaluate(()=>{window.__fixture.failMessages=false;});
      await page.click("#overview-retry");
