@@ -79,7 +79,7 @@ function navigateStudy(){
 function renderDashboard(){
  const host=el("uniproxiti-dashboard");
  if(!authorized(session())){host.hidden=true;return;}
- host.hidden=false;
+ host.hidden=mode!=="tracks";
  const listed=data.courses.filter(course=>requiredCourses.has(course.id));
  const total=catalogReady?listed.length:null;
  const done=catalogReady?listed.filter(course=>progress.get(course.id)?.completed_at).length:null;
@@ -163,6 +163,7 @@ function renderDashboard(){
 }
 function show(next){
  mode=next;
+ el("uniproxiti-dashboard").hidden=next!=="tracks"||!authorized(session());
  el("academy-track-list").hidden=next!=="tracks";
  el("academy-lesson-panel").hidden=next!=="lesson";
  el("academy-exam-panel").hidden=next!=="exam";
