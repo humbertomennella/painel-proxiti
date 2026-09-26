@@ -18,7 +18,7 @@
 <script src="./assets/app.js" defer></script>
 <script src="./assets/alerts.js" defer></script>
 <script src="./assets/overview-model.js?v=1" defer></script>
-<script src="./assets/operations.js?v=20260926-2" defer></script>
+<script src="./assets/operations.js?v=20260926-3" defer></script>
 <script src="./assets/academy.js?v=20260926-1" defer></script>
 <script src="./assets/layout.js" defer></script>
 <script src="./assets/profile.js" defer></script>
@@ -227,6 +227,7 @@
     <div class="academy-filters">
       <div class="ops-inline-search"><label for="training-search">Pesquisar na Academia</label><input id="training-search" type="search" placeholder="Título, assunto ou conteúdo técnico" autocomplete="off" maxlength="120"><p id="training-search-status" role="status" aria-live="polite"></p></div>
       <label for="training-category-filter">Especialidade <select id="training-category-filter"><option value="">Todas as áreas</option><option>Atendimento</option><option>Computadores</option><option>Redes</option><option>Backup</option><option>Segurança</option><option>Infraestrutura</option><option>Geral</option></select></label>
+      <label for="training-status-filter" data-admin-only>Publicação <select id="training-status-filter"><option value="all">Publicados e rascunhos</option><option value="published">Publicados</option><option value="draft">Rascunhos</option></select></label>
     </div>
     <form id="training-form" class="ops-form academy-editor" data-admin-only>
       <h4 id="training-editor-title">Publicar material técnico</h4>
