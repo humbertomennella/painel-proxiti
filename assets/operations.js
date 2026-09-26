@@ -407,7 +407,7 @@
       window.PROXITI_OVERVIEW_SNAPSHOT=null;window.PROXITI_OVERVIEW_STATUS=null;
       el("ticket-list").replaceChildren();el("ticket-detail").hidden=true;
       el("ticket-empty-state").hidden=false;
-      clearTicketPresentation();announceTicket();
+      clearTicketPresentation();ticketSync("restricted");announceTicket();
       for(const id of ["ticket-badge","notifications-count"]){
         const badge=el(id);badge.textContent="";badge.hidden=true;
       }
@@ -477,6 +477,7 @@
       el(id).replaceChildren();
     el("staff-messages").replaceChildren();el("staff-reply").value="";
     el("ticket-search").value="";
+    threadSync("restricted");
   }
   function announceTicket(){
     window.PROXITI_ACTIVE_TICKET=state.active;
@@ -488,6 +489,7 @@
     const same=()=>state.db===db&&state.user?.id===uid&&
       state.accessGeneration===generation&&can("tickets_view");
     state.loading=true;
+    ticketSync("loading");
     if(!state.ticketsReady)overviewStatus("loading");
     try{
       const tickets=await query(db.from("support_tickets")
@@ -521,8 +523,8 @@
         else{state.active=null;announceTicket();remember("ticket","");el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;}
       }
       if(state.ticketError)notice("");
-      state.ticketsReady=true;state.ticketError=false;
-      updateInbox();renderTickets();
+      state.ticketsReady=true;state.ticketError=false;state.ticketLastUpdated=Date.now();
+      ticketSync("ready");updateInbox();renderTickets();
       overviewStatus(overviewComplete()?"ready":"partial");
       if(state.restoreScroll!==null){
         const y=state.restoreScroll;state.restoreScroll=null;
@@ -530,7 +532,10 @@
       }
     }catch{
       if(same()){
-        state.ticketError=true;
+        state.ticketError=true;ticketSync("error");
+        if(!state.ticketsReady)el("ticket-list").replaceChildren(elem("p",
+          "A fila está temporariamente indisponível. Use Atualizar para tentar novamente.",
+          "ticket-list-empty"));
         notice("Não foi possível atualizar os chamados. Você pode tentar novamente.",true);
         overviewStatus("error");
       }
@@ -817,6 +822,7 @@
     el("notifications-list").replaceChildren();
     window.PROXITI_OVERVIEW_SNAPSHOT=null;window.PROXITI_OVERVIEW_STATUS=null;
     el("overview-open").textContent="Chamados: atualizando…";
+    ticketSync("restricted");
     el("operations").hidden=true;el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;notice("");announceTicket();
   }
   async function start(e){
