@@ -115,6 +115,7 @@ try{
  for(const width of [320,375,430,767,768,930,1199,1200,1366,1920]){
   await page.setViewportSize({width,height:870});
   await page.evaluate(()=>window.dispatchEvent(new Event("resize")));
+  await page.waitForTimeout(280); // Aguarda a transição de 220 ms do grid lateral.
   for(const theme of ["light","dark"]){
    await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);
    const data=await page.evaluate(()=>({
