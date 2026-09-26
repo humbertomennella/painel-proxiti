@@ -140,3 +140,52 @@ html[data-theme] body.workspace-mode .ops-inline-search input{
 html[data-theme] body.workspace-mode .ops-inline-search input:focus-visible{outline:2px solid var(--px-blue);outline-offset:2px}
 html[data-theme] body.workspace-mode .ops-inline-search p{margin:0;min-height:20px;color:var(--px-muted);font-size:.84rem}
 html[data-theme] body.workspace-mode .ops-list-item[hidden]{display:none!important}
+
+/* Chamados: transparência de sincronização e hierarquia clara da conversa. */
+html[data-theme] body.workspace-mode #ops-tickets .ticket-sync-status{
+ display:flex;align-items:center;gap:9px;margin:11px 0 14px;
+ padding:10px 13px;border:1px solid var(--px-line);border-radius:10px;
+ background:var(--px-bg-muted);color:var(--px-text);line-height:1.5;
+ font-size:.89rem;max-width:100%;overflow-wrap:anywhere
+}
+html[data-theme] body.workspace-mode #ops-tickets .ticket-sync-status:before{
+ content:"";display:inline-block;flex:0 0 8px;width:8px;height:8px;
+ border-radius:50%;background:var(--px-blue)
+}
+html[data-theme] body.workspace-mode #ops-tickets .ticket-sync-status[data-phase="ready"]:before{
+ background:#39946d
+}
+html[data-theme] body.workspace-mode #ops-tickets .ticket-sync-status[data-phase="error"]:before,
+html[data-theme] body.workspace-mode #ops-tickets .ticket-sync-status[data-phase="partial"]:before,
+html[data-theme] body.workspace-mode #ops-tickets .ticket-sync-status[data-phase="read-error"]:before{
+ background:#bd7b35
+}
+html[data-theme] body.workspace-mode #ops-tickets .ticket-status-help{
+ flex:1 1 200px;align-self:center;font-size:.83rem;line-height:1.5;
+ color:var(--px-muted);overflow-wrap:anywhere
+}
+html[data-theme] body.workspace-mode #ops-tickets .ticket-conversation-head{
+ display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px;
+ margin-bottom:8px
+}
+html[data-theme] body.workspace-mode #ops-tickets .ticket-conversation-head h4{margin:0}
+html[data-theme] body.workspace-mode #ops-tickets .ticket-conversation-head button{
+ min-height:44px;padding:9px 13px
+}
+html[data-theme] body.workspace-mode #ops-tickets .ops-conversation #ticket-thread-status{
+ margin:8px 0 13px
+}
+html[data-theme] body.workspace-mode #ops-tickets .ticket-inbox-card:focus-visible,
+html[data-theme] body.workspace-mode #ops-tickets #reload-tickets:focus-visible,
+html[data-theme] body.workspace-mode #ops-tickets #ticket-thread-retry:focus-visible{
+ outline:3px solid var(--px-orange);outline-offset:3px
+}
+@media(max-width:680px){
+ html[data-theme] body.workspace-mode #ops-tickets .ticket-conversation-head{
+  align-items:stretch
+ }
+ html[data-theme] body.workspace-mode #ops-tickets .ticket-conversation-head button{
+  flex:1 0 100%
+ }
+ html[data-theme] body.workspace-mode #ops-tickets .ticket-status-help{flex-basis:100%}
+}
