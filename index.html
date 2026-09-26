@@ -89,6 +89,7 @@
   <div id="ops-tickets" class="ops-view px-panel">
     <div class="ops-section-head"><h3>Fila de atendimentos</h3><button type="button" id="reload-tickets" class="secondary">Atualizar ↻</button></div>
     <p class="ops-muted">Acompanhe cada etapa. Solicitações sem responsável ficam disponíveis aos técnicos autorizados.</p>
+    <p id="ticket-sync-status" class="ticket-sync-status" role="status" aria-live="polite">Consultando a fila autorizada…</p>
     <div class="ticket-metrics" role="group" aria-label="Filtrar chamados por situação">
       <button type="button" class="ticket-metric" data-ticket-filter="open" aria-pressed="false"><span class="metric-top"><span class="metric-indicator metric-open" aria-hidden="true"></span>Abertos</span><strong id="ticket-metric-open">0</strong><small>Novos e em triagem</small></button>
       <button type="button" class="ticket-metric" data-ticket-filter="in_progress" aria-pressed="false"><span class="metric-top"><span class="metric-indicator metric-progress" aria-hidden="true"></span>Em atendimento</span><strong id="ticket-metric-progress">0</strong><small>Em execução</small></button>
@@ -105,7 +106,7 @@
       <p id="ticket-description" class="ops-description"></p>
       <div class="ops-controls"><button type="button" id="claim-ticket" class="primary">Assumir atendimento</button>
       <label>Situação <select id="ticket-status"><option value="new">Novo</option><option value="triage">Em triagem</option><option value="in_progress">Em atendimento</option><option value="waiting_customer">Aguardando cliente</option><option value="resolved">Resolvido</option><option value="closed">Encerrado</option></select></label>
-      <button type="button" id="save-status" class="secondary">Salvar situação</button>
+      <button type="button" id="save-status" class="secondary">Salvar situação</button><span id="ticket-status-help" class="ticket-status-help" role="status">O histórico de um chamado encerrado é somente leitura.</span>
       <label id="assign-group" data-admin-only>Designar técnico <select id="ticket-assignee"></select></label>
       <button type="button" id="save-assignee" class="secondary" data-admin-only>Designar</button></div>
 
@@ -191,7 +192,7 @@
           <ol id="ticket-report-history" class="ticket-workflow-list"><li class="ticket-workflow-empty">Nenhuma versão salva.</li></ol>
         </details>
       </section>
-      <div class="ops-conversation"><h4>Conversa do atendimento</h4><div id="staff-messages" class="ops-messages" aria-live="polite"></div>
+      <div class="ops-conversation" id="ticket-conversation"><div class="ticket-conversation-head"><h4>Conversa do atendimento</h4><button type="button" id="ticket-thread-retry" class="secondary">Atualizar conversa</button></div><p id="ticket-thread-status" class="ticket-sync-status" role="status" aria-live="polite">A conversa será carregada ao abrir o chamado.</p><div id="staff-messages" class="ops-messages" aria-live="polite"></div>
       <form id="staff-reply-form"><label for="staff-reply">Responder ao cliente</label><textarea id="staff-reply" maxlength="2000" rows="3" required placeholder="Escreva sua mensagem para o cliente. Não solicite senhas."></textarea><button type="submit" class="primary">Enviar resposta ↗</button></form></div>
       <details class="ticket-audit-panel"><summary>Histórico das movimentações</summary><ol id="ticket-audit-list" class="ticket-audit-list"><li>Carregando histórico…</li></ol></details>
     </article></div></div>
