@@ -52,7 +52,7 @@ async function openScenario({tickets=baseline,appointmentsFixture=[],failAppoint
    document.getElementById("setup").hidden=true;
    const fixture=window.__fixture={
      tickets:structuredClone(tickets),
-     messages:structuredClone(messages),
+     messages:[],
      failTickets:false,failMessages:false,failReceipts:false,failRead:false,deferReply:false,
      attachAmbiguous:false,failAppointments,deferAppointments,
      read:[],staff_presence:[],notes:[],tasks:[],reports:[],attachments:[],devices:[],
