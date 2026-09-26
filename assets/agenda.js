@@ -228,6 +228,7 @@
    if(!allowed(active)){clear();return;}
    const now=Date.now(),visible=entries.filter(row=>validRow(row)&&
      (currentFilter==="all"||(
+       !["closed","resolved"].includes(tickets.get(row.ticket_id)?.status)&&
        ["planned","confirmed"].includes(row.status)&&
        Date.parse(row.starts_at)+Number(row.duration_minutes)*60000>=now)));
    const list=el("agenda-list");list.replaceChildren();
