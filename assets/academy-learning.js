@@ -379,7 +379,7 @@ function renderCertificate(){
    return;
  }
  const item=make("div",null,"academy-certificate-card");
- item.append(make("small","PROXITI · ACADEMIA INTERNA","academy-certificate-kicker"),
+ item.append(make("small","PROXITI · CAPACITAÇÃO INTERNA","academy-certificate-kicker"),
    make("h6","Certificado de Conclusão Interna"),
    make("p","Certificamos que "+certificate.holder_name+
      " concluiu a capacitação interna Fundamentos Operacionais PROXITI."),
@@ -412,7 +412,7 @@ function printCertificate(){
  const paper=make("main",null,"paper");
  paper.append(make("div","PROXITI","brand"),
    make("h1","Certificado de Conclusão Interna"),
-   make("p","A Academia PROXITI certifica que"),
+   make("p","A UniProxiti certifica que"),
    make("div",certificate.holder_name,"name"),
    make("p","concluiu a capacitação interna Fundamentos Operacionais PROXITI, "+
      "com 16 aulas nas oito áreas de atendimento, computadores, redes, "+
@@ -451,7 +451,7 @@ async function loadProgress(silent=true){
    if(!silent)setStatus("Progresso atualizado na sua conta.");
  }catch(error){
    if(valid(g,s))setStatus("Não foi possível sincronizar o progresso: "+
-     error.message+". Tente atualizar a Academia.","error");
+     error.message+". Tente atualizar a UniProxiti.","error");
  }finally{if(valid(g,s))loading=false;}
 }
 el("academy-learning-refresh").addEventListener("click",()=>{
