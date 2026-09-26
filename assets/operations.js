@@ -379,11 +379,21 @@
       window.PROXITI_OVERVIEW_SNAPSHOT=null;window.PROXITI_OVERVIEW_STATUS=null;
       el("ticket-list").replaceChildren();el("ticket-detail").hidden=true;
       el("ticket-empty-state").hidden=false;
-      announceTicket();updateInbox();
+      clearTicketPresentation();announceTicket();
+      for(const id of ["ticket-badge","notifications-count"]){
+        const badge=el(id);badge.textContent="";badge.hidden=true;
+      }
+      el("notifications-list").replaceChildren();
+      el("notifications-toggle").setAttribute("aria-label","Notificações indisponíveis para esta conta");
     }
     const first=Object.keys(allowed).find(key=>allowed[key]);
     el("operations").hidden=!first;
     if(first)showView(allowed[state.currentView]?state.currentView:first);
+    // A Visão Geral deve sincronizar mesmo se a última aba foi Academia ou Ferramentas.
+    if(allowed.tickets){
+      if(!state.ticketsReady)void loadTickets();
+      else if(can("chat")&&!state.messageReady)void checkNewMessages();
+    }
     document.dispatchEvent(new CustomEvent("proxiti-navigation-updated",{detail:{allowed}}));
   }
   async function loadStaff(){
@@ -432,6 +442,13 @@
         const option=elem("option",p.display_name);option.value=p.id;el("tool-assignee").append(option);
       }
     }catch(e){notice("Erro ao consultar técnicos: "+e.message,true);}
+  }
+  function clearTicketPresentation(){
+    for(const id of ["ticket-code","ticket-subject","ticket-customer",
+      "ticket-description","ticket-audit-list","ticket-current-status"])
+      el(id).replaceChildren();
+    el("staff-messages").replaceChildren();el("staff-reply").value="";
+    el("ticket-search").value="";
   }
   function announceTicket(){
     window.PROXITI_ACTIVE_TICKET=state.active;
@@ -767,8 +784,8 @@
     el("alert-toast").hidden=true;el("notifications-panel").hidden=true;
     el("notifications-toggle").setAttribute("aria-expanded","false");
     el("notifications-count").hidden=true;el("ticket-badge").hidden=true;
-    el("ticket-list").replaceChildren();el("staff-messages").replaceChildren();
-    el("staff-reply").value="";el("notifications-list").replaceChildren();
+    el("ticket-list").replaceChildren();clearTicketPresentation();
+    el("notifications-list").replaceChildren();
     window.PROXITI_OVERVIEW_SNAPSHOT=null;window.PROXITI_OVERVIEW_STATUS=null;
     el("overview-open").textContent="Chamados: atualizando…";
     el("operations").hidden=true;el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;notice("");announceTicket();
