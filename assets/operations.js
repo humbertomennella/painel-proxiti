@@ -589,41 +589,91 @@
       "Resolvido: revise o resultado antes do encerramento. A ação de encerrar é definitiva.":
       "As mudanças de situação ficam registradas no histórico do chamado.";
   }
+  function renderThread(ticketId,prepend=false){
+    if(state.active?.id!==ticketId)return;
+    const rows=[...state.threadRows.values()].sort((a,b)=>
+      (Date.parse(a.created_at)||0)-(Date.parse(b.created_at)||0)||
+      String(a.id).localeCompare(String(b.id)));
+    const box=el("staff-messages"),previousHeight=box.scrollHeight,previousTop=box.scrollTop;
+    const nearBottom=previousHeight-previousTop-box.clientHeight<130;
+    const signature=JSON.stringify([ticketId,state.threadHasMore,rows.map(item=>item.id)]);
+    el("ticket-thread-older").hidden=!state.threadHasMore;
+    el("ticket-thread-older").disabled=state.threadOlderBusy;
+    threadSync(state.threadHasMore?"partial":"ready",rows.length);
+    if(signature===state.renderedThread)return;
+    box.replaceChildren();
+    if(!rows.length)box.append(elem("p","Ainda não há mensagens.","ops-muted"));
+    for(const message of rows){
+      const bubble=elem("div","","ops-bubble"+(message.sender_kind==="staff"?" own":""));
+      bubble.append(elem("small",(message.sender_kind==="staff"?"Equipe PROXITI":"Cliente")+
+        " · "+shortDate(message.created_at)),elem("div",message.body));
+      box.append(bubble);
+    }
+    if(prepend)box.scrollTop=previousTop+Math.max(0,box.scrollHeight-previousHeight);
+    else if(nearBottom)box.scrollTop=box.scrollHeight;
+    state.renderedThread=signature;
+  }
   async function loadMessages(){
+    if(state.threadOlderBusy)return;
     const ticket=state.active,db=state.db,uid=state.user?.id,generation=state.accessGeneration;
     const revision=++state.threadRevision;
     if(!ticket||!db||!can("chat")||!can("tickets_view"))return;
     const valid=()=>state.db===db&&state.user?.id===uid&&state.accessGeneration===generation&&
       state.threadRevision===revision&&state.active?.id===ticket.id&&can("chat")&&can("tickets_view");
-    threadSync("loading");
+    if(!state.threadRows.size)threadSync("loading");
     try{
-      // A ordem descendente traz a conversa recente; a apresentação é cronológica.
+      // Ordenação secundária evita perder ou repetir mensagens com o mesmo horário.
       const fetched=await query(db.from("support_messages")
         .select("id,sender_kind,body,created_at").eq("ticket_id",ticket.id)
-        .order("created_at",{ascending:false}).limit(151));
+        .order("created_at",{ascending:false}).order("id",{ascending:false}).limit(151));
       if(!valid())return;
-      const list=fetched.slice(0,150).reverse(),capped=fetched.length>150;
-      const box=el("staff-messages");
-      const nearBottom=box.scrollHeight-box.scrollTop-box.clientHeight<130;
-      box.replaceChildren();
-      if(capped)box.append(elem("p",
-        "Exibindo as 150 mensagens mais recentes. Mensagens anteriores permanecem no histórico.",
-        "ops-muted"));
-      if(!list.length)box.append(elem("p","Ainda não há mensagens.","ops-muted"));
-      for(const message of list){
-        const bubble=elem("div","","ops-bubble"+(message.sender_kind==="staff"?" own":""));
-        bubble.append(elem("small",(message.sender_kind==="staff"?"Equipe PROXITI":"Cliente")+
-          " · "+shortDate(message.created_at)),elem("div",message.body));
-        box.append(bubble);
-      }
-      if(nearBottom)box.scrollTop=box.scrollHeight;
-      state.renderedThread=JSON.stringify([ticket.id,list.map(message=>message.id)]);
-      threadSync(capped?"partial":"ready",list.length);
-      await markMessagesSeen(ticket.id,list);
+      const latest=fetched.slice(0,150);
+      if(!state.threadExpanded)state.threadRows=new Map(latest.map(item=>[item.id,item]));
+      else for(const item of latest)state.threadRows.set(item.id,item);
+      if(!state.threadExpanded)state.threadHasMore=fetched.length>150;
+      renderThread(ticket.id);
+      await markMessagesSeen(ticket.id,latest);
     }catch(error){
       if(!valid())return;
       threadSync("error");
       notice("Falha ao consultar conversa: "+error.message,true);
+    }
+  }
+  async function loadEarlierMessages(){
+    const ticket=state.active,db=state.db,uid=state.user?.id,generation=state.accessGeneration;
+    const revision=state.threadRevision;
+    if(!ticket||!db||!can("chat")||!state.threadHasMore||state.threadOlderBusy)return;
+    const valid=()=>state.db===db&&state.user?.id===uid&&state.accessGeneration===generation&&
+      state.threadRevision===revision&&state.active?.id===ticket.id&&can("chat")&&can("tickets_view");
+    const oldest=[...state.threadRows.values()].sort((a,b)=>
+      (Date.parse(a.created_at)||0)-(Date.parse(b.created_at)||0)||
+      String(a.id).localeCompare(String(b.id)))[0];
+    if(!oldest)return;
+    state.threadOlderBusy=true;
+    const button=el("ticket-thread-older");button.disabled=true;
+    try{
+      const ties=await query(db.from("support_messages")
+        .select("id,sender_kind,body,created_at").eq("ticket_id",ticket.id)
+        .eq("created_at",oldest.created_at).lt("id",oldest.id)
+        .order("id",{ascending:false}).limit(151));
+      if(!valid())return;
+      let fetched=ties;
+      if(ties.length<151){
+        const earlier=await query(db.from("support_messages")
+          .select("id,sender_kind,body,created_at").eq("ticket_id",ticket.id)
+          .lt("created_at",oldest.created_at)
+          .order("created_at",{ascending:false}).order("id",{ascending:false})
+          .limit(151-ties.length));
+        if(!valid())return;
+        fetched=ties.concat(earlier);
+      }
+      for(const item of fetched.slice(0,150))state.threadRows.set(item.id,item);
+      state.threadExpanded=true;state.threadHasMore=fetched.length>150;
+      renderThread(ticket.id,true);
+    }catch{
+      if(valid())threadSync("history-error");
+    }finally{
+      if(valid()){state.threadOlderBusy=false;button.disabled=false;}
     }
   }
   async function openTicket(id){
@@ -633,8 +683,13 @@
     const db=state.db,uid=state.user.id,generation=state.accessGeneration;
     if(state.active?.id&&state.active.id!==id)
       remember("draft-"+state.active.id,el("staff-reply").value);
-    state.active=ticket;remember("ticket",id);state.renderedThread="";
-    el("staff-messages").replaceChildren();
+    const changed=state.active?.id!==id;
+    state.active=ticket;remember("ticket",id);
+    if(changed){
+      state.threadRevision++;state.threadRows.clear();state.threadExpanded=false;
+      state.threadHasMore=false;state.threadOlderBusy=false;state.renderedThread="";
+      el("ticket-thread-older").hidden=true;el("staff-messages").replaceChildren();
+    }
     updateTicketHeading();announceTicket();updateInbox();renderTickets();
     el("staff-reply").value=recalled("draft-"+id)||"";
     void loadAudit(id);
@@ -952,6 +1007,7 @@
   el("ticket-thread-retry").addEventListener("click",()=>{
     if(state.active&&can("chat"))void loadMessages();
   });
+  el("ticket-thread-older").addEventListener("click",()=>void loadEarlierMessages());
   document.addEventListener("proxiti-overview-retry",()=>{if(can("tickets_view"))void loadTickets();});
   el("browser-notifications").addEventListener("click",async()=>{
     if(!("Notification" in window)||Notification.permission!=="default")return;
