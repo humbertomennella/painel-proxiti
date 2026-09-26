@@ -21,7 +21,7 @@
 
 ## Fases entregues
 
-**Fase 0 · proteção:** branch isolada e contrato versionado. **Fase 1 · tokens:** cores azul/navy, claro/escuro, escalas e estados. **Fase 2 · shell:** sidebar 240 px no desktop, 72 px no tablet, drawer com hambúrguer abaixo de 768 px, topbar e login; a busca global não foi inventada. **Fase 3 · telas:** reskin de Login, Visão Geral, Chamados, Técnicos, CMS, Agenda, Academia, Ferramentas e Meu Perfil. Academia, quizzes e certificados que **já estão na versão atual** foram mantidos; não foram criados módulos extras do mockup. **Fase 4 · microcopy:** áudio versus notificações, presença de contas, saudação local e duas datas legadas em DD/MM/AAAA. **Fase 5 · responsividade e acessibilidade:** foco por teclado, cartões responsivos, skeleton de atualização, contraste de tokens e preferência de movimento reduzido. **Fase 6 · QA:** ver checklist.
+**Fase 0 · proteção:** branch isolada e contrato versionado. **Fase 1 · tokens:** cores azul/navy, claro/escuro, escalas e estados. **Fase 2 · shell:** sidebar 240 px no desktop, 72 px no tablet, drawer com hambúrguer abaixo de 768 px, topbar e login; a busca global não foi inventada. **Fase 3 · telas:** reskin de Login, Visão Geral, Chamados, Técnicos, CMS, Agenda, UniProxiti, Ferramentas e Meu Perfil. UniProxiti, quizzes e certificados que **já estão na versão atual** foram mantidos; não foram criados módulos extras do mockup. **Fase 4 · microcopy:** áudio versus notificações, presença de contas, saudação local e duas datas legadas em DD/MM/AAAA. **Fase 5 · responsividade e acessibilidade:** foco por teclado, cartões responsivos, skeleton de atualização, contraste de tokens e preferência de movimento reduzido. **Fase 6 · QA:** ver checklist.
 
 A imagem fornecida é referência estética. Números, clientes, técnicos, progresso, notas e certificados nela são ilustrativos e **não foram inseridos** no Supabase ou no HTML de produção.
 
@@ -50,6 +50,6 @@ A evidência automatizada está no job [Interface responsiva · execução de re
 
 ## Revisão visual do titular
 
-As capturas do Chromium estão disponíveis no artefato `proxiti-central-visual-smoke` da [execução de revisão](https://github.com/humbertomennella/painel-proxiti/actions/runs/36220414369), incluindo login, shell e Academia em claro/escuro nas larguras principais. Validar o visual em celular e desktop antes de autorizar qualquer merge.
+As capturas do Chromium estão disponíveis no artefato `proxiti-central-visual-smoke` da [execução de revisão](https://github.com/humbertomennella/painel-proxiti/actions/runs/36220414369), incluindo login, shell e UniProxiti em claro/escuro nas larguras principais. Validar o visual em celular e desktop antes de autorizar qualquer merge.
 
 **Regra de publicação:** PR permanece draft. Não há merge automático. A branch só pode ser integrada após sua revisão explícita.
