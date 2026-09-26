@@ -134,6 +134,9 @@ async function openScenario({tickets=baseline,appointmentsFixture=[],failAppoint
        }
        if(name==="proxiti_change_ticket_status"){
          if(!target||target.status==="closed")return error("Chamado encerrado");
+         if(["resolved","closed"].includes(args.p_status)&&fixture.appointments.some(row=>
+           row.ticket_id===target.id&&["planned","confirmed"].includes(row.status)))
+           return error("Finalize ou cancele os compromissos pendentes");
          target.status=args.p_status;return ok(null);
        }
        if(name==="proxiti_staff_reply"){
@@ -316,6 +319,28 @@ try{
    assert.equal(await page.evaluate(()=>window.__fixture.appointmentReschedules.length),1);
   }finally{await page.close();}
  });
+ await test("Chamado não pode ser resolvido enquanto houver compromisso ativo",async()=>{
+  const page=await openScenario({appointmentsFixture:[appointment(1)]});
+  page.on("dialog",dialog=>dialog.accept());
+  try{
+   await page.evaluate(()=>window.PROXITI_OPEN_VIEW("tickets"));
+   await page.locator(".ticket-inbox-card").filter({hasText:"#102 ·"}).click();
+   await page.waitForFunction(()=>document.getElementById("ticket-code").textContent.includes("#102"));
+   await page.selectOption("#ticket-status","resolved");
+   await page.click("#save-status");
+   await page.waitForFunction(()=>document.getElementById("ops-message").textContent.includes("Finalize ou cancele"));
+   assert.equal(await page.evaluate(()=>window.__fixture.tickets[1].status),"in_progress");
+   assert.equal(await page.evaluate(()=>window.__fixture.calls.includes("proxiti_change_ticket_status")),false);
+   await page.evaluate(()=>window.PROXITI_OPEN_VIEW("agenda"));
+   await page.waitForFunction(()=>document.getElementById("agenda-sync-state").dataset.phase==="ready");
+   await page.getByRole("button",{name:"Cancelar compromisso"}).click();
+   await page.waitForFunction(()=>window.__fixture.appointments[0].status==="cancelled");
+   await page.evaluate(()=>window.PROXITI_OPEN_VIEW("tickets"));
+   await page.selectOption("#ticket-status","resolved");
+   await page.click("#save-status");
+   await page.waitForFunction(()=>window.__fixture.tickets[1].status==="resolved");
+  }finally{await page.close();}
+ });
  await test("Histórico pagina 61 itens sem inventar total global",async()=>{
   const rows=Array.from({length:61},(_,i)=>appointment(i+1,{starts_at:future(48)}));
   const page=await openScenario({appointmentsFixture:rows});
@@ -385,7 +410,7 @@ try{
    assert.deepEqual(page.__errors,[]);
   }finally{await page.close();}
  });
- console.log("PASS: 10 cenários de Agenda em Chromium com dados exclusivamente simulados.");
+ console.log("PASS: 11 cenários de Agenda em Chromium com dados exclusivamente simulados.");
 }finally{
  await browser.close();
  await new Promise((resolve,reject)=>server.close(error=>error?reject(error):resolve()));
