@@ -19,7 +19,7 @@ const make=(tag,text="",cls="")=>{
 };
 const request=async promise=>{
  const {data,error}=await promise;
- if(error)throw new Error(error.message||"Operação não confirmada.");
+ if(error)throw new Error(String(error.message||"Operação não confirmada.").replaceAll("Academia","UniProxiti"));
  return data;
 };
 const points=n=>Number.isFinite(Number(n))?Number(n).toFixed(2).replace(".",","):"—";
@@ -31,8 +31,11 @@ const setStatus=(message,phase="ready")=>{
 };
 let revision=0,progress=new Map(),certificate=null,loading=false,
  selected=null,quizQuestions=[],examQuestions=[],mode="tracks",quizBusy=false,examBusy=false;
+let requiredCourses=new Map(),recentAttempts=null,catalogReady=false;
 function clear(){
  revision++;progress.clear();certificate=null;selected=null;loading=false;
+ requiredCourses.clear();recentAttempts=null;catalogReady=false;
+ el("uniproxiti-dashboard").hidden=true;
  quizQuestions=[];examQuestions=[];quizBusy=false;examBusy=false;
  el("academy-track-list").replaceChildren();
  el("academy-learning-summary").replaceChildren(
@@ -52,6 +55,111 @@ function averagePassed(){
  const scores=data.courses.map(course=>progress.get(course.id))
    .filter(item=>item?.completed_at).map(item=>Number(item.best_score));
  return scores.length?scores.reduce((sum,n)=>sum+n,0)/scores.length:null;
+}
+function unixTime(value){
+ const date=Date.parse(value||"");
+ return Number.isFinite(date)?date:0;
+}
+function nextCourse(){
+ const pending=data.courses.filter(course=>requiredCourses.has(course.id)&&!progress.get(course.id)?.completed_at);
+ const preferred=pending.filter(course=>requiredCourses.get(course.id)===true);
+ const attempted=preferred.concat(pending.filter(course=>!preferred.includes(course)))
+   .filter(course=>progress.get(course.id)?.attempts>0);
+ attempted.sort((a,b)=>unixTime(progress.get(b.id)?.updated_at)-unixTime(progress.get(a.id)?.updated_at));
+ return attempted[0]||preferred[0]||pending[0]||null;
+}
+function navigateStudy(){
+ if(!authorized(session())||!catalogReady)return;
+ const course=nextCourse();
+ if(course){void openCourse(course.id);return;}
+ if(!certificate){void openExam();return;}
+ show("certificate");renderCertificate();
+ el("academy-certificate-panel").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function renderDashboard(){
+ const host=el("uniproxiti-dashboard");
+ if(!authorized(session())){host.hidden=true;return;}
+ host.hidden=false;
+ const listed=data.courses.filter(course=>requiredCourses.has(course.id));
+ const total=catalogReady?listed.length:null;
+ const done=catalogReady?listed.filter(course=>progress.get(course.id)?.completed_at).length:null;
+ const percent=total?Math.round(100*done/total):null;
+ const ring=el("uniproxiti-progress-ring");
+ ring.style.setProperty("--up-progress",percent===null?"0%":percent+"%");
+ if(percent===null){ring.removeAttribute("aria-valuenow");ring.setAttribute("aria-valuetext","Currículo indisponível");}
+ else{ring.setAttribute("aria-valuenow",String(percent));ring.removeAttribute("aria-valuetext");}
+ el("uniproxiti-progress-percent").textContent=percent===null?"—":percent+"%";
+ el("uniproxiti-approved").textContent=total===null?"—":done+" de "+total;
+ el("uniproxiti-approved-note").textContent=total===null?
+   "Não foi possível verificar o currículo ativo.":"Aulas aprovadas registradas no servidor";
+ const history=(recentAttempts||[]).filter(row=>courses.has(row.course_id)&&unixTime(row.created_at)>0)
+   .sort((a,b)=>unixTime(b.created_at)-unixTime(a.created_at));
+ const latest=history[0]||[...progress.values()]
+   .filter(row=>Number(row.attempts)>0&&unixTime(row.updated_at)>0)
+   .sort((a,b)=>unixTime(b.updated_at)-unixTime(a.updated_at))[0];
+ const latestScore=latest?(latest.score??latest.last_score):null;
+ el("uniproxiti-last-score").textContent=latestScore===null||!Number.isFinite(Number(latestScore))?
+   "—":points(latestScore)+" / 100";
+ const avg=averagePassed();
+ el("uniproxiti-average-score").textContent=avg===null?
+   "Sem média: nenhuma aula aprovada":"Média real das aulas aprovadas: "+points(avg)+" / 100";
+ el("uniproxiti-cert-status").textContent=certificate?"Disponível":"Em andamento";
+ el("uniproxiti-cert-note").textContent=certificate?
+   "Emitido em "+formatDate(certificate.issued_at):
+   done===total&&total!==null?"Aulas aprovadas; avaliação final e critérios do servidor pendentes":
+   "Depende das aulas, da avaliação final e dos critérios do servidor";
+ const action=el("uniproxiti-continue"),resume=el("uniproxiti-resume-action");
+ const next=catalogReady?nextCourse():null;
+ action.disabled=!catalogReady;
+ if(catalogReady)action.textContent=next?"Continuar estudo":certificate?"Ver certificado":"Abrir prova final";
+ const title=el("uniproxiti-resume-title"),note=el("uniproxiti-resume-note"),track=el("uniproxiti-resume-track");
+ const bar=track.querySelector('[role="progressbar"]');
+ track.hidden=!next;resume.disabled=!next;
+ if(next){
+   const meta=tracks.get(next.track),row=progress.get(next.id);
+   const trackCourses=listed.filter(course=>course.track===next.track);
+   const trackDone=trackCourses.filter(course=>progress.get(course.id)?.completed_at).length;
+   const trackPct=trackCourses.length?Math.round(100*trackDone/trackCourses.length):0;
+   title.textContent=next.title;
+   note.textContent=(row?.attempts?"Há "+row.attempts+" tentativa(s) registrada(s). ":"Próxima aula ainda não iniciada. ")+
+     "Trilha: "+meta.title+".";
+   el("uniproxiti-resume-progress").textContent="Progresso real da trilha: "+trackDone+
+     " de "+trackCourses.length+" aulas ("+trackPct+"%)";
+   el("uniproxiti-resume-fill").style.width=trackPct+"%";
+   bar.setAttribute("aria-valuenow",String(trackPct));
+   resume.textContent=row?.attempts?"Continuar aula":"Iniciar aula";
+ }else{
+   title.textContent=total===null?"Aguardando currículo autorizado":
+     certificate?"Todas as aulas aprovadas":"Todas as aulas aprovadas; prova final pendente";
+   note.textContent=total===null?"Atualize o painel para consultar os cursos ativos.":
+     "A porcentagem de leitura da aula não é registrada no banco.";
+ }
+ const list=el("uniproxiti-activity-list");list.replaceChildren();
+ const events=history.map(row=>({
+   at:row.created_at,label:row.passed?"Quiz aprovado":"Quiz realizado",
+   course:courses.get(row.course_id).title,detail:"Nota registrada: "+points(row.score)+" / 100"
+ }));
+ for(const course of listed){
+   const row=progress.get(course.id);
+   if(row?.completed_at&&unixTime(row.completed_at)>0)
+     events.push({at:row.completed_at,label:"Aula concluída",course:course.title,
+       detail:"Conclusão registrada no servidor"});
+ }
+ events.sort((a,b)=>unixTime(b.at)-unixTime(a.at));
+ for(const item of events.slice(0,6)){
+   const li=make("li");
+   li.append(make("strong",item.label+" · "+item.course),make("span",item.detail),
+     make("small",formatDate(item.at)+" · "+new Date(item.at).toLocaleTimeString("pt-BR",
+       {hour:"2-digit",minute:"2-digit"})));
+   list.append(li);
+ }
+ if(!events.length)list.append(make("li","Nenhuma atividade registrada para esta versão do currículo."));
+ el("uniproxiti-activity-note").textContent=recentAttempts===null?
+   "Histórico de tentativas indisponível; somente conclusões verificadas são exibidas.":"";
+ const certCard=el("uniproxiti-certificate-card");certCard.hidden=!certificate;
+ if(certificate)el("uniproxiti-certificate-detail").textContent=
+   "Nota final: "+points(certificate.overall_score)+" / 100 · Emitido em "+
+   formatDate(certificate.issued_at)+".";
 }
 function show(next){
  mode=next;
@@ -108,23 +216,42 @@ function renderTracks(){
  if(!authorized(session()))return;
  const host=el("academy-track-list");host.replaceChildren();
  for(const [index,track] of data.tracks.entries()){
-   const group=make("details",null,"academy-track-card");
-   if(index===0)group.open=true;
+   const lessonList=data.courses.filter(course=>course.track===track.id);
+   if(!lessonList.length)continue;
+   const done=lessonList.filter(course=>progress.get(course.id)?.completed_at).length;
+   const flags=lessonList.map(course=>requiredCourses.get(course.id));
+   const badge=flags.some(value=>typeof value!=="boolean")?"Classificação indisponível":
+     flags.every(Boolean)?"Obrigatória":flags.every(value=>!value)?"Recomendada":"Mista";
+   const tile=make("article",null,"uniproxiti-track-tile");
+   const group=make("details",null,"academy-track-card");if(index===0)group.open=true;
    const title=make("summary",null,"academy-track-summary");
    const illustration=make("img");
-   illustration.src=track.image;
-   illustration.alt="Infográfico original da trilha "+track.title;
+   illustration.src=track.image;illustration.alt="Infográfico original da trilha "+track.title;
    illustration.width=960;illustration.height=440;illustration.loading="lazy";
    const copy=make("div",null,"academy-track-copy");
-   const lessonList=data.courses.filter(course=>course.track===track.id);
-   const done=lessonList.filter(course=>progress.get(course.id)?.completed_at).length;
-   copy.append(make("small","TRILHA "+String(index+1).padStart(2,"0")+" · "+
-     done+"/"+lessonList.length+" aulas aprovadas"),
+   copy.append(make("span",badge,"uniproxiti-track-category"),
+     make("small","TRILHA "+String(index+1).padStart(2,"0")),
      make("h5",track.title),make("p",track.subtitle));
+   const progressInfo=make("div",null,"uniproxiti-track-progress");
+   progressInfo.append(make("span",done+" de "+lessonList.length+" aulas aprovadas"));
+   const progressBar=make("div",null,"bar");progressBar.setAttribute("role","progressbar");
+   progressBar.setAttribute("aria-label","Aulas aprovadas da trilha "+track.title);
+   progressBar.setAttribute("aria-valuemin","0");
+   progressBar.setAttribute("aria-valuemax",String(lessonList.length));
+   progressBar.setAttribute("aria-valuenow",String(done));
+   const fill=make("span");fill.style.width=(100*done/lessonList.length)+"%";
+   progressBar.append(fill);progressInfo.append(progressBar);copy.append(progressInfo);
    title.append(illustration,copy);
    const body=make("div",null,"academy-track-courses");
    for(const course of lessonList)body.append(cardForCourse(course));
-   group.append(title,body);host.append(group);
+   group.append(title,body);
+   const footer=make("div",null,"uniproxiti-track-footer");
+   const target=lessonList.find(course=>!progress.get(course.id)?.completed_at)||lessonList[0];
+   const started=lessonList.some(course=>Number(progress.get(course.id)?.attempts)>0);
+   const cta=make("button",done===lessonList.length?"Revisar":started?"Continuar":"Iniciar","secondary");
+   cta.type="button";cta.setAttribute("aria-label",cta.textContent+" trilha "+track.title);
+   cta.addEventListener("click",()=>void openCourse(target.id));
+   footer.append(cta);tile.append(group,footer);host.append(tile);
  }
 }
 function renderReferences(references,host){
@@ -434,19 +561,31 @@ async function loadProgress(silent=true){
  const g=revision;
  loading=true;if(!silent)setStatus("Sincronizando suas notas e certificados…","loading");
  try{
-   const [rows,cert]=await Promise.all([
+   const [rows,cert,registeredCourses,attempts]=await Promise.all([
      request(s.client.from("academy_course_progress")
-       .select("course_id,best_score,last_score,attempts,completed_at")
+       .select("course_id,best_score,last_score,attempts,completed_at,updated_at")
        .eq("curriculum_version",VERSION).limit(100)),
      request(s.client.from("academy_certificates")
        .select("id,verification_code,holder_name,curriculum_version,course_count,quiz_average,exam_score,overall_score,issued_at")
-       .eq("curriculum_version",VERSION).maybeSingle())
+       .eq("curriculum_version",VERSION).maybeSingle()),
+     request(s.client.from("academy_courses")
+       .select("code,track_id,required,active")
+       .eq("curriculum_version",VERSION).eq("active",true).limit(100)).catch(()=>null),
+     request(s.client.from("academy_quiz_attempts")
+       .select("course_id,score,passed,created_at")
+       .eq("curriculum_version",VERSION)
+       .order("created_at",{ascending:false}).limit(8)).catch(()=>null)
    ]);
    if(!valid(g,s))return;
    progress=new Map(rows.filter(row=>courses.has(row.course_id))
      .map(row=>[row.course_id,row]));
    certificate=cert||null;
-   summary();renderTracks();
+   requiredCourses=new Map((registeredCourses||[]).filter(row=>courses.has(row.code)&&row.active===true)
+     .map(row=>[row.code,row.required]));
+   catalogReady=registeredCourses!==null&&requiredCourses.size===data.courses.length&&
+     [...requiredCourses.values()].every(value=>typeof value==="boolean");
+   recentAttempts=attempts;
+   summary();renderTracks();renderDashboard();
    if(mode==="certificate")renderCertificate();
    if(!silent)setStatus("Progresso atualizado na sua conta.");
  }catch(error){
@@ -454,6 +593,12 @@ async function loadProgress(silent=true){
      error.message+". Tente atualizar a UniProxiti.","error");
  }finally{if(valid(g,s))loading=false;}
 }
+el("uniproxiti-continue").addEventListener("click",navigateStudy);
+el("uniproxiti-resume-action").addEventListener("click",()=>{
+ if(!authorized(session())||!catalogReady)return;
+ const next=nextCourse();if(next)void openCourse(next.id);
+});
+el("uniproxiti-certificate-pdf").addEventListener("click",printCertificate);
 el("academy-learning-refresh").addEventListener("click",()=>{
  if(authorized(session()))void loadProgress(false);
 });
