@@ -132,7 +132,22 @@ try{
    document.getElementById("overview-online").textContent="Você está online";
  });
  await page.waitForFunction(()=>document.getElementById("overview-online").textContent==="Você está online");
- console.log("PASS: presença exibida como contas online, sem confundir com cadastro de técnicos.");
+ console.log("PASS: presença exibida como contas online, sem confundir com cadastro de técnicos."); 
+ for(const [hour,phrase] of [[0,"Boa madrugada"],[5,"Boa madrugada"],
+   [6,"Bom dia"],[11,"Bom dia"],[12,"Boa tarde"],[17,"Boa tarde"],
+   [18,"Boa noite"],[23,"Boa noite"]]){
+   const greeting=await page.evaluate(hour=>{
+     const RealDate=window.Date;
+     class HourDate extends RealDate{getHours(){return hour;}}
+     window.Date=HourDate;
+     window.dispatchEvent(new Event("focus"));
+     const text=document.getElementById("welcome").textContent;
+     window.Date=RealDate;
+     return text;
+   },hour);
+   assert.equal(greeting,phrase+", Pessoa","Saudação incorreta às "+hour+"h");
+ }
+ console.log("PASS: saudação testada nas oito fronteiras de madrugada, manhã, tarde e noite.");
  for(const width of [320,375,430,767,768,930,1199,1200,1366,1920]){
   await page.setViewportSize({width,height:870});
   await page.evaluate(()=>window.dispatchEvent(new Event("resize")));
