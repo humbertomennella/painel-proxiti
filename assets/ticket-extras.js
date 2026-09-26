@@ -1,7 +1,7 @@
 (() => {
  "use strict";
  const el=id=>document.getElementById(id);
- let selected=null,revision=0,agendaRevision=0;
+ let selected=null,revision=0;
  const session=()=>window.PROXITI_ACTIVE_SESSION;
  const db=()=>session()?.client;
  const admin=()=>session()?.profile?.role==="administrator"&&session()?.profile?.status==="active";
@@ -55,27 +55,73 @@
    head.append(make("strong",item.title),make("span",statuses[item.status]||item.status,"ops-badge"));
    li.append(head,make("small",date(item.starts_at)+" · "+item.duration_minutes+" min · "+
      (modalities[item.modality]||item.modality)));
+   if(item.status==="planned")
+     li.append(make("small","Planejado: a confirmação do cliente ainda não foi registrada."));
+   if(item.status==="confirmed"&&item.confirmed_at)
+     li.append(make("small","Confirmado em "+date(item.confirmed_at)+
+       (item.confirmation_channel?" · "+({chat:"Chat",phone:"Telefone",whatsapp:"WhatsApp",
+         email:"E-mail",in_person:"Presencial"}[item.confirmation_channel]||"Canal informado"):"")));
    if(item.private_details)li.append(make("p",item.private_details));
-   if(writable()&&selected?.id===ticketId&&!["done","cancelled"].includes(item.status)){
+   if(writable()&&selected?.id===ticketId&&["planned","confirmed"].includes(item.status)){
      const actions=make("div","","ops-controls");
-     const transitions=item.status==="planned"?[["confirmed","Confirmar após combinar"],["cancelled","Cancelar"]]:
-       [["done","Concluir compromisso"],["cancelled","Cancelar"]];
-     for(const [status,label]of transitions){
-       const button=make("button",label,"secondary");button.type="button";
-       button.addEventListener("click",async()=>{
-         if(selected?.id!==ticketId||!writable())return;
-         if(status==="confirmed"&&!window.confirm("O cliente confirmou o horário por um canal de atendimento?"))return;
-         if(status==="cancelled"&&!window.confirm("Cancelar este compromisso?"))return;
-         button.disabled=true;feedback("");
-         try{
-           await rpc("proxiti_update_appointment",{p_id:item.id,p_status:status});
-           feedback("Agenda atualizada.");activity(ticketId);
-           await Promise.all([loadAppointments(ticketId),loadAgenda()]);
-         }catch(error){feedback(error.message,true);}finally{button.disabled=false;}
-       });
-       actions.append(button);
+     const active=session(),client=db(),rev=revision,uid=active.user.id;
+     const still=()=>same(rev,ticketId,client,uid)&&writable();
+     async function commit(name,params,button,message){
+       if(!still())return;
+       for(const control of actions.querySelectorAll("button,select"))control.disabled=true;
+       feedback("");
+       try{
+         await query(client.rpc(name,params));
+         if(!still())return;
+         feedback(message);activity(ticketId);
+         await loadAppointments(ticketId);
+         document.dispatchEvent(new Event("proxiti-agenda-refresh"));
+       }catch(error){
+         if(still()){
+           feedback("Não foi possível confirmar a mudança: "+error.message+
+             ". A lista será atualizada para evitar ações duplicadas.",true);
+           await loadAppointments(ticketId);
+         }
+       }finally{
+         for(const control of actions.querySelectorAll("button,select"))control.disabled=false;
+       }
      }
-     li.append(actions);
+     if(item.status==="planned"){
+       const label=make("label","Canal da confirmação do cliente");
+       const channel=make("select");
+       channel.setAttribute("aria-label","Canal da confirmação do cliente para "+item.title);
+       for(const [value,text]of [["","Selecione o canal"],["chat","Chat da Central"],
+         ["phone","Telefone"],["whatsapp","WhatsApp"],["email","E-mail"],
+         ["in_person","Presencial"]]){
+         const option=make("option",text);option.value=value;channel.append(option);
+       }
+       const confirm=make("button","Registrar confirmação","secondary");confirm.type="button";
+       confirm.addEventListener("click",()=>{
+         if(!channel.value){feedback("Informe onde o cliente confirmou o horário.",true);return;}
+         if(!window.confirm("O cliente confirmou este horário por "+
+           channel.selectedOptions[0].textContent+"? O registro não envia mensagem automaticamente."))return;
+         void commit("proxiti_confirm_appointment",
+           {p_id:item.id,p_channel:channel.value},confirm,"Confirmação registrada.");
+       });
+       actions.append(label,channel,confirm);
+     }else{
+       const done=make("button","Concluir compromisso","secondary");done.type="button";
+       done.addEventListener("click",()=>{
+         if(!window.confirm("O compromisso foi realizado? O chamado permanecerá na situação atual."))return;
+         void commit("proxiti_update_appointment",
+           {p_id:item.id,p_status:"done"},done,"Compromisso concluído.");
+       });
+       actions.append(done);
+     }
+     const cancel=make("button","Cancelar compromisso","secondary");cancel.type="button";
+     cancel.addEventListener("click",()=>{
+       if(!window.confirm("Cancelar compromisso? A ação não notifica automaticamente o cliente."))return;
+       void commit("proxiti_update_appointment",
+         {p_id:item.id,p_status:"cancelled"},cancel,"Compromisso cancelado.");
+     });
+     const reschedule=make("button","Reagendar na Agenda","secondary");reschedule.type="button";
+     reschedule.addEventListener("click",()=>window.PROXITI_OPEN_VIEW?.("agenda"));
+     actions.append(cancel,reschedule);li.append(actions);
    }
    return li;
  }
@@ -84,7 +130,7 @@
    if(!canView()||!client)return;
    try{
      const rows=await query(client.from("ticket_appointments")
-       .select("id,ticket_id,title,starts_at,duration_minutes,modality,status,private_details")
+       .select("id,ticket_id,title,starts_at,duration_minutes,modality,status,private_details,confirmed_at,confirmation_channel")
        .eq("ticket_id",ticketId).order("starts_at",{ascending:false}).limit(100));
      if(!same(rev,ticketId,client,uid))return;
      const list=el("ticket-appointments-list");list.replaceChildren();
@@ -167,22 +213,36 @@
  });
  el("ticket-appointment-form").addEventListener("submit",async event=>{
    event.preventDefault();if(!writable()||selected.status==="resolved")return;
-   const ticket=selected,button=event.currentTarget.querySelector('[type="submit"]');
+   const ticket=selected,client=db(),uid=session()?.user?.id,rev=revision;
+   const still=()=>same(rev,ticket.id,client,uid)&&writable();
+   const button=event.currentTarget.querySelector('[type="submit"]');
    const local=el("ticket-appointment-start").value,when=new Date(local);
-   if(!local||!Number.isFinite(when.getTime())){feedback("Informe uma data e horário válidos.",true);return;}
+   const duration=Number(el("ticket-appointment-duration").value);
+   if(!local||!Number.isFinite(when.getTime())||when.getTime()<Date.now()-900000||
+      !Number.isInteger(duration)||duration<15||duration>480){
+     feedback("Informe um horário válido e duração entre 15 e 480 minutos.",true);return;
+   }
    button.disabled=true;feedback("");
    try{
-     await rpc("proxiti_schedule_appointment",{
+     await query(client.rpc("proxiti_schedule_appointment",{
        p_ticket:ticket.id,p_title:el("ticket-appointment-title").value.trim(),
-       p_starts_at:when.toISOString(),p_duration:Number(el("ticket-appointment-duration").value),
+       p_starts_at:when.toISOString(),p_duration:duration,
        p_modality:el("ticket-appointment-mode").value,
        p_private_details:el("ticket-appointment-details").value.trim()
-     });
-     if(selected?.id===ticket.id){
-       el("ticket-appointment-form").reset();feedback("Horário planejado. Confirme com o cliente.");
-       activity(ticket.id);await Promise.all([loadAppointments(ticket.id),loadAgenda()]);
+     }));
+     if(!still())return;
+     el("ticket-appointment-form").reset();
+     feedback("Horário planejado. Combine com o cliente e registre a confirmação.");
+     activity(ticket.id);await loadAppointments(ticket.id);
+     document.dispatchEvent(new Event("proxiti-agenda-refresh"));
+   }catch(error){
+     if(still()){
+       feedback("Não foi possível confirmar o agendamento. Verifique a Agenda antes de reenviar: "+
+         error.message,true);
+       await loadAppointments(ticket.id);
+       document.dispatchEvent(new Event("proxiti-agenda-refresh"));
      }
-   }catch(error){feedback(error.message,true);}finally{button.disabled=false;}
+   }finally{button.disabled=false;}
  });
  el("ticket-report-save").addEventListener("click",async event=>{
    if(!writable())return;
@@ -206,53 +266,9 @@
      }
    }catch(error){feedback(error.message,true);}finally{button.disabled=false;}
  });
- async function loadAgenda(){
-   const rev=++agendaRevision,active=session();
-   if(!active?.client||!(admin()||active.profile?.permissions?.tickets_view===true))return;
-   const list=el("agenda-list");
-   if(!list)return;
-   try{
-     const rows=await query(active.client.from("ticket_appointments")
-       .select("id,ticket_id,title,starts_at,duration_minutes,modality,status")
-       .order("starts_at",{ascending:true}).limit(250));
-     const ids=[...new Set(rows.map(x=>x.ticket_id))];
-     const tickets=ids.length?await query(active.client.from("support_tickets")
-       .select("id,reference,subject").in("id",ids)):[];
-     if(rev!==agendaRevision||session()?.user?.id!==active.user.id)return;
-     const byId=new Map(tickets.map(x=>[x.id,x]));
-     const display=rows.filter(x=>el("agenda-filter").value==="all"||
-       (x.status!=="cancelled"&&x.status!=="done"&&new Date(x.starts_at).getTime()>=Date.now()-86400000));
-     list.replaceChildren();el("agenda-count").textContent=display.length+" de "+rows.length+" compromissos acessíveis";
-     if(!display.length){list.append(make("p","Nenhum compromisso nessa visualização.","ticket-workflow-empty"));return;}
-     for(const row of display){
-       const card=make("article","","agenda-entry");
-       const link=byId.get(row.ticket_id);
-       card.append(make("strong",row.title),
-         make("p",date(row.starts_at)+" · "+(modalities[row.modality]||row.modality)+
-           " · "+row.duration_minutes+" min · "+(statuses[row.status]||row.status)),
-         make("small",link?"Chamado #"+link.reference+" · "+link.subject:"Chamado autorizado","academy-meta"));
-       if(link){
-         const open=make("button","Abrir chamado","secondary");open.type="button";
-         open.addEventListener("click",()=>{
-           window.PROXITI_OPEN_VIEW?.("tickets");
-           document.dispatchEvent(new CustomEvent("proxiti-overview-open-ticket",{detail:{id:row.ticket_id}}));
-         });card.append(open);
-       }
-       list.append(card);
-     }
-   }catch(error){
-     if(rev!==agendaRevision)return;
-     list.replaceChildren(make("p","Falha ao consultar agenda: "+error.message,"ticket-workflow-feedback error"));
-   }
- }
- el("reload-agenda").addEventListener("click",()=>void loadAgenda());
- el("agenda-filter").addEventListener("change",()=>void loadAgenda());
- document.addEventListener("proxiti-agenda-refresh",()=>void loadAgenda());
  document.addEventListener("proxiti-ticket-selected",event=>choose(event.detail?.ticket||null));
  document.addEventListener("proxiti-session-ended",()=>{
-   selected=null;revision++;agendaRevision++;choose(null);
-   el("agenda-list").replaceChildren(make("p","Entre na Central para consultar a agenda.","ops-muted"));
-   el("agenda-count").textContent="";
+   selected=null;revision++;choose(null);
  });
  if(window.PROXITI_ACTIVE_TICKET)choose(window.PROXITI_ACTIVE_TICKET);
 })();

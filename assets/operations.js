@@ -216,7 +216,7 @@
         unassigned:"Retornado à fila",status_changed:"Situação alterada",staff_replied:"Equipe respondeu",
         customer_replied:"Cliente enviou mensagem",note_added:"Nota técnica registrada",
         checklist_created:"Roteiro técnico criado",checklist_updated:"Etapa técnica atualizada",
-        attachment_added:"Anexo privado incluído",appointment_created:"Compromisso planejado",appointment_updated:"Agenda atualizada",device_updated:"Equipamento identificado",report_saved:"Relatório registrado"};
+        attachment_added:"Anexo privado incluído",appointment_created:"Compromisso planejado",appointment_updated:"Agenda atualizada",appointment_rescheduled:"Horário reagendado",device_updated:"Equipamento identificado",report_saved:"Relatório registrado"};
       for(const event of events){
         const item=elem("li");
         const actor=event.actor_id?staffName(event.actor_id):"Sistema / cliente";
@@ -1092,6 +1092,18 @@
     const button=event.currentTarget;button.disabled=true;
     const same=()=>state.db===db&&state.user?.id===uid&&state.accessGeneration===generation;
     try{
+      if(["resolved","closed"].includes(nextStatus)){
+        const activeAppointments=await query(db.from("ticket_appointments")
+          .select("id").eq("ticket_id",ticket.id)
+          .in("status",["planned","confirmed"]).limit(1));
+        if(!same()||state.active?.id!==ticket.id)return;
+        if(activeAppointments.length){
+          el("ticket-status").value=ticket.status;
+          notice("Finalize ou cancele os compromissos pendentes na Agenda antes de "+
+            "resolver ou encerrar este chamado.",true);
+          return;
+        }
+      }
       if(nextStatus==="closed"){
         const [tasks,reports]=await Promise.all([
           query(db.from("ticket_tasks").select("state").eq("ticket_id",ticket.id).limit(31)),

@@ -12,19 +12,20 @@
 <link rel="stylesheet" href="./assets/interface.css">
 <link rel="stylesheet" href="./assets/overview-comfort.css?v=20260925-3">
 <link rel="stylesheet" href="./assets/ticket-workflow.css?v=20260926-1">
-<link rel="stylesheet" href="./assets/operations-v8.css?v=1">
+<link rel="stylesheet" href="./assets/operations-v8.css?v=20260926-2">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js" defer></script>
 <script src="./assets/config.js" defer></script>
 <script src="./assets/app.js" defer></script>
 <script src="./assets/alerts.js" defer></script>
 <script src="./assets/overview-model.js?v=1" defer></script>
-<script src="./assets/operations.js?v=20260926-1" defer></script>
+<script src="./assets/operations.js?v=20260926-2" defer></script>
 <script src="./assets/layout.js" defer></script>
 <script src="./assets/profile.js" defer></script>
 <script src="./assets/appearance.js" defer></script>
 <script src="./assets/overview.js?v=20260925-3" defer></script>
 <script src="./assets/ticket-workflow.js?v=20260926-1" defer></script>
-<script src="./assets/ticket-extras.js?v=20260926-1" defer></script>
+<script src="./assets/ticket-extras.js?v=20260926-2" defer></script>
+<script src="./assets/agenda.js?v=20260926-1" defer></script>
 <script src="./assets/technical-tools-core.js?v=1" defer></script>
 <script src="./assets/technical-tools.js?v=1" defer></script>
 </head>
@@ -212,8 +213,11 @@
   <div id="ops-agenda" class="ops-view px-panel" hidden>
     <div class="ops-section-head"><h3>Agenda de atendimentos</h3><button type="button" id="reload-agenda" class="secondary">Atualizar ↻</button></div>
     <p class="ops-muted">Compromissos vinculados aos chamados acessíveis. Planejar não envia convite: confirme com o cliente antes de marcar o horário.</p>
-    <div class="ops-inline-search"><label for="agenda-filter">Visualização</label><select id="agenda-filter"><option value="upcoming">Próximos compromissos</option><option value="all">Todos os agendamentos acessíveis</option></select><p id="agenda-count" role="status" aria-live="polite"></p></div>
-    <div id="agenda-list" class="agenda-list" aria-live="polite"><p class="ops-muted">Carregando sua agenda…</p></div>
+    <p id="agenda-sync-state" class="ticket-sync-status" role="status" aria-live="polite">Consultando sua agenda autorizada…</p>
+    <div class="ops-inline-search agenda-toolbar"><label for="agenda-filter">Visualização</label><select id="agenda-filter"><option value="upcoming">Próximos e em andamento</option><option value="all">Histórico e compromissos futuros</option></select><p id="agenda-count" role="status" aria-live="polite"></p></div>
+    <p id="agenda-feedback" class="ticket-workflow-feedback" role="status" aria-live="polite" hidden></p>
+    <div id="agenda-list" class="agenda-list"><p class="ops-muted">Carregando sua agenda…</p></div>
+    <button type="button" id="agenda-load-more" class="secondary" hidden>Carregar mais compromissos</button>
   </div>
   <div id="ops-training" class="ops-view px-panel" hidden>
     <div class="ops-section-head"><h3>Academia PROXITI</h3><button type="button" id="reload-training" class="secondary">Atualizar ↻</button></div>

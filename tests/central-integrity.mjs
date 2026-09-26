@@ -7,7 +7,7 @@ const html=get("index.html");
 const scriptPaths=[
   "assets/app.js","assets/alerts.js","assets/operations.js","assets/layout.js",
   "assets/profile.js","assets/appearance.js","assets/overview-model.js","assets/overview.js","assets/ticket-workflow.js",
-  "assets/ticket-extras.js","assets/technical-tools-core.js","assets/technical-tools.js"
+  "assets/ticket-extras.js","assets/agenda.js","assets/technical-tools-core.js","assets/technical-tools.js"
 ];
 for (const path of scriptPaths) new Script(get(path),{filename:path});
 const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);
@@ -110,7 +110,7 @@ for(const id of ["ops-agenda","reload-agenda","agenda-filter","agenda-list","age
 assert(html.includes('data-side-view="agenda"')&&html.includes('data-summary-view="agenda"'),
  "Agenda sem acesso na navegação");
 assert(html.includes('src="./assets/technical-tools-core.js?v=1"'),"Core das ferramentas não carregado");
-assert(html.includes('src="./assets/ticket-extras.js?v=20260926-1"'),"Integração de compromissos não carregada");
+assert(html.includes('src="./assets/ticket-extras.js?v=20260926-2"'),"Integração de compromissos não carregada");
 const cssV8=get("assets/operations-v8.css");
 assert.equal((cssV8.match(/{/g)||[]).length,(cssV8.match(/}/g)||[]).length,
  "CSS V8 desbalanceado");
@@ -216,3 +216,43 @@ assert(get("assets/ticket-extras.js").includes("const same=(rev,ticketId,client,
 assert(existsSync(new URL("../tests/tickets-functional.mjs",import.meta.url)),
  "Testes funcionais de chamados não existem");
 console.log("Chamados: segurança, histórico, conversa e integridade técnica verificados.");
+
+for(const id of ["agenda-sync-state","agenda-feedback","agenda-load-more","agenda-list","agenda-filter"]){
+ assert(html.includes('id="'+id+'"'),"Agenda sem estado ou controle acessível: "+id);
+}
+assert(html.includes('src="./assets/agenda.js?v=20260926-1"'),"Módulo Agenda não carregado");
+const agendaJs=get("assets/agenda.js"),agendaSql=get("supabase/agenda_integrity_v10.sql");
+for(const rpc of ["proxiti_confirm_appointment","proxiti_update_appointment",
+ "proxiti_reschedule_appointment"]){
+ assert(agendaJs.includes(rpc),"Agenda sem operação "+rpc);
+ assert(agendaSql.includes("public."+rpc),"RPC da Agenda não existe na migração: "+rpc);
+}
+assert(agendaSql.includes("confirmation_channel")&&agendaSql.includes("confirmed_at"),
+ "Confirmação não armazena evidência de contato");
+assert(agendaSql.includes("for update")&&
+ agendaSql.includes("old_status in ('done','cancelled')"),
+ "A transição da agenda não protege estados terminais ou concorrência");
+assert(agendaSql.includes("status='planned',confirmed_at=null"),
+ "Reagendamento não invalida confirmação anterior");
+assert(agendaJs.includes(".range(offset,offset+PAGE_SIZE)"),
+ "Agenda não possui paginação de histórico");
+assert(agendaJs.includes("session()?.client===active.client"),
+ "Agenda pode exibir resposta atrasada de outra sessão");
+assert(agendaSql.includes("create table if not exists public.ticket_appointment_reschedules")&&
+ agendaSql.includes("using(public.proxiti_ticket_access(ticket_id,false))")&&
+ agendaSql.includes("btrim(p_reason)"),
+ "Reagendamento não preserva motivo com acesso restrito");
+assert(agendaJs.includes('from("ticket_appointment_reschedules")'),
+ "Histórico privado de reagendamento não está acessível ao técnico autorizado");
+assert(get("README.md").includes("docs/agenda-homologacao.md")&&
+ existsSync(new URL("../docs/agenda-homologacao.md",import.meta.url)),
+ "Roteiro operacional de Agenda não está publicado");
+const agendaClosure=get("supabase/agenda_closure_guard_v11.sql");
+assert(agendaClosure.includes("p_status in ('resolved','closed')")&&
+ agendaClosure.includes("status in ('planned','confirmed')")&&
+ agendaClosure.includes("for update"),"Chamado pode finalizar com compromissos pendentes");
+assert(get("assets/operations.js").includes("Finalize ou cancele os compromissos pendentes na Agenda"),
+ "Encerramento não orienta a concluir compromissos ativos");
+assert(existsSync(new URL("../tests/agenda-functional.mjs",import.meta.url)),
+ "Testes funcionais da Agenda não foram adicionados");
+console.log("Agenda: migração, permissões, paginação e testes funcionais verificados.");
