@@ -5,10 +5,10 @@ let audio=null,enabled=true;
 try{enabled=localStorage.getItem(key)!=="false"}catch{}
 function label(){
  if(!button)return;
- button.textContent=enabled?"♫ Alertas ativados":"♪ Alertas desativados";
+ button.textContent=enabled?"♫ Som ligado":"♪ Som desligado";
  button.setAttribute("aria-pressed",String(enabled));
- button.setAttribute("aria-label",enabled?"Desativar alertas":"Ativar alertas");
- button.title=enabled?"Desativar alertas":"Ativar alertas";
+ button.setAttribute("aria-label",enabled?"Desativar som dos alertas":"Ativar som dos alertas");
+ button.title=enabled?"Desativar som dos alertas":"Ativar som dos alertas";
 }
 async function unlock(){
  try{
