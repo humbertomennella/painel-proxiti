@@ -33,6 +33,15 @@ assert(read("assets/operations.js").includes("Programa interno de capacitação 
 assert(!html.includes("<h3>UniProxiti</h3>"),"Título duplicado dentro do módulo");
 assert(html.includes("Certificado UniProxiti"));
 assert(!html.includes("Academia PROXITI"));
+assert(html.includes("./assets/academy-curriculum.js?v=20260926-2"));
+assert(html.includes("./assets/academy-visuals/operacao.svg?v=20260926-1"));
+for(const id of ["atendimento","computadores","redes","seguranca","backup","infraestrutura","privacidade","operacao"]){
+ const art=read("assets/academy-visuals/"+id+".svg");
+ assert(!/academia proxiti/i.test(art),"Marca antiga na ilustração "+id);
+ assert(art.includes("UniProxiti")||art.includes("UNIPROXITI"),
+   "Identidade UniProxiti não consta no SVG "+id);
+}
+
 const js=read("assets/academy-learning.js"),oldJs=baseline("assets/academy-learning.js");
 new Script(js,{filename:"assets/academy-learning.js"});
 assert(js.includes('from("academy_course_progress")')&&
