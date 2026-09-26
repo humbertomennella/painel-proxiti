@@ -162,3 +162,424 @@ html[data-theme] body.workspace-mode #ops-agenda .agenda-history ol{
  margin:8px 0;padding:0 0 0 21px;min-width:0;overflow-wrap:anywhere
 }
 html[data-theme] body.workspace-mode #ops-agenda .agenda-history li{padding:9px 0}
+
+/* Academia: biblioteca editorial compacta, estados explícitos e histórico privado. */
+html[data-theme] body.workspace-mode #ops-training .academy-filters{
+ grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:12px
+}
+html[data-theme] body.workspace-mode #ops-training .academy-sync-state{
+ display:flex;gap:9px;align-items:center;padding:10px 13px;margin:12px 0 17px;
+ border:1px solid var(--px-line);border-radius:11px;
+ background:var(--px-bg-muted);color:var(--px-text);line-height:1.5;
+ font-size:.9rem;overflow-wrap:anywhere
+}
+html[data-theme] body.workspace-mode #ops-training .academy-sync-state:before{
+ content:"";flex:0 0 8px;width:8px;height:8px;border-radius:50%;
+ background:var(--px-blue)
+}
+html[data-theme] body.workspace-mode #ops-training .academy-sync-state[data-phase="ready"]:before{
+ background:#39946d
+}
+html[data-theme] body.workspace-mode #ops-training .academy-sync-state[data-phase="error"]:before{
+ background:#bd7b35
+}
+html[data-theme] body.workspace-mode #ops-training .academy-entry-head [data-published="false"]{
+ background:var(--px-bg-muted);color:var(--px-muted);border:1px solid var(--px-line)
+}
+html[data-theme] body.workspace-mode #ops-training .academy-actions{
+ gap:9px;flex-wrap:wrap;align-items:center
+}
+html[data-theme] body.workspace-mode #ops-training .academy-actions button,
+html[data-theme] body.workspace-mode #ops-training #training-load-more{
+ min-height:44px;padding:10px 13px;line-height:1.35
+}
+html[data-theme] body.workspace-mode #ops-training .academy-versions{
+ min-width:0;border-top:1px solid var(--px-line);padding-top:6px
+}
+html[data-theme] body.workspace-mode #ops-training .academy-versions summary{
+ cursor:pointer;padding:12px 0;color:var(--px-blue);font-size:.95rem;font-weight:740
+}
+html[data-theme] body.workspace-mode #ops-training .academy-version-list{
+ padding:0 0 0 21px;margin:7px 0 12px;display:grid;gap:12px
+}
+html[data-theme] body.workspace-mode #ops-training .academy-version{
+ min-width:0;padding:12px;border:1px solid var(--px-line);border-radius:10px;
+ background:var(--px-bg-muted);overflow-wrap:anywhere
+}
+html[data-theme] body.workspace-mode #ops-training .academy-version strong,
+html[data-theme] body.workspace-mode #ops-training .academy-version small{
+ display:block;margin-bottom:6px
+}
+html[data-theme] body.workspace-mode #ops-training .academy-version>details{
+ padding:5px 0
+}
+html[data-theme] body.workspace-mode #ops-training .academy-version>button{
+ min-height:44px;margin-top:8px
+}
+html[data-theme] body.workspace-mode #ops-training .academy-entry button:focus-visible,
+html[data-theme] body.workspace-mode #ops-training .academy-versions summary:focus-visible,
+html[data-theme] body.workspace-mode #ops-training #training-load-more:focus-visible{
+ outline:3px solid var(--px-orange);outline-offset:3px
+}
+html[data-theme] body.workspace-mode #ops-training #training-load-more{margin:15px 0}
+@media(max-width:680px){
+ html[data-theme] body.workspace-mode #ops-training .academy-filters{
+  grid-template-columns:minmax(0,1fr)
+ }
+ html[data-theme] body.workspace-mode #ops-training .academy-entry{padding:14px}
+ html[data-theme] body.workspace-mode #ops-training .academy-actions button,
+ html[data-theme] body.workspace-mode #ops-training #training-load-more{width:100%}
+ html[data-theme] body.workspace-mode #ops-training .academy-version{padding:10px}
+}
+
+/* Academia: corrigir intrinsic sizing no menor viewport, inclusive biblioteca antiga. */
+html[data-theme] body.workspace-mode #ops-training,
+html[data-theme] body.workspace-mode #ops-training .academy-entry,
+html[data-theme] body.workspace-mode #ops-training #training-list{
+ min-width:0;max-width:100%;box-sizing:border-box
+}
+html[data-theme] body.workspace-mode #ops-training .academy-entry{
+ display:grid;grid-template-columns:minmax(0,1fr)
+}
+html[data-theme] body.workspace-mode #ops-training .academy-entry>*{
+ min-width:0;max-width:100%;box-sizing:border-box
+}
+html[data-theme] body.workspace-mode #ops-training .academy-entry-head{
+ display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px;min-width:0
+}
+html[data-theme] body.workspace-mode #ops-training .academy-entry-head>*{
+ min-width:0;max-width:100%;overflow-wrap:anywhere
+}
+html[data-theme] body.workspace-mode #ops-training .academy-actions{
+ display:flex;flex-wrap:wrap;min-width:0
+}
+html[data-theme] body.workspace-mode #ops-training .academy-article,
+html[data-theme] body.workspace-mode #ops-training .academy-body,
+html[data-theme] body.workspace-mode #ops-training .academy-versions,
+html[data-theme] body.workspace-mode #ops-training .academy-version-list{
+ min-width:0;max-width:100%;overflow-wrap:anywhere;box-sizing:border-box
+}
+html[data-theme] body.workspace-mode #ops-training .academy-actions button{
+ min-width:0;max-width:100%;box-sizing:border-box;white-space:normal
+}
+
+/* Capacitação interna: identidade grafite PROXITI, layout compacto e sem template genérico. */
+html[data-theme] body.workspace-mode #ops-training .academy-library-heading{
+ margin:25px 0 14px;padding-top:18px;border-top:1px solid var(--px-line)
+}
+html[data-theme] body.workspace-mode #ops-training .academy-library-heading h4{
+ margin:0 0 4px;font-size:1.2rem;letter-spacing:-.02em
+}
+html[data-theme] body.workspace-mode #ops-training .academy-library-heading p{
+ margin:0;color:var(--px-muted);font-size:.92rem
+}
+html[data-theme] body.workspace-mode #ops-training .academy-learning{
+ min-width:0;max-width:100%;box-sizing:border-box;
+ display:grid;grid-template-columns:minmax(0,1fr);gap:16px;margin:15px 0 26px
+}
+html[data-theme] body.workspace-mode #ops-training .academy-learning>*{
+ min-width:0;max-width:100%;box-sizing:border-box
+}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-hero{
+ min-width:0;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(210px,.85fr);
+ gap:20px;align-items:center;padding:clamp(18px,2.3vw,29px);border:1px solid var(--px-line);
+ border-radius:17px;background:var(--px-surface);box-shadow:var(--px-shadow)
+}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-hero-copy{
+ min-width:0;overflow-wrap:anywhere
+}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-hero .kicker{
+ margin:0 0 9px;font-size:.76rem;letter-spacing:.08em;font-weight:850;color:var(--px-blue)
+}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-hero h4{
+ margin:0 0 10px;font-size:clamp(1.4rem,2.45vw,2.15rem);line-height:1.19;letter-spacing:-.037em
+}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-hero p{
+ line-height:1.55
+}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-hero img{
+ display:block;max-width:100%;width:100%;height:auto;aspect-ratio:960/440;
+ border-radius:12px;object-fit:cover;border:1px solid var(--px-line)
+}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-status{
+ display:flex;align-items:center;gap:9px;margin-top:14px;font-size:.86rem;
+ line-height:1.45;color:var(--px-muted);overflow-wrap:anywhere
+}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-status:before{
+ content:"";display:inline-block;flex:0 0 8px;width:8px;height:8px;border-radius:50%;
+ background:#36886c
+}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-status[data-phase="error"]:before{
+ background:#bc7533
+}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-status[data-phase="loading"]:before{
+ background:var(--px-blue)
+}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-summary{
+ padding:14px;border:1px solid var(--px-line);border-radius:13px;background:var(--px-bg-muted)
+}
+html[data-theme] body.workspace-mode #ops-training .academy-progress-panel,
+html[data-theme] body.workspace-mode #ops-training .academy-exam-metrics{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;min-width:0
+}
+html[data-theme] body.workspace-mode #ops-training .academy-progress-metric{
+ display:grid;gap:5px;min-width:0;padding:13px;border:1px solid var(--px-line);
+ border-radius:10px;background:var(--px-surface);overflow-wrap:anywhere
+}
+html[data-theme] body.workspace-mode #ops-training .academy-progress-metric small{
+ color:var(--px-muted);font-size:.81rem
+}
+html[data-theme] body.workspace-mode #ops-training .academy-progress-metric strong{
+ font-size:clamp(1.1rem,1.8vw,1.48rem);letter-spacing:-.025em
+}
+html[data-theme] body.workspace-mode #ops-training .academy-progress-metric span{
+ color:var(--px-muted);font-size:.76rem
+}
+html[data-theme] body.workspace-mode #ops-training .academy-progress-track{
+ margin-top:12px;height:8px;overflow:hidden;border-radius:99px;background:var(--px-line)
+}
+html[data-theme] body.workspace-mode #ops-training .academy-progress-track span{
+ display:block;height:100%;border-radius:inherit;background:var(--px-blue)
+}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-actions{
+ display:flex;gap:10px;flex-wrap:wrap;align-items:center
+}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-actions button,
+html[data-theme] body.workspace-mode #ops-training .academy-learning-detail>button,
+html[data-theme] body.workspace-mode #ops-training .academy-assessment-submit{
+ min-height:44px;padding:10px 15px;white-space:normal
+}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-policy{
+ margin:0;color:var(--px-muted);font-size:.84rem;line-height:1.56
+}
+html[data-theme] body.workspace-mode #ops-training .academy-track-list{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px
+}
+html[data-theme] body.workspace-mode #ops-training .academy-track-card{
+ min-width:0;overflow:hidden;border:1px solid var(--px-line);border-radius:13px;
+ background:var(--px-surface)
+}
+html[data-theme] body.workspace-mode #ops-training .academy-track-summary{
+ display:grid;grid-template-columns:minmax(100px,160px) minmax(0,1fr);
+ gap:13px;align-items:center;cursor:pointer;padding:14px;
+ list-style:none;overflow-wrap:anywhere
+}
+html[data-theme] body.workspace-mode #ops-training .academy-track-summary::-webkit-details-marker{
+ display:none
+}
+html[data-theme] body.workspace-mode #ops-training .academy-track-summary img{
+ width:100%;height:auto;aspect-ratio:960/440;object-fit:cover;border-radius:9px
+}
+html[data-theme] body.workspace-mode #ops-training .academy-track-copy{
+ display:grid;gap:4px;min-width:0
+}
+html[data-theme] body.workspace-mode #ops-training .academy-track-copy small{
+ font-size:.75rem;letter-spacing:.01em;color:var(--px-blue);font-weight:760
+}
+html[data-theme] body.workspace-mode #ops-training .academy-track-copy h5{
+ font-size:1rem;margin:0;line-height:1.3;letter-spacing:-.015em
+}
+html[data-theme] body.workspace-mode #ops-training .academy-track-copy p{
+ color:var(--px-muted);font-size:.83rem;line-height:1.45;margin:0
+}
+html[data-theme] body.workspace-mode #ops-training .academy-track-courses{
+ display:grid;grid-template-columns:minmax(0,1fr);gap:9px;padding:0 13px 13px
+}
+html[data-theme] body.workspace-mode #ops-training .academy-course-card{
+ text-align:left;display:grid;grid-template-columns:minmax(0,1fr) auto;
+ gap:4px 9px;min-width:0;padding:13px;border:1px solid var(--px-line);
+ border-radius:10px;background:var(--px-bg-muted);color:var(--px-text);
+ font:inherit;cursor:pointer;overflow-wrap:anywhere
+}
+html[data-theme] body.workspace-mode #ops-training .academy-course-card strong{
+ font-size:.92rem;line-height:1.4;min-width:0
+}
+html[data-theme] body.workspace-mode #ops-training .academy-course-card small{
+ grid-column:1/-1;color:var(--px-muted);font-size:.79rem
+}
+html[data-theme] body.workspace-mode #ops-training .academy-course-badge{
+ font-size:.73rem;font-weight:750;color:var(--px-muted);text-align:right
+}
+html[data-theme] body.workspace-mode #ops-training .academy-course-badge[data-passed="true"]{
+ color:#39946d
+}
+html[data-theme] body.workspace-mode #ops-training .academy-course-card:hover{
+ border-color:var(--px-blue);background:var(--px-surface)
+}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-detail{
+ min-width:0;padding:clamp(15px,2vw,24px);
+ border:1px solid var(--px-line);border-radius:14px;background:var(--px-surface)
+}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-detail h5{
+ margin:13px 0;font-size:1.25rem;line-height:1.35
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-intro{
+ display:grid;gap:10px;margin:14px 0 22px
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-intro img{
+ width:100%;max-height:300px;aspect-ratio:960/440;object-fit:cover;
+ border-radius:12px;border:1px solid var(--px-line)
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-intro h5{
+ font-size:clamp(1.35rem,2.2vw,1.9rem);margin:0;letter-spacing:-.025em
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-intro p{margin:0}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-block{
+ padding:17px 0;border-top:1px solid var(--px-line);line-height:1.7
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-block h6,
+html[data-theme] body.workspace-mode #ops-training .academy-case h6{
+ font-size:1.08rem;line-height:1.35;margin:0 0 12px
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-block p{margin:9px 0}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-block ul{
+ padding-left:23px;margin:10px 0
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-block li{margin:7px 0}
+html[data-theme] body.workspace-mode #ops-training .academy-case{
+ padding:19px;border:1px solid var(--px-line-strong);border-radius:12px;
+ background:var(--px-bg-muted);line-height:1.65
+}
+html[data-theme] body.workspace-mode #ops-training .academy-case-label{
+ display:block;font-size:.75rem;letter-spacing:.08em;font-weight:850;color:var(--px-blue)
+}
+html[data-theme] body.workspace-mode #ops-training .academy-case strong{
+ display:block;margin-top:13px
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-references{
+ padding:14px 0
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-references h6{
+ font-size:1rem;margin:0 0 8px
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-references a{
+ color:var(--px-blue);overflow-wrap:anywhere
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-footnote{
+ font-size:.85rem;color:var(--px-muted);line-height:1.55
+}
+html[data-theme] body.workspace-mode #ops-training .academy-assessment-form{
+ display:grid;gap:16px;min-width:0
+}
+html[data-theme] body.workspace-mode #ops-training .academy-question{
+ min-width:0;min-inline-size:0;width:100%;max-width:100%;box-sizing:border-box;
+ padding:15px;border:1px solid var(--px-line);border-radius:11px;
+ background:var(--px-bg-muted);overflow-wrap:anywhere
+}
+html[data-theme] body.workspace-mode #ops-training .academy-question legend{
+ padding:0 5px;font-weight:760;line-height:1.5;white-space:normal;
+ max-width:100%;overflow-wrap:anywhere
+}
+html[data-theme] body.workspace-mode #ops-training .academy-choice{
+ display:flex;align-items:flex-start;gap:11px;
+ margin:8px 0;padding:12px;border:1px solid var(--px-line);
+ border-radius:9px;background:var(--px-surface);cursor:pointer;
+ min-width:0;overflow-wrap:anywhere;line-height:1.45
+}
+html[data-theme] body.workspace-mode #ops-training .academy-choice input{
+ flex:0 0 18px;margin:3px 0 0
+}
+html[data-theme] body.workspace-mode #ops-training .academy-choice span{min-width:0}
+html[data-theme] body.workspace-mode #ops-training .academy-choice:has(input:checked){
+ border-color:var(--px-blue);background:var(--px-bg-muted)
+}
+html[data-theme] body.workspace-mode #ops-training .academy-critical{
+ display:inline-block;margin:8px 0;font-size:.8rem;font-weight:770;color:#a87838
+}
+html[data-theme] body.workspace-mode #ops-training .academy-assessment-result{
+ display:grid;gap:12px;margin:16px 0;min-width:0
+}
+html[data-theme] body.workspace-mode #ops-training .academy-grade-header{
+ display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px;
+ padding:14px;border:1px solid var(--px-line);border-radius:10px;background:var(--px-bg-muted)
+}
+html[data-theme] body.workspace-mode #ops-training .academy-grade-header strong{
+ font-size:1.4rem
+}
+html[data-theme] body.workspace-mode #ops-training .academy-grade-review{
+ padding:13px;border:1px solid var(--px-line);border-radius:10px;
+ background:var(--px-bg-muted);overflow-wrap:anywhere
+}
+html[data-theme] body.workspace-mode #ops-training .academy-grade-review p{
+ margin:7px 0;line-height:1.6
+}
+html[data-theme] body.workspace-mode #ops-training .academy-result-line{
+ margin:0;line-height:1.5
+}
+html[data-theme] body.workspace-mode #ops-training .academy-success{color:#39946d;font-weight:760}
+html[data-theme] body.workspace-mode #ops-training .academy-warning{color:#a87838;font-weight:760}
+html[data-theme] body.workspace-mode #ops-training .academy-certificate-card{
+ padding:clamp(18px,3vw,35px);border:3px double var(--px-blue);border-radius:13px;
+ text-align:center;background:var(--px-bg-muted);display:grid;gap:13px;
+ overflow-wrap:anywhere
+}
+html[data-theme] body.workspace-mode #ops-training .academy-certificate-kicker{
+ font-size:.78rem;letter-spacing:.1em;font-weight:840;color:var(--px-blue)
+}
+html[data-theme] body.workspace-mode #ops-training .academy-certificate-card h6{
+ margin:0;font-size:clamp(1.4rem,2.4vw,1.95rem)
+}
+html[data-theme] body.workspace-mode #ops-training .academy-certificate-card p{
+ margin:0;line-height:1.5
+}
+html[data-theme] body.workspace-mode #ops-training .academy-certificate-card strong{
+ font-size:1.35rem
+}
+html[data-theme] body.workspace-mode #ops-training .academy-learning button:focus-visible,
+html[data-theme] body.workspace-mode #ops-training .academy-track-summary:focus-visible,
+html[data-theme] body.workspace-mode #ops-training .academy-choice:focus-within{
+ outline:3px solid var(--px-orange);outline-offset:3px
+}
+@media(max-width:1000px){
+ html[data-theme] body.workspace-mode #ops-training .academy-learning-hero{
+  grid-template-columns:minmax(0,1fr)
+ }
+ html[data-theme] body.workspace-mode #ops-training .academy-learning-hero img{
+  max-height:260px
+ }
+}
+@media(max-width:740px){
+ html[data-theme] body.workspace-mode #ops-training .academy-track-list{
+  grid-template-columns:minmax(0,1fr)
+ }
+ html[data-theme] body.workspace-mode #ops-training .academy-progress-panel,
+ html[data-theme] body.workspace-mode #ops-training .academy-exam-metrics{
+  grid-template-columns:minmax(0,1fr)
+ }
+ html[data-theme] body.workspace-mode #ops-training .academy-track-summary{
+  grid-template-columns:minmax(0,1fr)
+ }
+ html[data-theme] body.workspace-mode #ops-training .academy-track-summary img{
+  max-height:165px
+ }
+ html[data-theme] body.workspace-mode #ops-training .academy-learning-actions button,
+ html[data-theme] body.workspace-mode #ops-training .academy-learning-detail>button,
+ html[data-theme] body.workspace-mode #ops-training .academy-assessment-submit{
+  width:100%
+ }
+}
+@media(max-width:420px){
+ html[data-theme] body.workspace-mode #ops-training .academy-course-card{
+  grid-template-columns:minmax(0,1fr)
+ }
+ html[data-theme] body.workspace-mode #ops-training .academy-course-badge{
+  text-align:left
+ }
+ html[data-theme] body.workspace-mode #ops-training .academy-choice{
+  padding:10px
+ }
+ html[data-theme] body.workspace-mode #ops-training .academy-question{
+  padding:12px 10px
+ }
+}
+
+/* Esconder painéis de avaliação independentemente dos displays responsivos. */
+html[data-theme] body.workspace-mode #ops-training .academy-learning [hidden],
+html[data-theme] body.workspace-mode #ops-training .academy-learning[hidden]{
+ display:none!important
+}
+html[data-theme] body.workspace-mode #ops-training .academy-entry .academy-versions ol,
+html[data-theme] body.workspace-mode #ops-training .academy-entry .academy-article>div,
+html[data-theme] body.workspace-mode #ops-training .academy-entry .academy-entry-head{
+ max-inline-size:100%;min-inline-size:0
+}

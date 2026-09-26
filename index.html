@@ -12,13 +12,16 @@
 <link rel="stylesheet" href="./assets/interface.css">
 <link rel="stylesheet" href="./assets/overview-comfort.css?v=20260925-3">
 <link rel="stylesheet" href="./assets/ticket-workflow.css?v=20260926-1">
-<link rel="stylesheet" href="./assets/operations-v8.css?v=20260926-2">
+<link rel="stylesheet" href="./assets/operations-v8.css?v=20260926-4">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js" defer></script>
 <script src="./assets/config.js" defer></script>
 <script src="./assets/app.js" defer></script>
 <script src="./assets/alerts.js" defer></script>
 <script src="./assets/overview-model.js?v=1" defer></script>
-<script src="./assets/operations.js?v=20260926-2" defer></script>
+<script src="./assets/operations.js?v=20260926-3" defer></script>
+<script src="./assets/academy.js?v=20260926-1" defer></script>
+<script src="./assets/academy-curriculum.js?v=20260926-1" defer></script>
+<script src="./assets/academy-learning.js?v=20260926-2" defer></script>
 <script src="./assets/layout.js" defer></script>
 <script src="./assets/profile.js" defer></script>
 <script src="./assets/appearance.js" defer></script>
@@ -221,25 +224,78 @@
   </div>
   <div id="ops-training" class="ops-view px-panel" hidden>
     <div class="ops-section-head"><h3>Academia PROXITI</h3><button type="button" id="reload-training" class="secondary">Atualizar ↻</button></div>
-    <div class="academy-intro"><strong>Procedimentos para consultar durante o atendimento.</strong><p>Os materiais são internos, versionados e não substituem autorização do cliente nem julgamento técnico. Não há certificados automáticos.</p></div>
+    <p id="training-sync-state" class="academy-sync-state" role="status" aria-live="polite">Consultando a biblioteca autorizada…</p>
+    <div class="academy-intro"><strong>Duas formas de aprender e trabalhar.</strong><p>As trilhas de capacitação possuem aulas, avaliações e certificado interno por aproveitamento. A biblioteca abaixo permanece para consulta durante os atendimentos; consultar um documento não equivale a concluir curso.</p></div>
+    <section id="academy-learning-root" class="academy-learning" aria-labelledby="academy-learning-heading">
+      <div class="academy-learning-hero">
+        <div class="academy-learning-hero-copy">
+          <p class="kicker">CAPACITAÇÃO INTERNA · PROXITI</p>
+          <h4 id="academy-learning-heading">Aprenda, pratique e comprove seu progresso.</h4>
+          <p>16 aulas, oito áreas da operação e avaliação corrigida pelo servidor. O certificado é interno, não equivale a diploma ou habilitação profissional externa.</p>
+          <div id="academy-learning-status" class="academy-learning-status" role="status" aria-live="polite">Preparando seus cursos…</div>
+          <button id="academy-learning-refresh" type="button" class="secondary">Atualizar progresso</button>
+        </div>
+        <img src="./assets/academy-visuals/operacao.svg" alt="Ilustração original: chamado, agenda e relatório como etapas do atendimento PROXITI." width="960" height="440" loading="lazy">
+      </div>
+      <div id="academy-learning-summary" class="academy-learning-summary" role="status" aria-live="polite">
+        <p>Consultando seu progresso individual…</p>
+      </div>
+      <div class="academy-learning-actions">
+        <button id="academy-learning-show-tracks" type="button" class="secondary">Ver trilhas</button>
+        <button id="academy-learning-show-certificate" type="button" class="secondary">Meu certificado</button>
+        <button id="academy-learning-open-exam" type="button" class="primary" disabled>Prova final · concluir 16 cursos</button>
+      </div>
+      <p class="academy-learning-policy">Para concluir cada aula: pelo menos 3 de 4 questões corretas (75%). Para o certificado interno: concluir as 16 aulas, obter no mínimo 75 na prova de 24 questões, média final ponderada mínima de 80 e acertar as quatro questões críticas de segurança e privacidade. Média final = 60% da média dos melhores questionários + 40% da prova final.</p>
+      <div id="academy-track-list" class="academy-track-list" aria-label="Trilhas e aulas disponíveis"></div>
+      <section id="academy-lesson-panel" class="academy-learning-detail" aria-labelledby="academy-lesson-heading" hidden>
+        <button type="button" id="academy-lesson-back" class="secondary">← Voltar às trilhas</button>
+        <div id="academy-lesson-content"></div>
+        <section id="academy-quiz-panel" aria-label="Questionário da aula">
+          <h5 id="academy-lesson-heading">Questionário da aula</h5>
+          <p id="academy-quiz-status" class="ops-muted" role="status" aria-live="polite">As perguntas serão carregadas com seu curso.</p>
+          <form id="academy-quiz-form" class="academy-assessment-form"></form>
+          <div id="academy-quiz-result" class="academy-assessment-result" role="status" aria-live="polite"></div>
+        </section>
+      </section>
+      <section id="academy-exam-panel" class="academy-learning-detail" aria-labelledby="academy-exam-heading" hidden>
+        <button type="button" id="academy-exam-back" class="secondary">← Voltar às trilhas</button>
+        <h5 id="academy-exam-heading">Avaliação Final · Fundamentos Operacionais PROXITI</h5>
+        <p>24 questões objetivas distribuídas entre as oito áreas. A prova é individual e corrigida no Supabase. Quatro questões críticas de segurança e privacidade exigem acerto; você pode refazer após estudar.</p>
+        <p id="academy-exam-status" class="ops-muted" role="status" aria-live="polite"></p>
+        <form id="academy-exam-form" class="academy-assessment-form"></form>
+        <div id="academy-exam-result" class="academy-assessment-result" role="status" aria-live="polite"></div>
+      </section>
+      <section id="academy-certificate-panel" class="academy-learning-detail" aria-labelledby="academy-certificate-heading" hidden>
+        <button type="button" id="academy-certificate-back" class="secondary">← Voltar às trilhas</button>
+        <h5 id="academy-certificate-heading">Certificado de Conclusão Interna</h5>
+        <div id="academy-certificate-detail" class="academy-certificate-detail"></div>
+        <button type="button" id="academy-certificate-print" class="primary" hidden>Imprimir / Salvar certificado em PDF</button>
+      </section>
+    </section>
+    <div class="academy-library-heading"><h4>Biblioteca técnica</h4><p>Procedimentos internos e arquivos privados para consulta rápida, com revisão e histórico editorial.</p></div>
     <div class="academy-filters">
-      <div class="ops-inline-search"><label for="training-search">Pesquisar na Academia</label><input id="training-search" type="search" placeholder="Título, tema ou conteúdo" autocomplete="off" maxlength="120"><p id="training-search-status" role="status" aria-live="polite"></p></div>
+      <div class="ops-inline-search"><label for="training-search">Pesquisar na Academia</label><input id="training-search" type="search" placeholder="Título, assunto ou conteúdo técnico" autocomplete="off" maxlength="120"><p id="training-search-status" role="status" aria-live="polite"></p></div>
       <label for="training-category-filter">Especialidade <select id="training-category-filter"><option value="">Todas as áreas</option><option>Atendimento</option><option>Computadores</option><option>Redes</option><option>Backup</option><option>Segurança</option><option>Infraestrutura</option><option>Geral</option></select></label>
+      <label for="training-status-filter" data-admin-only>Publicação <select id="training-status-filter"><option value="all">Publicados e rascunhos</option><option value="published">Publicados</option><option value="draft">Rascunhos</option></select></label>
     </div>
     <form id="training-form" class="ops-form academy-editor" data-admin-only>
       <h4 id="training-editor-title">Publicar material técnico</h4>
-      <p class="ops-muted">O material só fica disponível aos técnicos quando você habilita a publicação.</p>
+      <p class="ops-muted">Salve um rascunho, revise o conteúdo e só então publique. Atualizações preservam a versão anterior para consulta administrativa.</p>
       <label for="training-kind">Formato</label><select id="training-kind"><option value="article">Artigo / procedimento interno</option><option value="file">PDF ou imagem em armazenamento privado</option></select>
       <label for="training-category">Especialidade</label><select id="training-category"><option>Atendimento</option><option>Computadores</option><option>Redes</option><option>Backup</option><option>Segurança</option><option>Infraestrutura</option><option>Geral</option></select>
       <label for="training-title">Título</label><input id="training-title" maxlength="160" minlength="3" required>
       <label for="training-description">Descrição curta</label><textarea id="training-description" maxlength="2000" rows="2"></textarea>
       <label for="training-reference">Referência oficial HTTPS (opcional)</label><input id="training-reference" type="url" maxlength="500" placeholder="https://...">
       <div id="training-article-fields"><label for="training-body">Conteúdo do procedimento (máx. 16 mil caracteres)</label><textarea id="training-body" maxlength="16000" rows="13" placeholder="# Título&#10;## Etapa&#10;- Orientação objetiva."></textarea><p class="ops-muted">Use # e ## para títulos e - para etapas. O conteúdo é exibido como texto seguro, não como HTML.</p></div>
-      <div id="training-file-fields" hidden><label for="training-file">Arquivo privado: PDF ou imagem, até 10 MB</label><input id="training-file" type="file" accept="application/pdf,image/png,image/jpeg,image/webp"><p class="ops-muted">Ao editar um arquivo existente, os metadados podem ser alterados sem reenviar o arquivo.</p></div>
-      <label class="ops-check"><input id="training-published" type="checkbox"> Disponibilizar aos técnicos autorizados</label>
+      <div id="training-file-fields" hidden><label for="training-file">Arquivo privado: PDF ou imagem, até 10 MB</label><input id="training-file" type="file" accept="application/pdf,image/png,image/jpeg,image/webp"><p class="ops-muted">Ao editar, você pode manter o arquivo ou enviar uma nova versão privada. O arquivo anterior permanece no histórico administrativo.</p></div>
+      <label class="ops-check"><input id="training-reviewed" type="checkbox"> Confirmo que revisei tecnicamente o material desta atualização</label>
+      <label class="ops-check"><input id="training-published" type="checkbox"> Disponibilizar aos técnicos autorizados após a revisão</label>
+      <p class="ops-muted">A confirmação é editorial. Consultar um procedimento não equivale a treinamento concluído nem a certificado.</p>
+      <p id="training-editor-feedback" class="ticket-workflow-feedback" role="status" aria-live="polite" hidden></p>
       <div class="ops-controls"><button type="submit" class="primary" id="training-save">Salvar material</button><button type="button" class="secondary" id="training-cancel" hidden>Cancelar edição</button></div>
     </form>
-    <div id="training-list" class="ops-list"></div>
+    <div id="training-list" class="ops-list" aria-label="Materiais da Academia"></div>
+    <button type="button" id="training-load-more" class="secondary" hidden>Carregar mais materiais</button>
   </div>
   <div id="ops-tools" class="ops-view px-panel" hidden>
     <div class="ops-section-head"><h3>Ferramentas de trabalho</h3><button type="button" id="reload-tools" class="secondary">Atualizar ↻</button></div>

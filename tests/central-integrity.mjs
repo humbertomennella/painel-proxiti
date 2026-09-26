@@ -5,7 +5,7 @@ import { Script, runInNewContext } from "node:vm";
 const get = path => readFileSync(new URL("../"+path,import.meta.url),"utf8");
 const html=get("index.html");
 const scriptPaths=[
-  "assets/app.js","assets/alerts.js","assets/operations.js","assets/layout.js",
+  "assets/app.js","assets/alerts.js","assets/operations.js","assets/academy.js","assets/academy-curriculum.js","assets/academy-learning.js","assets/layout.js",
   "assets/profile.js","assets/appearance.js","assets/overview-model.js","assets/overview.js","assets/ticket-workflow.js",
   "assets/ticket-extras.js","assets/agenda.js","assets/technical-tools-core.js","assets/technical-tools.js"
 ];
@@ -256,3 +256,75 @@ assert(get("assets/operations.js").includes("Finalize ou cancele os compromissos
 assert(existsSync(new URL("../tests/agenda-functional.mjs",import.meta.url)),
  "Testes funcionais da Agenda não foram adicionados");
 console.log("Agenda: migração, permissões, paginação e testes funcionais verificados.");
+
+for(const id of ["training-sync-state","training-status-filter","training-reviewed",
+ "training-editor-feedback","training-load-more","training-list"]){
+ assert(html.includes('id="'+id+'"'),"Academia sem estado ou controle #"+id);
+}
+assert(html.includes('src="./assets/academy.js?v=20260926-1"'),
+ "Módulo editorial da Academia não está carregado");
+const academyCode=get("assets/academy.js"),academyDb=get("supabase/academy_integrity_v12.sql");
+for(const rule of ["training_material_versions","training_search_gin_idx",
+ "training_publication_review_check","proxiti_training_record_version",
+ "revoke delete on public.training_materials from authenticated"]){
+ assert(academyDb.includes(rule),"Migração da Academia sem "+rule);
+}
+assert(academyDb.includes("m.storage_path=storage.objects.name and m.published"),
+ "Arquivos de rascunhos estão acessíveis aos técnicos");
+assert(academyCode.includes('.textSearch("search_index",f.q'),
+ "Pesquisa não inclui conteúdo técnico no banco");
+assert(academyCode.includes(".range(offset,offset+PAGE)"),
+ "Biblioteca não pagina além dos materiais mais recentes");
+assert(academyCode.includes('.eq("updated_at",original.updated_at)'),
+ "Editor permite sobrescrever revisão concorrente");
+assert(academyCode.includes('from("training_material_versions")'),
+ "Histórico editorial não está acessível ao administrador");
+assert(academyCode.includes("proxiti-academy-read-v2-"),
+ "Indicação de consulta não distingue as versões do material");
+assert(get("assets/operations.js").includes('proxiti-academy-refresh'),
+ "Navegação não atualiza o módulo independente");
+assert(existsSync(new URL("../tests/academy-functional.mjs",import.meta.url)),
+ "Academia sem testes funcionais de sessão simulada");
+assert(existsSync(new URL("../docs/academia-homologacao.md",import.meta.url))&&
+ get("README.md").includes("docs/academia-homologacao.md"),
+ "Academia sem roteiro editorial e de homologação");
+console.log("Academia: integridade, versões, acesso privado e pesquisa validados.");
+
+const curriculumContext={window:{}};
+runInNewContext(get("assets/academy-curriculum.js"),curriculumContext);
+const curriculum=curriculumContext.window.PROXITI_ACADEMY_CURRICULUM;
+assert.equal(curriculum.version,"2026-09-v1");
+assert.equal(curriculum.tracks.length,8,"Academia deve conter oito áreas reais da PROXITI");
+assert.equal(curriculum.courses.length,16,"Academia deve conter dezesseis aulas completas");
+assert.equal(new Set(curriculum.courses.map(course=>course.id)).size,16);
+for(const course of curriculum.courses){
+ assert(course.objectives.length>=3&&course.sections.length>=3&&
+  course.checklist.length>=4&&course.practice.context.length>30&&
+  course.practice.response.length>30,"Aula incompleta: "+course.id);
+ assert(curriculum.tracks.some(track=>track.id===course.track),"Trilha desconhecida: "+course.id);
+}
+for(const track of curriculum.tracks)
+ assert(existsSync(new URL("../"+track.image,import.meta.url)),
+  "Ilustração original ausente: "+track.image);
+const learningSql=get("supabase/academy_learning_v13.sql");
+for(const required of ["academy_courses","academy_questions","academy_course_progress",
+ "academy_quiz_attempts","academy_exam_attempts","academy_certificates",
+ "proxiti_academy_questions","proxiti_academy_submit_quiz",
+ "proxiti_academy_submit_exam","critical_ok","score>=75",
+ "final_score>=80","0.60","0.40","verification_code"]){
+ assert(learningSql.includes(required),"Avaliações da Academia sem "+required);
+}
+assert(learningSql.includes("revoke all on public.academy_courses,public.academy_questions"),
+ "Gabarito público por privilégio de tabela");
+assert(learningSql.includes("revoke all on function public.proxiti_academy_submit_exam(jsonb) from public,anon"),
+ "Emissão da prova está acessível a visitantes anônimos");
+assert(html.includes('id="academy-track-list"')&&
+ html.includes('id="academy-quiz-form"')&&
+ html.includes('id="academy-exam-form"')&&
+ html.includes('id="academy-certificate-print"'),"Fluxo de certificação incompleto");
+assert(get("assets/academy-learning.js").includes('proxiti_academy_submit_exam')&&
+ get("assets/academy-learning.js").includes('from("academy_certificates")'),
+ "A nota ou o certificado não são obtidos do servidor");
+assert(existsSync(new URL("../tests/academy-learning-functional.mjs",import.meta.url)),
+ "Academia sem testes do curso, avaliação e certificado");
+console.log("Academia V13: 16 aulas, 8 imagens, progresso privado e certificado verificados.");
