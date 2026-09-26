@@ -213,22 +213,36 @@
  });
  el("ticket-appointment-form").addEventListener("submit",async event=>{
    event.preventDefault();if(!writable()||selected.status==="resolved")return;
-   const ticket=selected,button=event.currentTarget.querySelector('[type="submit"]');
+   const ticket=selected,client=db(),uid=session()?.user?.id,rev=revision;
+   const still=()=>same(rev,ticket.id,client,uid)&&writable();
+   const button=event.currentTarget.querySelector('[type="submit"]');
    const local=el("ticket-appointment-start").value,when=new Date(local);
-   if(!local||!Number.isFinite(when.getTime())){feedback("Informe uma data e horário válidos.",true);return;}
+   const duration=Number(el("ticket-appointment-duration").value);
+   if(!local||!Number.isFinite(when.getTime())||when.getTime()<Date.now()-900000||
+      !Number.isInteger(duration)||duration<15||duration>480){
+     feedback("Informe um horário válido e duração entre 15 e 480 minutos.",true);return;
+   }
    button.disabled=true;feedback("");
    try{
-     await rpc("proxiti_schedule_appointment",{
+     await query(client.rpc("proxiti_schedule_appointment",{
        p_ticket:ticket.id,p_title:el("ticket-appointment-title").value.trim(),
-       p_starts_at:when.toISOString(),p_duration:Number(el("ticket-appointment-duration").value),
+       p_starts_at:when.toISOString(),p_duration:duration,
        p_modality:el("ticket-appointment-mode").value,
        p_private_details:el("ticket-appointment-details").value.trim()
-     });
-     if(selected?.id===ticket.id){
-       el("ticket-appointment-form").reset();feedback("Horário planejado. Confirme com o cliente.");
-       activity(ticket.id);await Promise.all([loadAppointments(ticket.id),loadAgenda()]);
+     }));
+     if(!still())return;
+     el("ticket-appointment-form").reset();
+     feedback("Horário planejado. Combine com o cliente e registre a confirmação.");
+     activity(ticket.id);await loadAppointments(ticket.id);
+     document.dispatchEvent(new Event("proxiti-agenda-refresh"));
+   }catch(error){
+     if(still()){
+       feedback("Não foi possível confirmar o agendamento. Verifique a Agenda antes de reenviar: "+
+         error.message,true);
+       await loadAppointments(ticket.id);
+       document.dispatchEvent(new Event("proxiti-agenda-refresh"));
      }
-   }catch(error){feedback(error.message,true);}finally{button.disabled=false;}
+   }finally{button.disabled=false;}
  });
  el("ticket-report-save").addEventListener("click",async event=>{
    if(!writable())return;
