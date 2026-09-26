@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="./assets/overview-comfort.css?v=20260925-3">
 <link rel="stylesheet" href="./assets/ticket-workflow.css?v=20260926-1">
 <link rel="stylesheet" href="./assets/operations-v8.css?v=20260926-4">
-<link rel="stylesheet" href="./assets/reskin-visual.css?v=20260926-2">
+<link rel="stylesheet" href="./assets/reskin-visual.css?v=20260926-3">
 <link rel="stylesheet" href="./assets/uniproxiti-dashboard.css?v=20260926-2">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js" defer></script>
 <script src="./assets/config.js" defer></script>
@@ -33,7 +33,7 @@
 <script src="./assets/agenda.js?v=20260926-1" defer></script>
 <script src="./assets/technical-tools-core.js?v=1" defer></script>
 <script src="./assets/technical-tools.js?v=1" defer></script>
-<script src="./assets/reskin-visual.js?v=20260926-1" defer></script>
+<script src="./assets/reskin-visual.js?v=20260926-3" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Ir para o conteúdo</a>
@@ -41,7 +41,7 @@
 <header class="header"><a href="https://proxiti.com.br/" class="logo"><span class="mark">P</span>PROXI<span class="blue">TI</span></a><div class="header-actions-compact"><span class="header-caption"><span class="dot"></span> Central Técnica <span class="faded">/ área privada</span></span><button type="button" id="theme-toggle-public" class="theme-switch px-button" aria-label="Ativar tema escuro" title="Alternar tema claro e escuro"><svg class="theme-icon-moon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 13A8.5 8.5 0 0 1 11 3.5 8.5 8.5 0 1 0 20.5 13Z"/></svg><svg class="theme-icon-sun" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg><span class="theme-switch-label">Tema claro</span></button></div></header>
 <main id="main">
 <section id="auth-screen" class="auth-layout" aria-labelledby="headline">
-<div class="intro px-stack"><p class="kicker">ÁREA RESTRITA · PROXITI</p><h1 id="headline">Central Técnica<span>.</span></h1><p>Acesso à operação e ao acompanhamento dos atendimentos.</p><figure class="login-art"><img src="./assets/support-desk.svg" width="840" height="550" alt="Interface ilustrada de fila de chamados e conversa técnica protegida." decoding="async"></figure></div>
+<div class="intro px-stack"><p class="kicker">ÁREA RESTRITA · PROXITI</p><h1 id="headline">Central Técnica<span>.</span></h1><p>Acesso à operação e ao acompanhamento dos atendimentos.</p><figure class="login-art"><img src="./assets/photos/technical-hero.webp" width="1536" height="1024" alt="Bancada técnica ilustrativa com notebook, roteador e ferramentas." decoding="async"></figure><div class="login-principles"><span>Atendimento</span><span>Organização</span><span>Capacitação</span></div></div>
 <div class="login-card px-panel"><div class="card-top"><span class="lock" aria-hidden="true">⌑</span><span>IDENTIFICAÇÃO SEGURA</span></div>
 <div id="setup" class="message warning" hidden role="status">A autenticação ainda não foi configurada. Consulte o README do repositório e configure o Supabase para ativar o login.</div>
 <form id="login-form" novalidate><h2>Acesso à conta</h2><p class="sub">Seu e-mail e senha de acesso.</p><label for="email">E-mail</label><input id="email" type="email" required autocomplete="username" maxlength="254" placeholder="seuemail@exemplo.com">
@@ -118,7 +118,9 @@
       <label id="assign-group" data-admin-only>Designar técnico <select id="ticket-assignee"></select></label>
       <button type="button" id="save-assignee" class="secondary" data-admin-only>Designar</button></div>
 
-      <section id="ticket-workflow" class="ticket-workflow" aria-labelledby="ticket-workflow-title" hidden>
+      <div class="ops-conversation" id="ticket-conversation"><div class="ticket-conversation-head"><h4>Conversa do atendimento</h4><button type="button" id="ticket-thread-retry" class="secondary">Atualizar conversa</button></div><p id="ticket-thread-status" class="ticket-sync-status" role="status" aria-live="polite">A conversa será carregada ao abrir o chamado.</p><div id="staff-messages" class="ops-messages" aria-live="off"></div><button type="button" id="ticket-thread-older" class="secondary ticket-thread-older" hidden>Carregar mensagens anteriores</button>
+      <form id="staff-reply-form"><label for="staff-reply">Responder ao cliente</label><textarea id="staff-reply" maxlength="2000" rows="3" required placeholder="Escreva sua mensagem para o cliente. Não solicite senhas."></textarea><button type="submit" class="primary">Enviar resposta ↗</button></form></div>
+<section id="ticket-workflow" class="ticket-workflow" aria-labelledby="ticket-workflow-title" hidden>
                 <p id="ticket-extras-feedback" class="ticket-workflow-feedback" role="status" aria-live="polite" hidden></p>
         <div class="ticket-workflow-head">
           <div><p class="kicker">FERRAMENTAS DE ATENDIMENTO</p><h4 id="ticket-workflow-title">Área técnica do chamado</h4><p>Registre o diagnóstico e preserve o contexto. Notas internas e arquivos não são enviados ao cliente.</p></div>
@@ -200,22 +202,21 @@
           <ol id="ticket-report-history" class="ticket-workflow-list"><li class="ticket-workflow-empty">Nenhuma versão salva.</li></ol>
         </details>
       </section>
-      <div class="ops-conversation" id="ticket-conversation"><div class="ticket-conversation-head"><h4>Conversa do atendimento</h4><button type="button" id="ticket-thread-retry" class="secondary">Atualizar conversa</button></div><p id="ticket-thread-status" class="ticket-sync-status" role="status" aria-live="polite">A conversa será carregada ao abrir o chamado.</p><div id="staff-messages" class="ops-messages" aria-live="off"></div><button type="button" id="ticket-thread-older" class="secondary ticket-thread-older" hidden>Carregar mensagens anteriores</button>
-      <form id="staff-reply-form"><label for="staff-reply">Responder ao cliente</label><textarea id="staff-reply" maxlength="2000" rows="3" required placeholder="Escreva sua mensagem para o cliente. Não solicite senhas."></textarea><button type="submit" class="primary">Enviar resposta ↗</button></form></div>
+      
       <details class="ticket-audit-panel"><summary>Histórico das movimentações</summary><ol id="ticket-audit-list" class="ticket-audit-list"><li>Carregando histórico…</li></ol></details>
     </article></div></div>
   </div>
   <div id="ops-staff" class="ops-view px-panel" hidden data-admin-only>
     <div class="ops-section-head"><h3>Técnicos e acessos</h3><button type="button" id="reload-staff" class="secondary">Atualizar ↻</button></div>
-    <p class="ops-muted">Convites e mudanças de permissões exigem verificação em duas etapas para administradores. Ative-a em <strong>Meu perfil</strong> antes de cadastrar a equipe.</p><form id="invite-form" class="ops-inline-form"><label for="invite-email">Convidar técnico por e-mail</label><input id="invite-email" type="email" autocomplete="off" maxlength="254" placeholder="tecnico@exemplo.com" required><button type="submit" class="primary">Enviar convite ↗</button></form>
+<div class="central-staff-layout"><section class="central-invite-panel" aria-label="Convites e orientações">    <p class="ops-muted">Convites e mudanças de permissões exigem verificação em duas etapas para administradores. Ative-a em <strong>Meu perfil</strong> antes de cadastrar a equipe.</p><form id="invite-form" class="ops-inline-form"><label for="invite-email">Convidar técnico por e-mail</label><input id="invite-email" type="email" autocomplete="off" maxlength="254" placeholder="tecnico@exemplo.com" required><button type="submit" class="primary">Enviar convite ↗</button></form>
     <p class="ops-muted">Novos convidados começam com acesso pendente. A liberação e as permissões são definidas individualmente pelo administrador.</p>
-    <div id="staff-list" class="ops-list"></div>
+    </section><section class="central-staff-accounts" aria-label="Contas cadastradas"><h4>Contas cadastradas</h4><div id="staff-list" class="ops-list"></div></section></div>
   </div>
   <div id="ops-content" class="ops-view px-panel" hidden data-admin-only>
     <div class="ops-section-head"><h3>Conteúdo do site</h3><button type="button" id="reload-content" class="secondary">Atualizar ↻</button></div>
     <p class="ops-muted">Edite os textos ligados ao site pelo identificador. A exclusão remove a personalização e restaura o texto estático do site. Arquivos-fonte, checkout e código continuam protegidos no GitHub.</p>
     <form id="content-form" class="ops-form"><label for="content-key">Identificador do bloco</label><input id="content-key" required pattern="[a-z0-9][a-z0-9._-]{2,100}" maxlength="100" placeholder="home.contact.intro"><label for="content-label">Nome interno</label><input id="content-label" required maxlength="160"><label for="content-value">Texto publicado</label><textarea id="content-value" maxlength="3000" rows="4" required></textarea><label class="ops-check"><input id="content-published" type="checkbox" checked> Publicar no site</label><div class="ops-controls"><button type="submit" class="primary">Salvar conteúdo</button><button type="button" id="content-delete" class="secondary">Excluir personalização</button></div></form>
-    <div id="content-list" class="ops-list"></div>
+    <section class="central-content-list"><h4>Blocos de conteúdo</h4><div id="content-list" class="ops-list"></div></section>
   </div>
   <div id="ops-agenda" class="ops-view px-panel" hidden>
     <div class="ops-section-head"><h3>Agenda de atendimentos</h3><button type="button" id="reload-agenda" class="secondary">Atualizar ↻</button></div>
@@ -227,29 +228,32 @@
     <button type="button" id="agenda-load-more" class="secondary" hidden>Carregar mais compromissos</button>
   </div>
   <div id="ops-training" class="ops-view px-panel" hidden>
-    <div class="uniproxiti-update-strip"><button type="button" id="reload-training" class="secondary">Atualizar ↻</button></div>
+    <div class="uniproxiti-update-strip"><button id="academy-learning-refresh" type="button" class="secondary">Atualizar progresso</button><button type="button" id="reload-training" class="secondary">Atualizar ↻</button></div>
     <p id="training-sync-state" class="academy-sync-state" role="status" aria-live="polite">Consultando a biblioteca autorizada…</p>
     
     <section id="academy-learning-root" class="academy-learning" aria-labelledby="academy-learning-heading">
       <div class="academy-learning-hero">
         <div class="academy-learning-hero-copy">
-          <p class="kicker">UNIPROXITI · CAPACITAÇÃO INTERNA</p>
-          <h4 id="academy-learning-heading">Seu aprendizado, com progresso verificável.</h4>
-          <p>Trilhas, avaliação corrigida pelo servidor e biblioteca técnica em um só lugar. Seus resultados aparecem conforme os registros da sua conta.</p>
-          <div id="academy-learning-status" class="academy-learning-status" role="status" aria-live="polite">Preparando seus cursos…</div>
-          <button id="academy-learning-refresh" type="button" class="secondary">Atualizar progresso</button>
+          <p class="kicker">CONHECIMENTO PARA A PRÁTICA</p>
+          <h4 id="academy-learning-heading">Uni<span class="hero-blue">Proxiti</span></h4>
+          <p>Programa interno de capacitação PROXITI</p>
+          <ul class="learning-principles" aria-label="Percurso de capacitação"><li><span aria-hidden="true">◇</span><div><strong>Aprenda</strong><small>com conteúdo prático</small></div></li><li><span aria-hidden="true">↗</span><div><strong>Evolua</strong><small>com avaliações reais</small></div></li><li><span aria-hidden="true">⚙</span><div><strong>Aplique</strong><small>no atendimento</small></div></li><li><span aria-hidden="true">☆</span><div><strong>Conquiste</strong><small>seu certificado interno</small></div></li></ul><div id="academy-learning-status" class="academy-learning-status" role="status" aria-live="polite">Preparando seus cursos…</div>
+          
         </div>
-        <img src="./assets/academy-visuals/operacao.svg?v=20260926-1" alt="Ilustração original: chamado, agenda e relatório como etapas do atendimento PROXITI." width="960" height="440" loading="lazy">
+        <picture class="learning-hero-photo"><source srcset="./assets/photos/technical-hero.webp" type="image/webp"><img src="./assets/academy-visuals/operacao.svg?v=20260926-1" alt="Bancada técnica ilustrativa com notebook e equipamentos de rede." width="960" height="440" loading="lazy"></picture>
       </div>
       <section id="uniproxiti-dashboard" class="uniproxiti-dashboard" aria-labelledby="uniproxiti-dashboard-heading" hidden>
-        <div class="uniproxiti-dashboard-heading"><div><p class="kicker">MEU PAINEL</p><h5 id="uniproxiti-dashboard-heading">Seu progresso de estudo</h5></div><button id="uniproxiti-continue" type="button" class="primary" disabled>Continuar estudo</button></div>
-        <div class="uniproxiti-stats" aria-label="Indicadores reais de capacitação">
+        <h5 id="uniproxiti-dashboard-heading" class="sr-only">Seu progresso de estudo</h5>
+        <div class="uniproxiti-indicator-row"><div class="uniproxiti-stats" aria-label="Indicadores reais de capacitação">
           <article class="uniproxiti-stat uniproxiti-stat-progress"><div class="uniproxiti-ring" id="uniproxiti-progress-ring" role="progressbar" aria-label="Aulas aprovadas em porcentagem" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><strong id="uniproxiti-progress-percent">—</strong></div><div><span>Progresso geral</span><small>Aulas aprovadas do currículo ativo</small></div></article>
           <article class="uniproxiti-stat"><span>Aulas aprovadas</span><strong id="uniproxiti-approved">—</strong><small id="uniproxiti-approved-note">Consultando as aulas autorizadas…</small></article>
           <article class="uniproxiti-stat"><span>Última nota</span><strong id="uniproxiti-last-score">—</strong><small id="uniproxiti-average-score">Média das aulas aprovadas indisponível</small></article>
           <article class="uniproxiti-stat"><span>Certificação interna</span><strong id="uniproxiti-cert-status">Em andamento</strong><small id="uniproxiti-cert-note">Verificando o certificado emitido pelo servidor…</small></article>
         </div>
-        <div class="uniproxiti-dashboard-columns">
+        <div class="uniproxiti-continue-card"><span aria-hidden="true" class="continue-play">▷</span><button id="uniproxiti-continue" type="button" class="primary" disabled>Continuar estudo</button><small>Retome a próxima aula disponível</small></div></div>
+<div class="uniproxiti-tracks-heading"><div><p class="kicker">PERCURSOS DISPONÍVEIS</p><h5>Trilhas de capacitação</h5></div><p>Os indicadores mostram aulas aprovadas e as exigências registradas no currículo.</p></div>
+<div id="academy-track-list" class="academy-track-list" aria-label="Trilhas e aulas disponíveis"></div>
+<div class="uniproxiti-dashboard-columns">
           <section class="uniproxiti-resume" aria-labelledby="uniproxiti-resume-heading"><p class="kicker">RETOME SEU PERCURSO</p><h5 id="uniproxiti-resume-heading">Continuar de onde parou</h5><strong id="uniproxiti-resume-title">Consultando seu histórico…</strong><p id="uniproxiti-resume-note">Os dados da aula são carregados da sua conta.</p><div class="uniproxiti-resume-track" id="uniproxiti-resume-track" hidden><span id="uniproxiti-resume-progress">—</span><div class="uniproxiti-resume-bar" role="progressbar" aria-label="Progresso da trilha" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="uniproxiti-resume-fill"></span></div></div><button id="uniproxiti-resume-action" type="button" class="secondary" disabled>Retomar aula</button><small class="uniproxiti-reading-note">O sistema registra tentativas e aprovações, não a porcentagem de leitura da aula.</small></section>
           <section class="uniproxiti-activity" aria-labelledby="uniproxiti-activity-heading"><p class="kicker">REGISTROS DA SUA CONTA</p><h5 id="uniproxiti-activity-heading">Minha atividade recente</h5><ol id="uniproxiti-activity-list" aria-live="polite"><li>Consultando as atividades registradas…</li></ol><p id="uniproxiti-activity-note" class="uniproxiti-note"></p></section>
         </div>
@@ -264,8 +268,8 @@
         <button id="academy-learning-open-exam" type="button" class="primary" disabled>Prova final · concluir 16 cursos</button>
       </div>
       <details class="uniproxiti-rules"><summary>Critérios de aprovação e certificação interna</summary><p class="academy-learning-policy">Para concluir cada aula: pelo menos 3 de 4 questões corretas (75%). Para o certificado interno: concluir as 16 aulas, obter no mínimo 75 na prova de 24 questões, média final ponderada mínima de 80 e acertar as quatro questões críticas de segurança e privacidade. Média final = 60% da média dos melhores questionários + 40% da prova final.</p></details>
-      <div class="uniproxiti-tracks-heading"><div><p class="kicker">PERCURSOS DISPONÍVEIS</p><h5>Trilhas de capacitação</h5></div><p>Os indicadores mostram aulas aprovadas e as exigências registradas no currículo.</p></div>
-      <div id="academy-track-list" class="academy-track-list" aria-label="Trilhas e aulas disponíveis"></div>
+      
+      
       <section id="academy-lesson-panel" class="academy-learning-detail" aria-labelledby="academy-lesson-heading" hidden>
         <button type="button" id="academy-lesson-back" class="secondary">← Voltar às trilhas</button>
         <div id="academy-lesson-content"></div>
@@ -297,7 +301,10 @@
       <label for="training-category-filter">Especialidade <select id="training-category-filter"><option value="">Todas as áreas</option><option>Atendimento</option><option>Computadores</option><option>Redes</option><option>Backup</option><option>Segurança</option><option>Infraestrutura</option><option>Geral</option></select></label>
       <label for="training-status-filter" data-admin-only>Publicação <select id="training-status-filter"><option value="all">Publicados e rascunhos</option><option value="published">Publicados</option><option value="draft">Rascunhos</option></select></label>
     </div>
-    <form id="training-form" class="ops-form academy-editor" data-admin-only>
+    
+    <div id="training-list" class="ops-list" aria-label="Materiais da UniProxiti"></div>
+<button type="button" id="training-load-more" class="secondary" hidden>Carregar mais materiais</button>
+<section class="central-editor-zone" data-admin-only aria-label="Editor administrativo de materiais"><h4>Gestão dos materiais</h4><p class="ops-muted">Publicação, revisão e histórico da biblioteca técnica.</p><form id="training-form" class="ops-form academy-editor" data-admin-only>
       <h4 id="training-editor-title">Publicar material técnico</h4>
       <p class="ops-muted">Salve um rascunho, revise o conteúdo e só então publique. Atualizações preservam a versão anterior para consulta administrativa.</p>
       <label for="training-kind">Formato</label><select id="training-kind"><option value="article">Artigo / procedimento interno</option><option value="file">PDF ou imagem em armazenamento privado</option></select>
@@ -312,9 +319,8 @@
       <p class="ops-muted">A confirmação é editorial. Consultar um procedimento não equivale a treinamento concluído nem a certificado.</p>
       <p id="training-editor-feedback" class="ticket-workflow-feedback" role="status" aria-live="polite" hidden></p>
       <div class="ops-controls"><button type="submit" class="primary" id="training-save">Salvar material</button><button type="button" class="secondary" id="training-cancel" hidden>Cancelar edição</button></div>
-    </form>
-    <div id="training-list" class="ops-list" aria-label="Materiais da UniProxiti"></div>
-    <button type="button" id="training-load-more" class="secondary" hidden>Carregar mais materiais</button>
+    </form></section>
+    
   </div>
   <div id="ops-tools" class="ops-view px-panel" hidden>
     <div class="ops-section-head"><h3>Ferramentas de trabalho</h3><button type="button" id="reload-tools" class="secondary">Atualizar ↻</button></div>

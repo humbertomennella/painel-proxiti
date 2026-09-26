@@ -1,0 +1,41 @@
+name: Central visual completo | Revisão
+on:
+  pull_request:
+    branches: [main, uniproxiti-dashboard]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  visual:
+    if: github.head_ref == 'central-visual-completo' || github.ref_name == 'central-visual-completo'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --no-package-lock playwright@1.55.0
+      - run: npx playwright install --with-deps chromium
+      - name: Integridade operacional e contratos
+        run: |
+          node tests/central-integrity.mjs
+          node tests/uniproxiti-integrity.mjs
+          node tests/central-visual-integrity.mjs
+      - name: Todas as suítes funcionais existentes e nova matriz visual
+        run: |
+          mkdir -p artifacts
+          result=0
+          for suite in browser-smoke overview-functional tickets-functional agenda-functional academy-functional academy-learning-functional central-visual; do
+            node "tests/$suite.mjs" > "artifacts/$suite.log" 2>&1 || result=1
+            cat "artifacts/$suite.log"
+          done
+          exit "$result"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: central-visual-completo-review
+          path: artifacts/
+          if-no-files-found: warn
