@@ -81,3 +81,70 @@ html[data-theme] body.workspace-mode .digital-toolkit button{min-height:45px}
  html[data-theme] body.workspace-mode .report-save-box button{width:100%}
 }
 @media(prefers-reduced-motion:reduce){.academy-article *,.agenda-list *,.digital-toolkit *{animation:none!important;transition:none!important}}
+
+/* Agenda: estados, confirmação humana e reagendamento explícito. */
+html[data-theme] body.workspace-mode #ops-agenda .ticket-sync-status{
+ display:flex;align-items:center;gap:10px;padding:11px 14px;margin:13px 0;
+ border:1px solid var(--px-line);border-radius:11px;
+ background:var(--px-bg-muted);color:var(--px-text);line-height:1.5;
+ overflow-wrap:anywhere
+}
+html[data-theme] body.workspace-mode #ops-agenda .ticket-sync-status:before{
+ content:"";flex:0 0 8px;width:8px;height:8px;border-radius:50%;background:var(--px-blue)
+}
+html[data-theme] body.workspace-mode #ops-agenda .ticket-sync-status[data-phase="ready"]:before{
+ background:#39946d
+}
+html[data-theme] body.workspace-mode #ops-agenda .ticket-sync-status[data-phase="error"]:before{
+ background:#bd7b35
+}
+html[data-theme] body.workspace-mode #ops-agenda .agenda-card-heading{
+ display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap
+}
+html[data-theme] body.workspace-mode #ops-agenda .agenda-actions{
+ display:flex;flex-wrap:wrap;gap:10px;align-items:end;
+ padding-top:10px;border-top:1px solid var(--px-line)
+}
+html[data-theme] body.workspace-mode #ops-agenda .agenda-actions button,
+html[data-theme] body.workspace-mode #ops-agenda #agenda-load-more{
+ min-height:44px;padding:10px 14px
+}
+html[data-theme] body.workspace-mode #ops-agenda .agenda-confirm{
+ display:grid;gap:7px;min-width:min(100%,210px);flex:1 1 210px
+}
+html[data-theme] body.workspace-mode #ops-agenda .agenda-confirm label{
+ color:var(--px-text);font-size:.88rem
+}
+html[data-theme] body.workspace-mode #ops-agenda .agenda-confirm select{
+ min-height:44px;width:100%;max-width:100%;border-radius:9px
+}
+html[data-theme] body.workspace-mode #ops-agenda .agenda-reschedule{
+ width:100%;border:1px solid var(--px-line);border-radius:10px;
+ padding:0 12px;background:var(--px-bg-muted)
+}
+html[data-theme] body.workspace-mode #ops-agenda .agenda-reschedule summary{
+ padding:12px 2px;cursor:pointer;font-weight:680
+}
+html[data-theme] body.workspace-mode #ops-agenda .agenda-reschedule form{
+ padding:12px 0 16px;display:grid;gap:9px;min-width:0
+}
+html[data-theme] body.workspace-mode #ops-agenda .agenda-reschedule input,
+html[data-theme] body.workspace-mode #ops-agenda .agenda-reschedule select,
+html[data-theme] body.workspace-mode #ops-agenda .agenda-reschedule textarea{
+ width:100%;min-width:0;max-width:100%;box-sizing:border-box
+}
+html[data-theme] body.workspace-mode #ops-agenda .agenda-entry-feedback{
+ width:100%;margin:0;color:var(--px-muted);overflow-wrap:anywhere
+}
+html[data-theme] body.workspace-mode #ops-agenda .agenda-entry button:focus-visible,
+html[data-theme] body.workspace-mode #ops-agenda .agenda-reschedule summary:focus-visible,
+html[data-theme] body.workspace-mode #ops-agenda #agenda-load-more:focus-visible{
+ outline:3px solid var(--px-orange);outline-offset:3px
+}
+@media(max-width:600px){
+ html[data-theme] body.workspace-mode #ops-agenda .agenda-entry{padding:14px;min-width:0}
+ html[data-theme] body.workspace-mode #ops-agenda .agenda-actions>button,
+ html[data-theme] body.workspace-mode #ops-agenda .agenda-confirm{width:100%}
+ html[data-theme] body.workspace-mode #ops-agenda .agenda-confirm button{width:100%}
+ html[data-theme] body.workspace-mode #ops-agenda #agenda-load-more{width:100%}
+}
