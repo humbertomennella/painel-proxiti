@@ -38,11 +38,13 @@ function setFocus(value,persist=false){
 function setSync(phase="loading",at=Date.now()){
  const status=el("overview-sync-state"),retry=el("overview-retry");
  if(!canTickets){
-   status.textContent="Os atendimentos não estão habilitados para sua conta.";
-   status.dataset.phase="restricted";retry.hidden=true;return;
+   if(status.textContent!=="Os atendimentos não estão habilitados para sua conta.")
+     status.textContent="Os atendimentos não estão habilitados para sua conta.";
+   status.dataset.phase="restricted";root.dataset.overviewSync="restricted";retry.hidden=true;return;
  }
  const valid=Number.isFinite(Number(at))&&Number(at)>0?Number(at):Date.now();
- status.dataset.phase=phase;retry.hidden=phase!=="error"&&phase!=="partial";
+ status.dataset.phase=phase;root.dataset.overviewSync=phase;
+ retry.hidden=phase!=="error"&&phase!=="partial";
  if(phase==="error"){
    status.textContent=hasData?"A atualização falhou. Os dados mostrados são da última consulta confirmada.":
      "Não foi possível carregar a fila. Use Atualizar agora para tentar novamente.";
@@ -59,7 +61,7 @@ function setSync(phase="loading",at=Date.now()){
      "Atualização parcial. Algumas informações não puderam ser verificadas.";
    el("overview-updated").textContent="Consulta parcial às "+clock(valid);
  }else if(phase==="ready"){
-   lastSuccess=valid;status.textContent="Dados conferidos às "+clock(valid)+".";
+   lastSuccess=valid;if(status.textContent!=="Dados conferidos.")status.textContent="Dados conferidos.";
    el("overview-updated").textContent="Atualizado às "+clock(valid);
  }else{
    status.textContent=hasData?"Conferindo atualizações. Os dados anteriores continuam visíveis.":
