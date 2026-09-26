@@ -87,6 +87,8 @@ for(const rule of ["create or replace function public.proxiti_ticket_access",
  "revoke all on public.ticket_attachments from public,anon,authenticated"]){
  assert(migration.includes(rule),"Permissão ou estrutura ausente: "+rule);
 }
+assert(get("assets/operations.js").includes("const nextGeneration=state.accessGeneration+1"),
+ "Reingresso não deve aceitar consultas da sessão anterior");
 assert(get("assets/operations.js").includes("state.tickets.filter(hasAttention)")&&
  get("assets/overview-model.js").includes('ticket.status!=="closed"'),
  "Fila e visão geral devem excluir históricos encerrados das pendências");
