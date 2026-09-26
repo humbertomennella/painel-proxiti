@@ -207,12 +207,14 @@
     }
     pending.sort((a,b)=>b.time-a.time);
     // Um chamado com novidade e mensagem continua sendo uma única pendência.
-    const count=pending.length;
+    const count=pending.length,partial=!overviewComplete();
     for(const id of ["notifications-count","ticket-badge"]){
-      const node=el(id);node.textContent=count>99?"99+":String(count);node.hidden=!count;
+      const node=el(id);node.textContent=partial?"?":count>99?"99+":String(count);
+      node.hidden=!partial&&!count;node.title=partial?"Contagem de pendências incompleta":"";
     }
     const area=el("notifications-list");area.replaceChildren();
-    if(!pending.length)area.append(elem("p",state.ticketsReady?
+    if(!pending.length)area.append(elem("p",partial?
+      "Conferência incompleta. Atualize a fila para verificar as pendências.":state.ticketsReady?
       "Nenhum chamado com novidade para revisar.":"Carregando notificações…","notifications-empty"));
     for(const item of pending.slice(0,12)){
       const entry=button(item.label,async()=>{
@@ -225,9 +227,8 @@
         elem("strong",item.label),elem("small",item.detail));
       area.append(entry);
     }
-    const partial=!overviewComplete();
     el("notifications-toggle").setAttribute("aria-label",partial?
-      "Atualização parcial: "+count+" chamados identificados com pendência":
+      "Contagem de pendências incompleta, abrir notificações":
       count?count+" chamados com pendência, abrir notificações":"Abrir notificações");
     if(state.ticketsReady)publishOverview();
   }
