@@ -269,7 +269,38 @@ try{
    assert.equal(await page.evaluate(()=>window.__fixture.calls.includes("storage.remove")),false);
   }finally{await page.close();}
  });
- console.log("PASS: 7 cenários de Chamados em Chromium sem escrever dados de produção.");
+ await test("Chamado aberto mantém legibilidade nos dois temas e cinco larguras",async()=>{
+  const page=await openScenario();
+  try{
+   await visit(page,102);
+   const artifacts=resolve(root,"artifacts");await mkdir(artifacts,{recursive:true});
+   for(const width of [320,375,430,768,1366]){
+    await page.setViewportSize({width,height:875});
+    for(const theme of ["light","dark"]){
+     await page.evaluate(theme=>document.documentElement.dataset.theme=theme,theme);
+     const value=await page.evaluate(()=>{
+       const detail=document.getElementById("ticket-detail").getBoundingClientRect();
+       const search=document.getElementById("ticket-search").getBoundingClientRect();
+       const reply=document.getElementById("staff-reply").getBoundingClientRect();
+       return {width:window.innerWidth,scroll:document.documentElement.scrollWidth,
+         detail:{left:detail.left,right:detail.right,width:detail.width},
+         search:{left:search.left,right:search.right},
+         reply:{left:reply.left,right:reply.right}};
+     });
+     assert(value.scroll<=width+2,width+"px/"+theme+": rolagem horizontal na área de Chamados");
+     for(const [name,rect]of Object.entries(value)){
+      if(!rect||typeof rect!=="object"||!("right" in rect))continue;
+      assert(rect.left>=-1&&rect.right<=width+1,width+"px/"+theme+": "+name+" sai da tela");
+     }
+     if([375,1366].includes(width))
+      await page.screenshot({path:resolve(artifacts,"chamados-"+width+"-"+theme+".png"),fullPage:true});
+    }
+    console.log("PASS: Chamados "+width+"px, temas claro/escuro, sem overflow");
+   }
+   assert.deepEqual(page.__errors,[]);
+  }finally{await page.close();}
+ });
+ console.log("PASS: 8 cenários de Chamados em Chromium, incluindo 10 medidas de layout.");
 }finally{
  await browser.close();
  await new Promise((resolve,reject)=>server.close(error=>error?reject(error):resolve()));
