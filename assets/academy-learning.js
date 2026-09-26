@@ -454,6 +454,9 @@ async function loadProgress(silent=true){
      error.message+". Tente atualizar a Academia.","error");
  }finally{if(valid(g,s))loading=false;}
 }
+el("academy-learning-refresh").addEventListener("click",()=>{
+ if(authorized(session()))void loadProgress(false);
+});
 el("academy-learning-show-tracks").addEventListener("click",()=>{
  if(!authorized(session()))return;
  show("tracks");el("academy-track-list").scrollIntoView({behavior:"smooth",block:"start"});
