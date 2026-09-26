@@ -110,7 +110,7 @@ for(const id of ["ops-agenda","reload-agenda","agenda-filter","agenda-list","age
 assert(html.includes('data-side-view="agenda"')&&html.includes('data-summary-view="agenda"'),
  "Agenda sem acesso na navegação");
 assert(html.includes('src="./assets/technical-tools-core.js?v=1"'),"Core das ferramentas não carregado");
-assert(html.includes('src="./assets/ticket-extras.js?v=1"'),"Integração de compromissos não carregada");
+assert(html.includes('src="./assets/ticket-extras.js?v=20260926-1"'),"Integração de compromissos não carregada");
 const cssV8=get("assets/operations-v8.css");
 assert.equal((cssV8.match(/{/g)||[]).length,(cssV8.match(/}/g)||[]).length,
  "CSS V8 desbalanceado");
