@@ -21,7 +21,8 @@ const query=async request=>{
  return data;
 };
 const shortDate=value=>{
- const d=new Date(value);return Number.isNaN(d.getTime())?"Sem revisão registrada":
+ const d=new Date(/^\\d{4}-\\d{2}-\\d{2}$/.test(String(value))?value+"T12:00:00":value);
+ return Number.isNaN(d.getTime())?"Sem revisão registrada":
    d.toLocaleDateString("pt-BR");
 };
 const https=value=>{
@@ -112,14 +113,7 @@ function printArticle(item){
  if(!popup){message("Permita a janela de impressão no navegador.",true);return;}
  popup.opener=null;
  const doc=popup.document;doc.title="PROXITI · "+item.title;
- const style=make("style","
- body{font:16px/1.64 system-ui,Arial,sans-serif;color:#15233b;max-width:800px;margin:32px auto;padding:0 22px}
- h1{font-size:28px;line-height:1.3}h5{font-size:21px;margin:24px 0 8px}
- h6{font-size:17px;margin:17px 0 7px}p{margin:7px 0;white-space:pre-wrap}
- small{color:#58667c}.academy-bullet{padding-left:18px}
- button{margin:20px 0;padding:12px;border-radius:8px}
- @media print{button{display:none}body{margin:0;max-width:none}}
- ".replace(/\n/g," "));doc.head.append(style);
+ const style=make("style","body{font:16px/1.64 system-ui,Arial,sans-serif;color:#15233b;max-width:800px;margin:32px auto;padding:0 22px}h1{font-size:28px;line-height:1.3}h5{font-size:21px;margin:24px 0 8px}h6{font-size:17px;margin:17px 0 7px}p{margin:7px 0;white-space:pre-wrap}small{color:#58667c}.academy-bullet{padding-left:18px}button{margin:20px 0;padding:12px;border-radius:8px}@media print{button{display:none}body{margin:0;max-width:none}}");doc.head.append(style);
  doc.body.append(make("h1",item.title),
    make("small","PROXITI · "+item.category+" · "+(item.reviewed_at?
      "revisado em "+shortDate(item.reviewed_at):"revisão pendente")));
