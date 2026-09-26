@@ -14,7 +14,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
     "quizWeight": 0.6,
     "examWeight": 0.4,
     "criticalRequired": true,
-    "certificateType": "Certificado de Conclusão Interna — Academia PROXITI"
+    "certificateType": "Certificado de Conclusão Interna — UniProxiti"
   },
   "tracks": [
     {
@@ -22,7 +22,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       "title": "Atendimento e conduta",
       "subtitle": "Escuta, diagnóstico autorizado e comunicação responsável.",
       "color": "#457eb6",
-      "image": "assets/academy-visuals/atendimento.svg",
+      "image": "assets/academy-visuals/atendimento.svg?v=20260926-1",
       "source": "Procedimentos internos PROXITI"
     },
     {
@@ -30,7 +30,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       "title": "Computadores e notebooks",
       "subtitle": "Triagem, manutenção preventiva e documentação.",
       "color": "#478e86",
-      "image": "assets/academy-visuals/computadores.svg",
+      "image": "assets/academy-visuals/computadores.svg?v=20260926-1",
       "source": "Microsoft Learn e procedimentos internos"
     },
     {
@@ -38,7 +38,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       "title": "Redes e Wi-Fi",
       "subtitle": "Conectividade, roteadores e isolamento de falhas.",
       "color": "#5575b9",
-      "image": "assets/academy-visuals/redes.svg",
+      "image": "assets/academy-visuals/redes.svg?v=20260926-1",
       "source": "Microsoft Learn e CISA"
     },
     {
@@ -46,7 +46,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       "title": "Segurança digital preventiva",
       "subtitle": "Identificação de golpes, contas e dispositivos protegidos.",
       "color": "#7a70b6",
-      "image": "assets/academy-visuals/seguranca.svg",
+      "image": "assets/academy-visuals/seguranca.svg?v=20260926-1",
       "source": "CISA"
     },
     {
@@ -54,7 +54,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       "title": "Backup e continuidade",
       "subtitle": "Cópias recuperáveis, restauração e proteção de dados.",
       "color": "#418d96",
-      "image": "assets/academy-visuals/backup.svg",
+      "image": "assets/academy-visuals/backup.svg?v=20260926-1",
       "source": "CISA e procedimentos internos"
     },
     {
@@ -62,7 +62,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       "title": "Infraestrutura e instalações",
       "subtitle": "Ambientes organizados, equipamento identificado e prevenção.",
       "color": "#98744e",
-      "image": "assets/academy-visuals/infraestrutura.svg",
+      "image": "assets/academy-visuals/infraestrutura.svg?v=20260926-1",
       "source": "Procedimentos internos PROXITI"
     },
     {
@@ -70,7 +70,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       "title": "Privacidade e autorização",
       "subtitle": "Minimização de dados, acesso autorizado e incidentes.",
       "color": "#5e85ad",
-      "image": "assets/academy-visuals/privacidade.svg",
+      "image": "assets/academy-visuals/privacidade.svg?v=20260926-1",
       "source": "ANPD"
     },
     {
@@ -78,7 +78,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       "title": "Operação residencial e empresarial",
       "subtitle": "Chamados, relatórios, continuidade e orientação final.",
       "color": "#647d97",
-      "image": "assets/academy-visuals/operacao.svg",
+      "image": "assets/academy-visuals/operacao.svg?v=20260926-1",
       "source": "Procedimentos internos PROXITI"
     }
   ],

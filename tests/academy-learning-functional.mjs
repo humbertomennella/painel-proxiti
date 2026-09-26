@@ -38,13 +38,13 @@ const messages=baseline.map((t,i)=>({
  id:"00000000-0000-4000-8000-00000000020"+(i+1),
  ticket_id:t.id,sender_kind:"customer",created_at:stamp,body:"Mensagem de teste"
 }));
-async function openScenario({materials=[],admin=false,failTraining=false,deferTraining=false,ambiguousSave=false,conflictSave=false,startView="training",progressFixture=[],failGrade=false}={}){
+async function openScenario({materials=[],admin=false,failTraining=false,deferTraining=false,ambiguousSave=false,conflictSave=false,startView="training",progressFixture=[],failGrade=false,quizAttemptsFixture=[],requiredOverrides={}}={}){
  const page=await browser.newPage({viewport:{width:375,height:850},deviceScaleFactor:1});
  page.__errors=[];
  page.on("pageerror",error=>page.__errors.push(error.message));
  await page.route("https://cdn.jsdelivr.net/**",route=>route.abort());
  await page.goto(url,{waitUntil:"load",timeout:30000});
- await page.evaluate(({materials,admin,failTraining,deferTraining,ambiguousSave,conflictSave,startView,progressFixture,failGrade})=>{
+ await page.evaluate(({materials,admin,failTraining,deferTraining,ambiguousSave,conflictSave,startView,progressFixture,failGrade,quizAttemptsFixture,requiredOverrides})=>{
    document.body.classList.add("workspace-mode");
    document.getElementById("auth-screen").hidden=true;
    document.getElementById("panel").hidden=false;
@@ -58,7 +58,11 @@ async function openScenario({materials=[],admin=false,failTraining=false,deferTr
      failTraining,deferTraining,ambiguousSave,conflictSave,
      read:[],staff_presence:[],notes:[],tasks:[],reports:[],attachments:[],devices:[],
      appointments:[],appointmentReschedules:[],audit:[],stored:new Map(),calls:[],
-     training:structuredClone(materials),versions:[],progress:structuredClone(progressFixture),certificates:[],failGrade
+     training:structuredClone(materials),versions:[],progress:structuredClone(progressFixture),certificates:[],failGrade,
+     quizAttempts:structuredClone(quizAttemptsFixture),academyCourses:window.PROXITI_ACADEMY_CURRICULUM.courses.map(course=>({
+       code:course.id,track_id:course.track,curriculum_version:"2026-09-v1",active:true,
+       required:Object.prototype.hasOwnProperty.call(requiredOverrides,course.id)?requiredOverrides[course.id]:true
+     }))
    };
    const tables={
      support_tickets:"tickets",support_messages:"messages",
@@ -67,7 +71,8 @@ async function openScenario({materials=[],admin=false,failTraining=false,deferTr
      ticket_attachments:"attachments",ticket_devices:"devices",ticket_appointments:"appointments",ticket_audit:"audit",
      ticket_appointment_reschedules:"appointmentReschedules",
      training_materials:"training",training_material_versions:"versions",profiles:"staff",
-     academy_course_progress:"progress",academy_certificates:"certificates"
+     academy_course_progress:"progress",academy_certificates:"certificates",
+     academy_courses:"academyCourses",academy_quiz_attempts:"quizAttempts"
    };
    const client={
      supabaseUrl:"https://example.supabase.co",
@@ -175,10 +180,13 @@ async function openScenario({materials=[],admin=false,failTraining=false,deferTr
          const score=correct*25,passed=score>=75;
          const old=fixture.progress.find(x=>x.course_id===args.p_course);
          if(old){old.best_score=Math.max(old.best_score,score);old.last_score=score;
-           old.attempts++;if(passed&&!old.completed_at)old.completed_at=new Date().toISOString();}
+           old.attempts++;old.updated_at=new Date().toISOString();
+           if(passed&&!old.completed_at)old.completed_at=new Date().toISOString();}
          else fixture.progress.push({course_id:args.p_course,curriculum_version:"2026-09-v1",
-           best_score:score,last_score:score,attempts:1,
+           best_score:score,last_score:score,attempts:1,updated_at:new Date().toISOString(),
            completed_at:passed?new Date().toISOString():null});
+         fixture.quizAttempts.push({course_id:args.p_course,score,passed,
+           curriculum_version:"2026-09-v1",created_at:new Date().toISOString()});
          return ok({score,passed,correct,total:4,review:Object.keys(args.p_answers).map(code=>({
            code,correct:args.p_answers[code]===0,correct_index:0,
            explanation:"O procedimento correto respeita autorização e evidências."
@@ -297,7 +305,7 @@ async function openScenario({materials=[],admin=false,failTraining=false,deferTr
    if(startView!=="tickets")sessionStorage.setItem("proxiti-work-v3-"+user.id+"-view",startView);
    window.PROXITI_ACTIVE_SESSION=session;
    document.dispatchEvent(new CustomEvent("proxiti-session-ready",{detail:session}));
- },{materials,admin,failTraining,deferTraining,ambiguousSave,conflictSave,startView,progressFixture,failGrade});
+ },{materials,admin,failTraining,deferTraining,ambiguousSave,conflictSave,startView,progressFixture,failGrade,quizAttemptsFixture,requiredOverrides});
  await page.waitForFunction(()=>["ready","partial","error","restricted"].includes(
    document.getElementById("overview-sync-state").dataset.phase),{timeout:12000});
  await page.evaluate(()=>window.PROXITI_OPEN_VIEW("training"));
@@ -309,7 +317,8 @@ function test(name,fn){return fn().then(()=>console.log("PASS: "+name));}
 const ids=["at-01","at-02","pc-01","pc-02","re-01","re-02","se-01","se-02",
  "bk-01","bk-02","in-01","in-02","pr-01","pr-02","op-01","op-02"];
 const complete=()=>ids.map(course_id=>({course_id,curriculum_version:"2026-09-v1",
- best_score:85,last_score:85,attempts:1,completed_at:new Date().toISOString()}));
+ best_score:85,last_score:85,attempts:1,completed_at:new Date().toISOString(),
+ updated_at:new Date().toISOString()}));
 async function first(page){
  await page.locator(".academy-track-card").first().evaluate(node=>node.open=true);
  await page.locator(".academy-course-card").first().click();
@@ -330,7 +339,86 @@ try{
      assert.deepEqual(page.__errors,[]);
    }finally{await page.close();}
  });
- await test("Quatro questões são corrigidas e aprovação 75 fica salva",async()=>{
+ await test("Dashboard não inventa dados para uma conta sem histórico",async()=>{
+   const page=await openScenario();
+   try{
+     await page.waitForFunction(()=>!document.getElementById("uniproxiti-dashboard").hidden);
+     assert.equal(await page.textContent("#uniproxiti-approved"),"0 de 16");
+     assert.equal(await page.textContent("#uniproxiti-progress-percent"),"0%");
+     assert.equal(await page.textContent("#uniproxiti-last-score"),"—");
+     assert.equal(await page.textContent("#uniproxiti-cert-status"),"Em andamento");
+     assert.equal(await page.locator("#uniproxiti-certificate-card").isVisible(),false);
+     assert.equal(await page.locator(".uniproxiti-track-category").first().textContent(),"Obrigatória");
+     assert((await page.textContent("#uniproxiti-activity-list")).includes("Nenhuma atividade registrada"));
+     await page.click("#uniproxiti-continue");
+     await page.waitForFunction(()=>document.querySelectorAll("#academy-quiz-form fieldset").length===4);
+     assert.deepEqual(page.__errors,[]);
+   }finally{await page.close();}
+ });
+ await test("Dashboard deriva nota, feed, progresso e classificação de dados do servidor",async()=>{
+   const older="2026-09-20T12:00:00.000Z",newer="2026-09-22T15:00:00.000Z";
+   const page=await openScenario({
+     progressFixture:[
+       {course_id:"at-01",curriculum_version:"2026-09-v1",best_score:75,
+        last_score:75,attempts:1,completed_at:older,updated_at:older},
+       {course_id:"pc-01",curriculum_version:"2026-09-v1",best_score:50,
+        last_score:50,attempts:1,completed_at:null,updated_at:newer}],
+     quizAttemptsFixture:[
+       {course_id:"at-01",curriculum_version:"2026-09-v1",score:75,passed:true,created_at:older},
+       {course_id:"pc-01",curriculum_version:"2026-09-v1",score:50,passed:false,created_at:newer}],
+     requiredOverrides:{"pc-01":false,"pc-02":false}
+   });
+   try{
+     await page.waitForFunction(()=>document.getElementById("uniproxiti-approved").textContent==="1 de 16");
+     assert.equal(await page.textContent("#uniproxiti-progress-percent"),"6%");
+     assert((await page.textContent("#uniproxiti-last-score")).includes("50,00"));
+     assert((await page.textContent("#uniproxiti-average-score")).includes("75,00"));
+     assert((await page.textContent("#uniproxiti-resume-title")).includes("Diagnóstico de lentidão"));
+     assert((await page.textContent("#uniproxiti-resume-progress")).includes("trilha: 0 de 2 aulas (0%)"));
+     assert((await page.textContent("#uniproxiti-activity-list")).includes("Quiz realizado"));
+     assert((await page.textContent("#uniproxiti-activity-list")).includes("Aula concluída"));
+     assert.equal(await page.locator(".uniproxiti-track-category").nth(1).textContent(),"Recomendada");
+     const requests=await page.evaluate(()=>window.__fixture.calls.filter(name=>
+       ["academy_courses","academy_course_progress","academy_certificates","academy_quiz_attempts"].includes(name)));
+     assert(requests.includes("academy_quiz_attempts")&&requests.includes("academy_courses"));
+     await mkdir(resolve(root,"artifacts"),{recursive:true});
+     for(const width of [320,375,1366]){
+       await page.setViewportSize({width,height:850});
+       for(const theme of ["light","dark"]){
+         await page.evaluate(value=>document.documentElement.dataset.theme=value,theme);
+         const audit=await page.evaluate(()=>{
+           const rgb=value=>String(value).match(/[0-9.]+/g).slice(0,3).map(Number);
+           const lum=value=>{
+             const [r,g,b]=rgb(value).map(v=>{
+               const x=v/255;return x<=.04045?x/12.92:((x+.055)/1.055)**2.4;
+             });
+             return .2126*r+.7152*g+.0722*b;
+           };
+           const ratio=(a,b)=>{const x=lum(a),y=lum(b);
+             return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);};
+           const stat=document.querySelector(".uniproxiti-stat");
+           const muted=stat.querySelector("small");
+           const chip=document.querySelector("#overview-home .overview-quick span");
+           return {
+             scroll:document.documentElement.scrollWidth,
+             statContrast:ratio(getComputedStyle(muted).color,getComputedStyle(stat).backgroundColor),
+             chipContrast:ratio(getComputedStyle(chip).color,getComputedStyle(chip).backgroundColor)
+           };
+         });
+         assert(audit.scroll<=width+2,"Dashboard com rolagem horizontal: "+width+"/"+theme+" "+JSON.stringify(audit));
+         assert(audit.statContrast>=4.5&&audit.chipContrast>=4.5,
+           "Contraste AA insuficiente: "+width+"/"+theme+" "+JSON.stringify(audit));
+         if([375,1366].includes(width))
+           await page.screenshot({path:resolve(root,"artifacts","uniproxiti-dashboard-"+width+"-"+theme+".png"),fullPage:true});
+       }
+     }
+     await page.click("#uniproxiti-resume-action");
+     await page.waitForFunction(()=>document.getElementById("academy-lesson-content").textContent
+       .includes("Computadores e notebooks"));
+     assert.deepEqual(page.__errors,[]);
+   }finally{await page.close();}
+ });
+  await test("Quatro questões são corrigidas e aprovação 75 fica salva",async()=>{
    const page=await openScenario();
    try{
      await first(page);await select(page,"#academy-quiz-form",4,[4]);
@@ -376,6 +464,9 @@ try{
      await page.locator("#academy-exam-form button[type=submit]").click();
      await page.waitForFunction(()=>window.__fixture.certificates.length===1);
      assert((await page.textContent("#academy-exam-result")).includes("91,00"));
+     await page.click("#academy-learning-show-tracks");
+     assert.equal(await page.locator("#uniproxiti-certificate-card").isVisible(),true);
+     assert.equal(await page.textContent("#uniproxiti-cert-status"),"Disponível");
      await page.click("#academy-learning-show-certificate");
      const [popup]=await Promise.all([page.waitForEvent("popup"),
        page.click("#academy-certificate-print")]);
@@ -417,7 +508,7 @@ try{
      assert.deepEqual(page.__errors,[]);
    }finally{await page.close();}
  });
- console.log("PASS: sete fluxos de capacitação, prova e certificado com contas simuladas.");
+ console.log("PASS: nove fluxos de capacitação, dashboard real, prova e certificado com contas simuladas.");
 }finally{
  await browser.close();
  await new Promise((resolve,reject)=>server.close(error=>error?reject(error):resolve()));

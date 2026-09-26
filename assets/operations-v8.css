@@ -163,7 +163,7 @@ html[data-theme] body.workspace-mode #ops-agenda .agenda-history ol{
 }
 html[data-theme] body.workspace-mode #ops-agenda .agenda-history li{padding:9px 0}
 
-/* Academia: biblioteca editorial compacta, estados explícitos e histórico privado. */
+/* UniProxiti: biblioteca editorial compacta, estados explícitos e histórico privado. */
 html[data-theme] body.workspace-mode #ops-training .academy-filters{
  grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:12px
 }
@@ -232,7 +232,7 @@ html[data-theme] body.workspace-mode #ops-training #training-load-more{margin:15
  html[data-theme] body.workspace-mode #ops-training .academy-version{padding:10px}
 }
 
-/* Academia: corrigir intrinsic sizing no menor viewport, inclusive biblioteca antiga. */
+/* UniProxiti: corrigir intrinsic sizing no menor viewport, inclusive biblioteca antiga. */
 html[data-theme] body.workspace-mode #ops-training,
 html[data-theme] body.workspace-mode #ops-training .academy-entry,
 html[data-theme] body.workspace-mode #ops-training #training-list{

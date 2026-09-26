@@ -433,7 +433,7 @@ try{
        "Marcar consulta não solicita emissão de certificado");
    }finally{await page.close();}
  });
- await test("Academia preenchida é legível nos dois temas e cinco larguras",async()=>{
+ await test("UniProxiti preenchida é legível nos dois temas e cinco larguras",async()=>{
    const page=await openScenario({materials:[makeMaterial(1)],admin:true});
    try{
      await academy(page);
@@ -475,12 +475,12 @@ try{
            path:resolve(folder,"academia-"+width+"-"+theme+".png"),fullPage:true
          });
        }
-       console.log("PASS: Academia "+width+"px nos temas claro e escuro");
+       console.log("PASS: UniProxiti "+width+"px nos temas claro e escuro");
      }
      assert.deepEqual(page.__errors,[]);
    }finally{await page.close();}
  });
- console.log("PASS: 11 cenários de Academia em Chromium, sem alterar materiais reais.");
+ console.log("PASS: 11 cenários de UniProxiti em Chromium, sem alterar materiais reais.");
 }finally{
  await browser.close();
  await new Promise((resolve,reject)=>server.close(error=>error?reject(error):resolve()));
