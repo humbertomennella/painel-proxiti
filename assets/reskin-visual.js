@@ -33,7 +33,7 @@
  function onlineCopy(){
    if(!online||!document.body.classList.contains("workspace-mode"))return;
    const value=online.textContent.trim();
-   const match=/^(\\d+) profissionais? online$/.exec(value);
+   const match=/^([0-9]+) (?:profissional|profissionais) online$/.exec(value);
    if(!match)return;
    const n=Number(match[1]);
    online.textContent=n+(n===1?" conta online agora":" contas online agora");
