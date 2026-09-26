@@ -5,8 +5,13 @@
  const session=()=>window.PROXITI_ACTIVE_SESSION;
  const db=()=>session()?.client;
  const admin=()=>session()?.profile?.role==="administrator"&&session()?.profile?.status==="active";
- const writable=()=>!!selected&&selected.status!=="closed"&&!!session()?.user&&
+ const canView=()=>!!selected&&!!session()?.user&&session()?.profile?.status==="active"&&
+   (admin()||(session()?.profile?.permissions?.tickets_view===true&&
+     (selected.assigned_to===session().user.id||selected.assigned_to===null)));
+ const writable=()=>canView()&&selected.status!=="closed"&&
    (admin()||selected.assigned_to===session().user.id);
+ const same=(rev,ticketId,client,uid)=>rev===revision&&selected?.id===ticketId&&
+   db()===client&&session()?.user?.id===uid&&canView();
  const date=value=>new Date(value).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"});
  const make=(tag,content="",cls="")=>{
    const node=document.createElement(tag);node.textContent=String(content);
@@ -26,12 +31,13 @@
  };
  const activity=id=>document.dispatchEvent(new CustomEvent("proxiti-ticket-activity",{detail:{id}}));
  async function loadDevice(ticketId){
-   const rev=revision;
+   const rev=revision,client=db(),uid=session()?.user?.id;
+   if(!canView()||!client)return;
    try{
-     const data=await query(db().from("ticket_devices")
+     const data=await query(client.from("ticket_devices")
        .select("category,brand,model,operating_system,asset_reference,observations,updated_at")
        .eq("ticket_id",ticketId).maybeSingle());
-     if(rev!==revision||selected?.id!==ticketId)return;
+     if(!same(rev,ticketId,client,uid))return;
      if(data){
        for(const [field,key] of [["category","category"],["brand","brand"],["model","model"],
          ["os","operating_system"],["ref","asset_reference"],["observations","observations"]])
@@ -39,7 +45,7 @@
        el("ticket-device-summary").textContent="Última atualização: "+date(data.updated_at)+
          " · "+[data.brand,data.model].filter(Boolean).join(" ")+" · "+data.category;
      }else el("ticket-device-summary").textContent="Nenhum equipamento identificado neste chamado.";
-   }catch(error){if(rev===revision)feedback("Equipamento: "+error.message,true);}
+   }catch(error){if(same(rev,ticketId,client,uid))feedback("Equipamento: "+error.message,true);}
  }
  const statuses={planned:"Planejado",confirmed:"Confirmado",done:"Concluído",cancelled:"Cancelado"};
  const modalities={remote:"Remoto",on_site:"Presencial",phone:"Ligação"};
@@ -74,24 +80,26 @@
    return li;
  }
  async function loadAppointments(ticketId){
-   const rev=revision;
+   const rev=revision,client=db(),uid=session()?.user?.id;
+   if(!canView()||!client)return;
    try{
-     const rows=await query(db().from("ticket_appointments")
+     const rows=await query(client.from("ticket_appointments")
        .select("id,ticket_id,title,starts_at,duration_minutes,modality,status,private_details")
        .eq("ticket_id",ticketId).order("starts_at",{ascending:false}).limit(100));
-     if(rev!==revision||selected?.id!==ticketId)return;
+     if(!same(rev,ticketId,client,uid))return;
      const list=el("ticket-appointments-list");list.replaceChildren();
      if(!rows.length){empty("ticket-appointments-list","Nenhum compromisso registrado.");return;}
      for(const row of rows)list.append(itemDetail(row,ticketId));
-   }catch(error){if(rev===revision)feedback("Agenda: "+error.message,true);}
+   }catch(error){if(same(rev,ticketId,client,uid))feedback("Agenda: "+error.message,true);}
  }
  async function loadReports(ticketId){
-   const rev=revision;
+   const rev=revision,client=db(),uid=session()?.user?.id;
+   if(!canView()||!client)return;
    try{
-     const rows=await query(db().from("ticket_reports")
+     const rows=await query(client.from("ticket_reports")
        .select("id,ticket_id,version,author_id,diagnosis,work_performed,recommendations,finalized,created_at")
        .eq("ticket_id",ticketId).order("version",{ascending:false}).limit(40));
-     if(rev!==revision||selected?.id!==ticketId)return;
+     if(!same(rev,ticketId,client,uid))return;
      const list=el("ticket-report-history");list.replaceChildren();
      if(!rows.length){empty("ticket-report-history","Nenhuma versão salva.");return;}
      for(const row of rows){
@@ -115,7 +123,7 @@
        });
        item.append(button);list.append(item);
      }
-   }catch(error){if(rev===revision)feedback("Relatórios: "+error.message,true);}
+   }catch(error){if(same(rev,ticketId,client,uid))feedback("Relatórios: "+error.message,true);}
  }
  function choose(ticket){
    const changed=selected?.id!==ticket?.id;revision++;selected=ticket||null;
@@ -123,7 +131,7 @@
    el("ticket-appointment-form").hidden=!writable()||selected?.status==="resolved";
    el("ticket-report-save-box").hidden=!writable();
    feedback("");
-   if(!selected){
+   if(!selected||!canView()){
      el("ticket-device-form").reset();el("ticket-appointment-form").reset();
      empty("ticket-appointments-list","Selecione um chamado.");
      empty("ticket-report-history","Selecione um chamado.");
