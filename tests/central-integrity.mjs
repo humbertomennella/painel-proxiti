@@ -178,5 +178,11 @@ assert.equal(model.summarize(tickets,{...options,canReadMessages:false}).unread,
  "Sem permissão para chat, só novos chamados devem contar");
 assert.equal(model.attention(tickets[2],()=>false,()=>4,true,true),false,
  "Encerrados nunca são pendências acionáveis");
+assert(existsSync(new URL("../docs/visao-geral-homologacao.md",import.meta.url)),
+ "Documentação de homologação da Visão Geral ausente");
+assert(get("README.md").includes("docs/visao-geral-homologacao.md"),
+ "Roteiro de homologação não está disponível no README");
+assert(get("assets/operations.js").includes('node.textContent=partial?"?"'),
+ "Badge não distingue atualização parcial");
 console.log("Visão geral: contagens, acesso, estado parcial e retomada testados.");
 
