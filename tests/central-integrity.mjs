@@ -64,8 +64,8 @@ for(const id of ["ticket-workflow","ticket-note-form","ticket-note-body","ticket
  "ticket-file-input","ticket-files-list","ticket-report-form"]){
  assert(html.includes('id="'+id+'"'),"Fluxo técnico sem #"+id);
 }
-assert(html.includes('src="./assets/ticket-workflow.js?v=1"'),"Script técnico não carregado");
-assert(html.includes('href="./assets/ticket-workflow.css?v=1"'),"Estilos técnicos não carregados");
+assert(html.includes('src="./assets/ticket-workflow.js?v=20260926-1"'),"Script técnico não carregado");
+assert(html.includes('href="./assets/ticket-workflow.css?v=20260926-1"'),"Estilos técnicos não carregados");
 const techCss=get("assets/ticket-workflow.css");
 assert.equal((techCss.match(/{/g)||[]).length,(techCss.match(/}/g)||[]).length,"CSS técnico incompleto");
 const techJs=get("assets/ticket-workflow.js");
@@ -188,3 +188,28 @@ assert(get("assets/operations.js").includes('node.textContent=partial?"?"'),
  "Badge não distingue atualização parcial");
 console.log("Visão geral: contagens, acesso, estado parcial e retomada testados.");
 
+
+for(const id of ["ticket-sync-status","ticket-thread-status","ticket-thread-retry","ticket-status-help"]){
+ assert(html.includes('id="'+id+'"'),"Chamados sem estado acessível #"+id);
+}
+const ticketSafety=get("supabase/ticket_safety_v9.sql");
+assert(ticketSafety.includes("status=case when status='new' then 'triage' else status end"),
+ "Assunção altera indevidamente o estado em andamento");
+assert(ticketSafety.includes("if previous_status='closed' then")&&ticketSafety.includes("for update"),
+ "Histórico encerrado pode ser reaberto ou alterado durante concorrência");
+assert(ticketSafety.includes("revoke all on function public.proxiti_claim_ticket(uuid) from public,anon"),
+ "Assumir chamado exposto ao público");
+assert(ticketSafety.includes("revoke all on function public.proxiti_change_ticket_status(uuid,text) from public,anon"),
+ "Mudança de situação exposta ao público");
+assert(get("assets/operations.js").includes('order("created_at",{ascending:false}).limit(151)'),
+ "Chat não carrega as mensagens mais recentes");
+assert(get("assets/operations.js").includes('threadSync("read-error")'),
+ "Falha na confirmação de leitura não é comunicada");
+assert(techJs.includes("verification=await query(db.from(\"ticket_attachments\")"),
+ "Falha de upload pode apagar arquivo já registrado");
+assert(techJs.includes("noteDrafts.clear()"),"Notas em rascunho sobrevivem ao logout");
+assert(get("assets/ticket-extras.js").includes("const same=(rev,ticketId,client,uid)"),
+ "Extras do chamado sem proteção contra leitura tardia");
+assert(existsSync(new URL("../tests/tickets-functional.mjs",import.meta.url)),
+ "Testes funcionais de chamados não existem");
+console.log("Chamados: segurança, histórico, conversa e integridade técnica verificados.");
