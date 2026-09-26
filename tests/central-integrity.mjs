@@ -238,6 +238,15 @@ assert(agendaJs.includes(".range(offset,offset+PAGE_SIZE)"),
  "Agenda não possui paginação de histórico");
 assert(agendaJs.includes("session()?.client===active.client"),
  "Agenda pode exibir resposta atrasada de outra sessão");
+assert(agendaSql.includes("create table if not exists public.ticket_appointment_reschedules")&&
+ agendaSql.includes("using(public.proxiti_ticket_access(ticket_id,false))")&&
+ agendaSql.includes("btrim(p_reason)"),
+ "Reagendamento não preserva motivo com acesso restrito");
+assert(agendaJs.includes('from("ticket_appointment_reschedules")'),
+ "Histórico privado de reagendamento não está acessível ao técnico autorizado");
+assert(get("README.md").includes("docs/agenda-homologacao.md")&&
+ existsSync(new URL("../docs/agenda-homologacao.md",import.meta.url)),
+ "Roteiro operacional de Agenda não está publicado");
 assert(existsSync(new URL("../tests/agenda-functional.mjs",import.meta.url)),
  "Testes funcionais da Agenda não foram adicionados");
 console.log("Agenda: migração, permissões, paginação e testes funcionais verificados.");
