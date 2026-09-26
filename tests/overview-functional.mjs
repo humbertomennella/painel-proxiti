@@ -152,6 +152,19 @@ try{
      }));
      assert(over.resume.includes("#102"));assert(over.scroll<=over.viewport+2);
      assert.equal(over.stored,"true");
+     await page.evaluate(()=>{
+       window.PROXITI_ACTIVE_SESSION=null;
+       document.dispatchEvent(new Event("proxiti-session-ended"));
+     });
+     const wiped=await page.evaluate(()=>({
+       subject:document.getElementById("ticket-subject").textContent,
+       customer:document.getElementById("ticket-customer").textContent,
+       resume:document.getElementById("overview-resume-detail").textContent,
+       snapshot:window.PROXITI_OVERVIEW_SNAPSHOT
+     }));
+     assert.equal(wiped.subject,"");assert.equal(wiped.customer,"");
+     assert(!wiped.resume.includes("Verificação de rede"));
+     assert.equal(wiped.snapshot,null);
    }finally{await page.close();}
  });
  await test("Falha da fila exibida e recuperada pelo botão",async()=>{
