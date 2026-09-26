@@ -389,6 +389,11 @@ try{
  await page.screenshot({path:resolve(shots,"drawer-375.png"),fullPage:false});
  console.log("PAGE ERRORS",page.__errors);
  await page.waitForFunction(()=>document.activeElement.closest("#app-sidebar"));
+ await page.locator(".sidebar-brand").focus();
+ await page.keyboard.press("Shift+Tab");
+ assert(await page.locator(".side-home").evaluate(n=>n===document.activeElement),"drawer reverse focus wrap");
+ await page.keyboard.press("Tab");
+ assert(await page.locator(".sidebar-brand").evaluate(n=>n===document.activeElement),"drawer forward focus wrap");
  await page.keyboard.press("Escape");
  await page.waitForFunction(()=>document.activeElement.id==="mobile-nav-toggle"&&!document.getElementById("panel-main").inert);
  await page.click("#mobile-nav-toggle");

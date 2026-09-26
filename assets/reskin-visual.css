@@ -248,7 +248,7 @@ html[data-theme] .auth-layout .login-card input{background:var(--px-surface-soft
  html[data-theme] body.workspace-mode .panel.mobile-side-open .reskin-help-copy{display:grid}
  html[data-theme] body.workspace-mode .panel.mobile-side-open .sidebar-top{flex-direction:row;padding:0 6px 25px}
  html[data-theme] body.workspace-mode .panel.mobile-side-open .sidebar-brand .mark{display:none}
- html[data-theme] body.workspace-mode .panel.mobile-side-open :is(.side-link,.side-home,.reskin-help){justify-content:flex-start;padding:10px 12px}
+ html[data-theme] body.workspace-mode .panel.mobile-side-open :is(.sidebar-nav .side-link,.side-home,.reskin-help){justify-content:flex-start;padding:10px 12px}
  html[data-theme] body.workspace-mode .panel-main{padding:0 14px 28px}
  html[data-theme] body.workspace-mode .panel-head{display:grid;grid-template-columns:1fr;gap:8px;padding:10px 14px;margin:0 -14px 16px}
  html[data-theme] body.workspace-mode .panel-head .kicker{display:none}

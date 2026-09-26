@@ -50,3 +50,37 @@ Testes funcionais usam sessões e respostas simuladas, executando os scripts rea
 Axe verifica contraste renderizado onde pode determinar o fundo. Gradientes e fotografias podem retornar verificação incompleta; esses trechos exigem inspeção visual e cálculo conservador das cores, não devem ser apresentados como aprovação automática integral de WCAG.
 
 Permanecem pendentes: login e recuperação com e-mail real, MFA/TOTP real, convite real, upload/storage real, conversa em tempo real entre dois navegadores autenticados, publicação real do CMS e emissão de certificado no banco real. Não foram acionadas operações reais para produzir capturas.
+
+## Resultados automatizados
+
+Execução aprovada: https://github.com/humbertomennella/painel-proxiti/actions/runs/36269094001. A aba Checks do PR registra a execução de cada commit posterior.
+
+| Verificação | Resultado | Escopo |
+|---|---|---|
+| Três suítes de integridade | Aprovado | 323 IDs; campos e seletores; scripts operacionais e árvore Supabase byte a byte contra o PR #9 |
+| Smoke responsivo existente | Aprovado | Cinco larguras, dois temas, controles alcançáveis |
+| Visão geral | Aprovado | 11 cenários: permissões, falhas, vazio, dados, retomada e layout |
+| Chamados | Aprovado | 10 cenários: rascunhos, leitura, paginação, concorrência, notas, anexos e encerramento |
+| Agenda | Aprovado | 11 cenários: confirmação, reagendamento, auditoria, filtros e acesso |
+| Biblioteca UniProxiti | Aprovado | 11 cenários: revisão, versões, concorrência, pesquisa, falhas e arquivos |
+| Capacitação | Aprovado | Nove fluxos: aulas, avaliações, progresso, reprovação e certificado |
+| Nova matriz de telas internas | Aprovado | Oito áreas × 1920/1366/768/375/320 px × dois temas: 80 verificações sem overflow |
+| Login | Aprovado | Cinco larguras × dois temas; estados de recuperação, redefinição e MFA renderizados |
+| CMS, perfil e ferramentas | Aprovado | Texto literal, edição/salvamento/exclusão simulados; nome; CIDR /31; SHA-256 conhecido |
+| Menu móvel | Aprovado | Entrada de foco, Escape, retorno de foco e backdrop |
+| Contraste automático | Aprovado no escopo determinável | Axe color-contrast, oito áreas e login, dois temas; limitações de fundos complexos descritas acima |
+| Cores principais | Aprovado | Cálculo conservador de sete pares: de 5,01:1 a 13,41:1 |
+| Erros JavaScript na nova matriz autenticada | Nenhum | Sessão simulada, HTML e scripts reais |
+
+## Checklist de homologação real
+
+- [x] Reorganização integrada ao HTML real, com evidências de navegador.
+- [x] Componentes funcionais preservados nos testes e contratos.
+- [x] Estados sem dados, falhas e dados variados testados por fixtures.
+- [x] Inspeção visual de composição, hierarquia, imagens, cards e temas.
+- [ ] Login, recuperação de e-mail e MFA/TOTP com conta real.
+- [ ] Convite e alteração de permissões com administrador real.
+- [ ] Uploads, anexos e storage reais.
+- [ ] Mensagens em tempo real entre dois navegadores autenticados.
+- [ ] Publicação real do CMS e certificado efetivamente persistido.
+- [ ] Aprovação do responsável antes de qualquer merge ou publicação.
