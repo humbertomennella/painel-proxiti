@@ -199,10 +199,8 @@ function start(session){
  userId=session.user.id;
  const p=session.profile||{};
  syncAccess({tickets:p.status==="active"&&(p.role==="administrator"||p.permissions?.tickets_view===true)});
- let focused=false;try{focused=sessionStorage.getItem(focusKey(userId))==="true";}catch{}
- setFocus(focused);
- let enlarged=false;try{enlarged=localStorage.getItem(readingKey(userId))==="true";}catch{}
- setReading(enlarged);setGuide(false);
+  // Sem controles visíveis, preferências antigas não devem ocultar seções.
+  setFocus(false);setReading(false);setGuide(false);
  const snapshot=window.PROXITI_OVERVIEW_SNAPSHOT;
  if(canTickets&&snapshot?.userId===userId){
    render(snapshot.detail);
