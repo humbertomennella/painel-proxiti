@@ -81,7 +81,7 @@ try{
    const selector=view==="training"?"#ops-training .academy-learning-hero":
     view==="profile"?"#profile-section>.central-page-hero":"#ops-"+view+">.central-page-hero";
    const geometry=await page.locator(selector).boundingBox();
-   assert(geometry&&Math.abs(geometry.x-main.x)<=2&&geometry.height>=240,
+   assert(geometry&&Math.abs(geometry.x-main.x)<=2&&(view==="tickets"?geometry.height>=100&&geometry.height<=220:geometry.height>=240),
     width+"px / "+view+": banner sem encaixe full-bleed: "+JSON.stringify(geometry));
    assert(geometry.x+geometry.width<=width+2,width+"px / "+view+": banner excede viewport");
    if(view!=="training"){

@@ -1,8 +1,8 @@
 /* Scoped operational layout; data-tool-active is independent of authorization. */
-html[data-theme] body.workspace-mode #ops-tickets .central-page-hero{min-height:110px;height:auto;margin-bottom:0}
-html[data-theme] body.workspace-mode #ops-tickets .central-page-hero-copy{padding:18px 24px}
+html[data-theme] body.workspace-mode #ops-tickets .central-page-hero{min-height:110px;height:auto;margin-bottom:0;padding:12px 22px}
+html[data-theme] body.workspace-mode #ops-tickets .central-page-hero-copy{padding:0}
 html[data-theme] body.workspace-mode #ops-tickets .central-page-hero h2{font-size:26px;margin:3px 0}
-html[data-theme] body.workspace-mode #ops-tickets .central-page-hero-media{max-height:120px;min-height:0}
+html[data-theme] body.workspace-mode #ops-tickets .central-page-hero-media{max-height:none;min-height:0}
 html[data-theme] body.workspace-mode #ops-tickets .ticket-metric{min-height:60px;padding:8px 12px;display:grid;grid-template-columns:1fr auto;gap:3px}
 html[data-theme] body.workspace-mode #ops-tickets .ticket-metric small{grid-column:1 / -1}
 html[data-theme] body.workspace-mode #ops-tickets .ticket-metric strong{font-size:22px}
@@ -51,6 +51,6 @@ html[data-theme] body.workspace-mode #ops-tickets .report-suggestion button{widt
  html[data-theme] body.workspace-mode #ops-tickets #ticket-detail>.ops-section-head{position:relative}
  html[data-theme] body.workspace-mode #ops-tickets #ticket-conversation{min-height:430px;height:70dvh}
  html[data-theme] body.workspace-mode #ops-tickets :is(input,select,textarea){font-size:16px!important}
- html[data-theme] body.workspace-mode #ops-tickets .central-page-hero-media{display:none}
+ html[data-theme] body.workspace-mode #ops-tickets .central-page-hero-copy p:not(.kicker){font-size:13px;margin:4px 0}
 }
 @media(prefers-reduced-motion:reduce){#ops-tickets *{scroll-behavior:auto!important;transition:none!important}}
