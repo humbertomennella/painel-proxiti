@@ -353,7 +353,7 @@ assert(equipmentBegin>libraryEnd&&html.indexOf('id="tools-list"')>equipmentBegin
 assert(html.indexOf('id="ticket-search"')<html.indexOf('id="ticket-metric-open"'),
  "Pesquisa de Chamados não está no topo");
 assert(!html.includes('id="toggle-alerts"')&&
- get("assets/alerts.js").includes("get enabled(){return true;}"),
+ get("assets/alerts.js").includes("get enabled(){return enabled();},setEnabled"),
  "Som de chamado deve ficar ligado sem botão");
 assert(html.includes('class="overview-view-controls" hidden aria-hidden="true"'),
  "Controles Focar/Leitura/Ajuda continuam na Visão Geral");
