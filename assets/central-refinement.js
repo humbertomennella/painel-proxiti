@@ -66,6 +66,36 @@ function indexedItems(query){
    if(normalize(course.title).includes(needle))
     hits.push({view:"training",title:course.title,kind:"Aula",course:course.id,track:course.track});
  }
+ const tickets=pages.find(item=>item.view==="tickets"),clients=pages.find(item=>item.view==="clients");
+ if(tickets){
+  const digits=needle.match(/(?:#|\b)(\d{2,})\b/)?.[1]||"";
+  if(digits||/\b(chamado|chamados|ticket|fila|mensagem|mensagens)\b/.test(needle))
+   hits.unshift({view:"tickets",title:digits?"Chamado #"+digits:"Consultar Chamados",kind:"Chamados",query:digits});
+  for(const btn of document.querySelectorAll("#ticket-list .ticket-inbox-card")){
+   const label=btn.getAttribute("aria-label")||"";
+   if(normalize(label+" "+btn.textContent).includes(needle)){
+    const reference=label.match(/^Chamado\s+(\d+),/)?.[1]||"";
+    if(reference)hits.push({view:"tickets",title:label,kind:"Chamado acessível",query:reference});
+   }
+  }
+ }
+ if(clients)for(const card of document.querySelectorAll("#clients-list .central-module-card")){
+  const name=card.querySelector("h3")?.textContent?.trim()||"";
+  if(name&&normalize(name).includes(needle))hits.push({view:"clients",title:name,kind:"Cliente autorizado",clientName:name});
+ }
+ const topics=[
+  [/agenda|visita|compromisso|agendamento/,"agenda"],
+  [/relatorio|indicador|grafico|estatistica/,"reports"],
+  [/usuario|conta de usuario|permissao|equipe/,"users"],
+  [/configuracao|tema|aparencia|notificacao|som/,"settings"],
+  [/perfil|alterar senha|foto de perfil/,"profile"],
+  [/equipamento|inventario|manutencao de maquina/,"equipment"],
+  [/curso|aula|trilha|certificado|capacitacao/,"training"],
+  [/procedimento|manual|biblioteca|artigo tecnico/,"library"]
+ ];
+ if(!hits.length)for(const [pattern,target] of topics){
+  if(pattern.test(needle)){const item=pages.find(page=>page.view===target);if(item){hits.push(item);break;}}
+ }
  if(!hits.length&&library)hits.push({view:"library",title:"Pesquisar materiais por “"+query+"”",kind:"Biblioteca Técnica",query});
  return hits.slice(0,10);
 }
@@ -113,7 +143,22 @@ function openResult(item){
  const nav=availableViews().some(x=>x.view===item.view);
  if(!nav)return;
  window.PROXITI_OPEN_VIEW?.(item.view);
- if(item.view==="library"&&item.query){
+ if(item.view==="tickets"&&item.query){
+  requestAnimationFrame(()=>{
+   document.querySelector('[data-ticket-filter="all"]')?.click();
+   const field=id("ticket-search");if(!field)return;
+   field.value=item.query;field.dispatchEvent(new Event("input",{bubbles:true}));field.focus();
+   const card=[...document.querySelectorAll("#ticket-list .ticket-inbox-card")].find(node=>
+     node.getAttribute("aria-label")?.startsWith("Chamado "+item.query+","));
+   card?.click();
+  });
+ }else if(item.view==="clients"&&item.clientName){
+  requestAnimationFrame(()=>{
+   const card=[...document.querySelectorAll("#clients-list .central-module-card")].find(node=>
+     node.querySelector("h3")?.textContent===item.clientName);
+   card?.scrollIntoView({block:"center",behavior:"smooth"});
+  });
+ }else if(item.view==="library"&&item.query){
   requestAnimationFrame(()=>{
    const field=id("training-search");if(!field)return;
    field.value=item.query;field.dispatchEvent(new Event("input",{bubbles:true}));
