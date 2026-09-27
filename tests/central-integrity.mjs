@@ -401,7 +401,7 @@ console.log("Refinamento: navegação, busca, menu, fotografias e som validado e
 
 /* V10 · Contratos do novo workspace de Chamados */
 for(const id of [
- "ticket-chat-column","ticket-desk-shortcuts","ticket-list-pane","ticket-queue-toggle",
+ "ticket-chat-column","ticket-desk-shortcuts","ticket-list-pane","ticket-queue-toggle","ticket-go-chat",
  "ticket-diagnostic","ticket-diagnostic-symptoms","ticket-diagnostic-platform",
  "ticket-diagnostic-impact","ticket-diagnostic-run","ticket-diagnostic-results",
  "ticket-diagnostic-message","ticket-diagnostic-to-note","ticket-diagnostic-to-reply",
