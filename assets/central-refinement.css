@@ -186,3 +186,15 @@ html[data-theme] body.workspace-mode #ops-library .academy-entry .academy-body{m
 /* O seletor legado #ops-tickets aplicava padding extra: removê-lo libera o banner até a borda da sidebar. */
 html[data-theme] body.workspace-mode .ops-view,
 html[data-theme] body.workspace-mode #ops-tickets{padding:0!important}
+
+/* O perfil já tem título no hero: manter o título antigo para aria-labelledby, sem repetir um segundo banner. */
+html[data-theme] body.workspace-mode #profile-section>.profile-page-head{
+ position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;
+ clip-path:inset(50%)!important;white-space:nowrap!important;
+ padding:0!important;margin:0!important;border:0!important;
+}
+@media(min-width:1101px){
+ html[data-theme] body.workspace-mode #ops-training .uniproxiti-indicator-row{
+  grid-template-columns:minmax(0,4fr) minmax(175px,.95fr);
+ }
+}
