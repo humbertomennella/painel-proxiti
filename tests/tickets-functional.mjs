@@ -319,6 +319,9 @@ try{
    await visit(page,102);
    await page.waitForFunction(()=>document.getElementById("ticket-diagnostic-results").textContent.includes("Conectividade"));
    assert.equal(await page.isHidden("#ticket-conversation"),false);
+   assert.equal(await page.isHidden("#ticket-go-chat"),false);
+   await page.click("#ticket-go-chat");
+   assert.equal(await page.getAttribute('[data-ticket-jump="chat"]',"aria-current"),"location");
    assert.equal(await page.getAttribute("#ticket-list-pane","data-mobile-collapsed"),"true");
    assert.equal(await page.isVisible("#ticket-queue-toggle"),true);
    await page.click("#ticket-diagnostic-to-note");
@@ -347,6 +350,7 @@ try{
   try{
    await visit(page,102);
    assert.equal(await page.isHidden("#ticket-conversation"),true);
+   assert.equal(await page.isHidden("#ticket-go-chat"),true);
    assert.equal(await page.isDisabled("#ticket-diagnostic-message"),true);
    assert.equal(await page.isDisabled("#ticket-diagnostic-to-reply"),true);
    assert.equal(await page.isHidden("#ticket-workflow"),false);
