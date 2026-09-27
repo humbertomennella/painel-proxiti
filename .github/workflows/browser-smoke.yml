@@ -15,6 +15,8 @@ on:
       - "tests/academy-learning-functional.mjs"
       - "tests/reskin-visual.mjs"
       - "tests/uniproxiti-integrity.mjs"
+      - "tests/uniproxiti-v14-integrity.mjs"
+      - "supabase/academy_track_certification_v14.sql"
       - ".github/workflows/browser-smoke.yml"
   push:
     branches: [main]
@@ -31,6 +33,8 @@ on:
       - "tests/academy-learning-functional.mjs"
       - "tests/reskin-visual.mjs"
       - "tests/uniproxiti-integrity.mjs"
+      - "tests/uniproxiti-v14-integrity.mjs"
+      - "supabase/academy_track_certification_v14.sql"
       - ".github/workflows/browser-smoke.yml"
   workflow_dispatch:
 permissions:
@@ -62,6 +66,8 @@ jobs:
         run: node tests/agenda-functional.mjs
       - name: Verificar UniProxiti com busca, publicação, revisão e privacidade
         run: node tests/academy-functional.mjs
+      - name: Verificar requisitos da nova certificação independente
+        run: node tests/uniproxiti-v14-integrity.mjs
       - name: Verificar aulas, prova final, nota e certificado interno
         run: node tests/academy-learning-functional.mjs
       - name: Auditar dashboard UniProxiti, IDs e contraste AA

@@ -38,13 +38,13 @@ const messages=baseline.map((t,i)=>({
  id:"00000000-0000-4000-8000-00000000020"+(i+1),
  ticket_id:t.id,sender_kind:"customer",created_at:stamp,body:"Mensagem de teste"
 }));
-async function openScenario({materials=[],admin=false,failTraining=false,deferTraining=false,ambiguousSave=false,conflictSave=false,startView="training",progressFixture=[],failGrade=false,quizAttemptsFixture=[],requiredOverrides={}}={}){
+async function openScenario({materials=[],admin=false,failTraining=false,deferTraining=false,ambiguousSave=false,conflictSave=false,startView="training",progressFixture=[],failGrade=false,quizAttemptsFixture=[],requiredOverrides={},trackCertificatesFixture=[]}={}){
  const page=await browser.newPage({viewport:{width:375,height:850},deviceScaleFactor:1});
  page.__errors=[];
  page.on("pageerror",error=>page.__errors.push(error.message));
  await page.route("https://cdn.jsdelivr.net/**",route=>route.abort());
  await page.goto(url,{waitUntil:"load",timeout:30000});
- await page.evaluate(({materials,admin,failTraining,deferTraining,ambiguousSave,conflictSave,startView,progressFixture,failGrade,quizAttemptsFixture,requiredOverrides})=>{
+ await page.evaluate(({materials,admin,failTraining,deferTraining,ambiguousSave,conflictSave,startView,progressFixture,failGrade,quizAttemptsFixture,requiredOverrides,trackCertificatesFixture})=>{
    document.body.classList.add("workspace-mode");
    document.getElementById("auth-screen").hidden=true;
    document.getElementById("panel").hidden=false;
@@ -59,7 +59,8 @@ async function openScenario({materials=[],admin=false,failTraining=false,deferTr
      read:[],staff_presence:[],notes:[],tasks:[],reports:[],attachments:[],devices:[],
      appointments:[],appointmentReschedules:[],audit:[],stored:new Map(),calls:[],
      training:structuredClone(materials),versions:[],progress:structuredClone(progressFixture),certificates:[],failGrade,
-     quizAttempts:structuredClone(quizAttemptsFixture),academyCourses:window.PROXITI_ACADEMY_CURRICULUM.courses.map(course=>({
+     quizAttempts:structuredClone(quizAttemptsFixture),trackCertificates:structuredClone(trackCertificatesFixture),
+     trackExamAttempts:[],academyCourses:window.PROXITI_ACADEMY_CURRICULUM.courses.map(course=>({
        code:course.id,track_id:course.track,curriculum_version:"2026-09-v1",active:true,
        required:Object.prototype.hasOwnProperty.call(requiredOverrides,course.id)?requiredOverrides[course.id]:true
      }))
@@ -72,7 +73,8 @@ async function openScenario({materials=[],admin=false,failTraining=false,deferTr
      ticket_appointment_reschedules:"appointmentReschedules",
      training_materials:"training",training_material_versions:"versions",profiles:"staff",
      academy_course_progress:"progress",academy_certificates:"certificates",
-     academy_courses:"academyCourses",academy_quiz_attempts:"quizAttempts"
+     academy_courses:"academyCourses",academy_quiz_attempts:"quizAttempts",
+     academy_track_certificates:"trackCertificates",academy_track_exam_attempts:"trackExamAttempts"
    };
    const client={
      supabaseUrl:"https://example.supabase.co",
@@ -173,6 +175,43 @@ async function openScenario({materials=[],admin=false,failTraining=false,deferTr
            track_id:tracks[Math.floor(i/3)].id,prompt:"Qual decisão se aplica à questão "+(i+1)+"?",
            options:["Conduta correta","Conduta indevida","Ignorar contexto","Divulgar dados"],
            critical:[10,11,19,20].includes(i+1)})));
+       }
+       if(name==="proxiti_academy_track_questions"){
+         const track=args.p_track;
+         const lessons=window.PROXITI_ACADEMY_CURRICULUM.courses.filter(c=>c.track===track);
+         if(lessons.length!==2||lessons.some(c=>
+           !fixture.progress.find(x=>x.course_id===c.id&&x.completed_at)))
+           return error("Conclua as duas aulas desta trilha antes da prova");
+         return ok(Array.from({length:10},(_,i)=>({
+           code:"tr-"+track+"-"+(i+1),track_id:track,
+           prompt:"Questão da prova desta trilha "+(i+1)+"?",
+           options:["Procedimento seguro e autorizado","Alterar sem registrar",
+             "Ignorar autorização","Divulgar dados pessoais"],
+           critical:i===0
+         })));
+       }
+       if(name==="proxiti_academy_submit_track_exam"){
+         if(fixture.failGrade)return error("Correção temporariamente indisponível");
+         const track=args.p_track,lessons=window.PROXITI_ACADEMY_CURRICULUM.courses
+           .filter(c=>c.track===track);
+         const approvals=lessons.map(c=>fixture.progress.find(row=>row.course_id===c.id));
+         if(approvals.some(row=>!row?.completed_at))return error("Trilha incompleta");
+         const values=Object.values(args.p_answers),correct=values.filter(n=>n===0).length;
+         const score=correct*10,avg=approvals.reduce((n,row)=>n+Number(row.best_score),0)/2;
+         const overall=Math.round((avg*.6+score*.4)*100)/100;
+         const critical=args.p_answers["tr-"+track+"-1"]===0;
+         const passed=score>=80&&overall>=80&&critical;
+         const stamp=new Date().toISOString();
+         fixture.trackExamAttempts.push({track_id:track,score,overall,critical,passed,created_at:stamp});
+         let certificate=fixture.trackCertificates.find(row=>row.track_id===track);
+         if(passed&&!certificate){
+           certificate={verification_code:"PXI-TRI-TESTE-"+track,holder_name:profile.display_name,
+             track_id:track,curriculum_version:"2026-09-v1",course_count:2,
+             quiz_average:avg,exam_score:score,overall_score:overall,issued_at:stamp};
+           fixture.trackCertificates.push(certificate);
+         }
+         return ok({score,quiz_average:avg,overall_score:overall,correct,total:10,
+           critical_correct:critical,passed,certificate:passed?certificate:null});
        }
        if(name==="proxiti_academy_submit_quiz"){
          if(fixture.failGrade)return error("Correção temporariamente indisponível");
@@ -305,7 +344,7 @@ async function openScenario({materials=[],admin=false,failTraining=false,deferTr
    if(startView!=="tickets")sessionStorage.setItem("proxiti-work-v3-"+user.id+"-view",startView);
    window.PROXITI_ACTIVE_SESSION=session;
    document.dispatchEvent(new CustomEvent("proxiti-session-ready",{detail:session}));
- },{materials,admin,failTraining,deferTraining,ambiguousSave,conflictSave,startView,progressFixture,failGrade,quizAttemptsFixture,requiredOverrides});
+ },{materials,admin,failTraining,deferTraining,ambiguousSave,conflictSave,startView,progressFixture,failGrade,quizAttemptsFixture,requiredOverrides,trackCertificatesFixture});
  await page.waitForFunction(()=>["ready","partial","error","restricted"].includes(
    document.getElementById("overview-sync-state").dataset.phase),{timeout:12000});
  await page.evaluate(()=>window.PROXITI_OPEN_VIEW("training"));
@@ -346,9 +385,10 @@ try{
      assert.equal(await page.textContent("#uniproxiti-approved"),"0 de 16");
      assert.equal(await page.textContent("#uniproxiti-progress-percent"),"0%");
      assert.equal(await page.textContent("#uniproxiti-last-score"),"—");
-     assert.equal(await page.textContent("#uniproxiti-cert-status"),"Em andamento");
+     assert.equal(await page.textContent("#uniproxiti-cert-status"),"0 de 8");
      assert.equal(await page.locator("#uniproxiti-certificate-card").isVisible(),false);
-     assert.equal(await page.locator(".uniproxiti-track-category").first().textContent(),"Obrigatória");
+     assert.equal(await page.locator(".uniproxiti-track-category").first().textContent(),"Essencial");
+     assert.equal(await page.locator(".uniproxiti-track-category").nth(4).textContent(),"Recomendada");
      assert((await page.textContent("#uniproxiti-activity-list")).includes("Nenhuma atividade registrada"));
      await page.click("#uniproxiti-continue");
      await page.waitForFunction(()=>document.querySelectorAll("#academy-quiz-form fieldset").length===4);
@@ -377,7 +417,7 @@ try{
      assert((await page.textContent("#uniproxiti-resume-progress")).includes("trilha: 0 de 2 aulas (0%)"));
      assert((await page.textContent("#uniproxiti-activity-list")).includes("Quiz realizado"));
      assert((await page.textContent("#uniproxiti-activity-list")).includes("Aula concluída"));
-     assert.equal(await page.locator(".uniproxiti-track-category").nth(1).textContent(),"Recomendada");
+     assert.equal(await page.locator(".uniproxiti-track-category").nth(1).textContent(),"Essencial");
      const requests=await page.evaluate(()=>window.__fixture.calls.filter(name=>
        ["academy_courses","academy_course_progress","academy_certificates","academy_quiz_attempts"].includes(name)));
      assert(requests.includes("academy_quiz_attempts")&&requests.includes("academy_courses"));
@@ -466,13 +506,39 @@ try{
      assert((await page.textContent("#academy-exam-result")).includes("91,00"));
      await page.click("#academy-learning-show-tracks");
      assert.equal(await page.locator("#uniproxiti-certificate-card").isVisible(),true);
-     assert.equal(await page.textContent("#uniproxiti-cert-status"),"Disponível");
+     assert.equal(await page.textContent("#uniproxiti-cert-status"),"0 de 8");
      await page.click("#academy-learning-show-certificate");
      const [popup]=await Promise.all([page.waitForEvent("popup"),
        page.click("#academy-certificate-print")]);
      await popup.waitForSelector(".paper");
      assert((await popup.textContent(".paper")).includes("PXI-ACA-TESTE-VALIDO"));
      assert((await popup.textContent(".paper")).includes("Documento interno e institucional"));
+     await popup.close();assert.deepEqual(page.__errors,[]);
+   }finally{await page.close();}
+ });
+ await test("Duas aulas liberam prova e certificado da própria trilha",async()=>{
+   const page=await openScenario({progressFixture:complete().filter(row=>
+     ["at-01","at-02"].includes(row.course_id))});
+   page.on("dialog",dialog=>dialog.accept());
+   try{
+     await page.waitForFunction(()=>document.getElementById("uniproxiti-approved")
+       .textContent==="2 de 16");
+     assert.equal(await page.isDisabled("#academy-learning-open-exam"),true);
+     assert.equal(await page.locator(".academy-track-cert button").count(),1);
+     await page.locator(".academy-track-cert button").first().click();
+     await page.waitForFunction(()=>document.querySelectorAll("#academy-track-exam-form fieldset").length===10);
+     await select(page,"#academy-track-exam-form",10);
+     await page.locator("#academy-track-exam-form button[type=submit]").click();
+     await page.waitForFunction(()=>window.__fixture.trackCertificates.length===1);
+     await page.click("#academy-learning-show-tracks");
+     assert.equal(await page.textContent("#uniproxiti-cert-status"),"1 de 8");
+     assert.equal(await page.evaluate(()=>window.__fixture.certificates.length),0);
+     await page.click("#academy-learning-show-certificate");
+     const [popup]=await Promise.all([page.waitForEvent("popup"),
+       page.locator("#academy-certificate-detail .academy-certificate-list button").click()]);
+     await popup.waitForSelector(".paper");
+     assert((await popup.textContent(".paper")).includes("PXI-TRI-TESTE-atendimento"));
+     assert((await popup.textContent(".paper")).includes("Atendimento e conduta"));
      await popup.close();assert.deepEqual(page.__errors,[]);
    }finally{await page.close();}
  });
@@ -508,7 +574,7 @@ try{
      assert.deepEqual(page.__errors,[]);
    }finally{await page.close();}
  });
- console.log("PASS: nove fluxos de capacitação, dashboard real, prova e certificado com contas simuladas.");
+ console.log("PASS: dez fluxos de capacitação, incluindo prova e certificado por trilha sem currículo completo.");
 }finally{
  await browser.close();
  await new Promise((resolve,reject)=>server.close(error=>error?reject(error):resolve()));

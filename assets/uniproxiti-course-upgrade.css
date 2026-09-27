@@ -1,0 +1,203 @@
+/* UNIPROXITI: correções responsivas, preservando a identidade visual da Central. */
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-indicator-row{
+  grid-template-columns:minmax(0,1fr)!important;align-items:start;gap:12px;
+}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-continue-card{
+  display:grid!important;grid-template-columns:36px minmax(0,1fr)!important;
+  grid-template-rows:auto auto;align-items:center;align-content:center;
+  max-width:760px;width:100%;min-height:78px!important;margin:0 auto;
+  padding:13px 18px!important;gap:1px 13px!important;border-radius:13px;
+}
+html[data-theme] body.workspace-mode #ops-training .continue-play{
+  grid-row:1/3!important;grid-column:1;width:36px;height:36px;font-size:21px;
+}
+html[data-theme] body.workspace-mode #ops-training #uniproxiti-continue{
+  grid-row:1!important;grid-column:2;font-size:clamp(15px,2.8vw,18px)!important;
+  font-weight:760!important;min-height:27px!important;padding:0!important;
+  line-height:1.25!important;text-align:center!important;
+}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-continue-card small{
+  grid-row:2;grid-column:2!important;text-align:center!important;
+  font-size:clamp(12px,2vw,14px)!important;line-height:1.45;
+}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-tracks-heading>p{
+  max-width:58ch;font-size:13px;line-height:1.55;
+}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-track-tile{
+  grid-template-rows:minmax(0,1fr) auto;overflow:hidden;border-radius:12px;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-track-summary>img{
+  width:100%;height:auto!important;aspect-ratio:16/9!important;max-height:none;
+  object-fit:cover;object-position:center;border-radius:11px 11px 0 0;
+  background:#0a2544;display:block;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-track-copy{
+  flex:1;display:flex;flex-direction:column;gap:9px;padding:14px 13px 12px;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-track-copy>small{
+  font-size:11px;letter-spacing:.065em;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-track-copy h5{
+  font-size:clamp(14px,1.2vw,17px)!important;line-height:1.34!important;
+  min-height:2.7em;margin:0;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-track-copy>p{
+  font-size:13px!important;line-height:1.48!important;min-height:3em;
+}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-track-progress{
+  margin-top:auto;font-size:12px;gap:9px;
+}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-track-category{
+  font-size:12px;padding:5px 10px;border-radius:7px;top:11px;left:11px;
+}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-track-footer{
+  padding:0 13px 13px;
+}
+html[data-theme] body.workspace-mode #ops-training .uniproxiti-track-footer button{
+  min-height:46px;font-size:14px;font-weight:680;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-detail{
+  width:100%;max-width:1120px;margin-inline:auto;min-width:0;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-intro{
+  display:grid;gap:13px;min-width:0;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-intro>img{
+  width:100%;height:auto!important;aspect-ratio:16/9!important;
+  object-fit:contain;object-position:center;border-radius:14px;
+  background:#102b4c;max-height:400px;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-intro h5{
+  font-size:clamp(24px,4.8vw,36px);line-height:1.2;letter-spacing:-.03em;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-block{
+  max-width:80ch;margin-inline:auto;padding-block:23px;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-block p,
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-block li{
+  font-size:clamp(15px,2.4vw,17px);line-height:1.75;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-block h6{
+  font-size:clamp(20px,3vw,25px);line-height:1.3;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-assessment-form{
+  display:grid;gap:24px;max-width:850px;margin-inline:auto;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-question{
+  padding:20px!important;min-width:0;display:grid;gap:12px;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-question legend{
+  max-width:100%;font-size:clamp(16px,2.8vw,20px);line-height:1.45;
+  padding:0 5px;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-choice{
+  display:flex;align-items:flex-start;gap:14px;min-height:58px;
+  padding:16px 15px;font-size:clamp(15px,2.5vw,17px);line-height:1.5;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-choice input{
+  flex:none;width:20px;height:20px;margin-top:2px;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-activity{
+  display:grid;gap:13px;max-width:80ch;margin:20px auto;
+  padding:19px;border:1px solid var(--px-line);border-radius:13px;
+  background:var(--px-surface-soft);color:var(--px-text);
+}
+html[data-theme] body.workspace-mode #ops-training .academy-activity h6{
+  margin:0;font-size:19px;color:var(--px-ink);
+}
+html[data-theme] body.workspace-mode #ops-training .academy-activity ol{
+  margin:0;padding-left:23px;display:grid;gap:10px;line-height:1.65;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-track-cert{
+  margin:8px 13px 14px;padding:12px;border-radius:9px;
+  border:1px solid var(--px-line);background:var(--px-surface-soft);
+  display:grid;gap:9px;font-size:13px;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-track-cert button{
+  width:100%;min-height:43px;font-size:13px;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-track-cert small{line-height:1.5}
+html[data-theme] body.workspace-mode #ops-training .academy-certificate-list{
+  display:grid;gap:13px;margin:16px 0;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-certificate-list article{
+  padding:15px;border:1px solid var(--px-line);border-radius:12px;
+  background:var(--px-surface-soft);display:grid;gap:9px;
+}
+@media(min-width:1280px){
+  html[data-theme] body.workspace-mode #ops-training .academy-track-list{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:767px){
+  html[data-theme] body.workspace-mode #ops-training .uniproxiti-continue-card{
+    max-width:540px;min-height:76px!important;padding:12px 13px!important;
+  }
+  html[data-theme] body.workspace-mode #ops-training .academy-track-list{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px;
+  }
+  html[data-theme] body.workspace-mode #ops-training .academy-track-copy{
+    padding:12px 11px;gap:7px;
+  }
+  html[data-theme] body.workspace-mode #ops-training .academy-track-copy h5{
+    font-size:15px!important;min-height:2.6em;
+  }
+  html[data-theme] body.workspace-mode #ops-training .academy-track-copy>p{
+    font-size:12px!important;min-height:4.4em;
+  }
+  html[data-theme] body.workspace-mode #ops-training .academy-lesson-intro>img{
+    aspect-ratio:16/9!important;max-height:280px;
+  }
+  html[data-theme] body.workspace-mode #ops-training .academy-question{padding:13px!important}
+  html[data-theme] body.workspace-mode #ops-training .academy-choice{padding:14px 12px}
+}
+@media(max-width:359px){
+  html[data-theme] body.workspace-mode #ops-training .academy-track-list{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  html[data-theme] body.workspace-mode #ops-training .academy-track-copy h5,
+  html[data-theme] body.workspace-mode #ops-training .academy-track-copy>p{min-height:0}
+}
+@media(prefers-reduced-motion:reduce){
+  html[data-theme] body.workspace-mode #ops-training .uniproxiti-track-tile,
+  html[data-theme] body.workspace-mode #ops-training .uniproxiti-continue-card{transition:none}
+}
+
+/* Imagem real de referência complementa o diagrama original de cada aula. */
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-photo{
+  display:grid;gap:10px;max-width:80ch;margin:20px auto 28px;
+  overflow:hidden;border:1px solid var(--px-line);border-radius:13px;
+  background:var(--px-surface-soft);color:var(--px-text);
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-photo img{
+  display:block;width:100%;height:auto;aspect-ratio:16/9;
+  object-fit:cover;object-position:center;max-height:400px;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-photo figcaption{
+  font-size:clamp(13px,2.3vw,15px);line-height:1.55;padding:0 16px 15px;
+}
+@media(max-width:767px){
+  html[data-theme] body.workspace-mode #ops-training .academy-lesson-photo{
+    margin:16px auto 23px;
+  }
+  html[data-theme] body.workspace-mode #ops-training .academy-lesson-photo figcaption{
+    padding:0 13px 13px;
+  }
+}
+
+/* Evita que a largura intrínseca (960px/880px) das imagens expanda o grid no celular. */
+html[data-theme] body.workspace-mode #ops-training #academy-lesson-content,
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-intro,
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-photo,
+html[data-theme] body.workspace-mode #ops-training .academy-activity{
+  min-width:0;max-width:100%;box-sizing:border-box;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-intro,
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-photo,
+html[data-theme] body.workspace-mode #ops-training .academy-activity{
+  grid-template-columns:minmax(0,1fr);
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-intro>img,
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-photo>img{
+  display:block;min-width:0;max-width:100%;box-sizing:border-box;
+}

@@ -97,23 +97,8 @@
  if(window.PROXITI_ACTIVE_SESSION?.user){greeting();requestAnimationFrame(syncSidebar);}
 })();
 
-/* Photographic presentation for existing dynamic track cards; no data/event replacement. */
-(() => {
- const host=document.getElementById('academy-track-list');
- const photographs={atendimento:'support',computadores:'computer',redes:'networks',seguranca:'security',backup:'security',infraestrutura:'technical-hero',privacidade:'security',operacao:'support'};
- function illustrate(){
-  for(const img of host.querySelectorAll('.academy-track-summary>img:not([data-central-photo])')){
-   const key=(img.getAttribute('src')||'').match(/academy-visuals\/([^/.]+)\.svg/)?.[1];
-   if(!photographs[key])continue;
-   img.dataset.centralPhoto=key;
-   img.src='./assets/photos/'+photographs[key]+'.webp';
-   img.alt='Imagem ilustrativa da trilha: '+(img.closest('summary').querySelector('h5')?.textContent||key);
-   img.decoding='async';
-   // Compact landing state only. Native summary still opens all original lesson controls.
-   img.closest('details').open=false;
-  }
- }
- if(host){new MutationObserver(illustrate).observe(host,{childList:true,subtree:true});illustrate();}
+/* Preserve as oito capas originais, distintas e com identidade temática da UNIPROXITI. */
+(()=>{
  // Accessible drawer: keep focus inside while open, restore it on close.
  const panel=document.getElementById('panel'),side=document.getElementById('app-sidebar');
  const main=document.getElementById('panel-main'),trigger=document.getElementById('mobile-nav-toggle');
