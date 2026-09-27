@@ -53,8 +53,8 @@ function buildResults(query){
  }
  if(allowed("training")){
   for(const course of window.PROXITI_ACADEMY_CURRICULUM?.courses||[]){
-   const name=normalized(course.title);
-   if(name.includes(q)||tokens.length>1&&tokens.every(t=>name.includes(t)))
+   const name=normalized(course.title),compact=name.replaceAll(" ","");
+   if(name.includes(q)||compact.includes(q.replaceAll(" ",""))||tokens.length>1&&tokens.every(t=>name.includes(t)))
     put({view:"training",title:course.title,description:"Aula da UNIPROXITI",icon:"◇",
       courseId:course.id,score:name===q?112:91});
   }
@@ -97,7 +97,7 @@ function render(){
  resultBox.replaceChildren();
  for(const [index,item]of results.entries()){
   const button=document.createElement("button");button.type="button";
-  button.className="central-global-item";button.setAttribute("role","option");
+  button.className="central-global-item";button.dataset.searchView=item.view;button.setAttribute("role","option");
   button.setAttribute("aria-selected",String(index===selected));
   const badge=document.createElement("span");badge.className="central-global-kind";
   badge.setAttribute("aria-hidden","true");badge.textContent=item.icon||"↗";
