@@ -5,6 +5,10 @@ html[data-theme] body.workspace-mode{--central-banner-height:250px}
 html[data-theme] body.workspace-mode .panel-main:has(#operations:not([hidden]) .ops-view:not([hidden]) > .central-page-hero) .panel-head,
 html[data-theme] body.workspace-mode .panel-main:has(#profile-section:not([hidden])) .panel-head,
 html[data-theme] body.workspace-mode .panel-main:has(#overview-home:not([hidden])) .panel-head{margin-bottom:0}
+html[data-theme] body.workspace-mode #ops-training .academy-learning-hero{
+ box-sizing:border-box;height:var(--central-banner-height);
+ min-height:var(--central-banner-height);max-height:none;
+}
 /* O mesmo encaixe da hero Uni: 24px até as bordas do painel, sem cartão interno. */
 html[data-theme] body.workspace-mode .ops-view > .central-page-hero,
 html[data-theme] body.workspace-mode #profile-section > .central-page-hero{
