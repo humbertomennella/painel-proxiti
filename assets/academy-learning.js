@@ -623,12 +623,31 @@ async function submitExam(event){
 function renderCertificate(){
  const target=el("academy-certificate-detail");target.replaceChildren();
  el("academy-certificate-print").hidden=!certificate;
- if(!certificate){
-   target.append(make("p","O certificado é emitido pelo Supabase somente após "+
-     "conclusão das 16 aulas, aprovação na prova final, nota final mínima e "+
-     "acerto das questões críticas. Seu progresso não é substituído por uma impressão local."));
+ if(!certificate&&!trackCertificates.size){
+   target.append(make("p",trackCatalogReady?
+     "Cada trilha tem certificado próprio. Conclua as duas aulas da trilha, faça sua prova final e atinja a média mínima para solicitar a emissão pelo servidor.":
+     "Não foi possível consultar seus certificados. Atualize o progresso para confirmar o resultado."));
    return;
  }
+ if(trackCertificates.size){
+   const title=make("h6","Certificados individuais emitidos pela UNIPROXITI");
+   const list=make("div",null,"academy-certificate-list");
+   for(const track of data.tracks){
+     const item=trackCertificates.get(track.id);if(!item)continue;
+     const card=make("article");
+     card.append(make("strong",track.title),
+       make("span","Nota final: "+points(item.overall_score)+" / 100"),
+       make("small","Emissão: "+formatDate(item.issued_at)+
+         " · Código: "+item.verification_code),
+       make("small","Certificado interno desta trilha, emitido e registrado pelo servidor."));
+     const print=make("button","Imprimir / Salvar PDF","secondary");print.type="button";
+     print.addEventListener("click",()=>printTrackCertificate(track.id));
+     card.append(print);list.append(card);
+   }
+   target.append(title,list);
+ }
+ if(!certificate)return;
+ target.append(make("h6","Certificado geral do currículo completo (opcional)"));
  const item=make("div",null,"academy-certificate-card");
  item.append(make("small","PROXITI · CAPACITAÇÃO INTERNA","academy-certificate-kicker"),
    make("h6","Certificado de Conclusão Interna"),
@@ -643,6 +662,40 @@ function renderCertificate(){
    make("p","Documento interno/institucional. Não substitui diploma, "+
      "habilitação profissional ou certificação externa."));
  target.append(item);
+}
+function printTrackCertificate(trackId){
+ const s=session(),track=tracks.get(trackId),cert=trackCertificates.get(trackId);
+ if(!authorized(s)||!track||!cert||!trackCatalogReady)return;
+ const popup=window.open("","_blank");
+ if(!popup){setStatus("Permita a janela de impressão do navegador.","error");return;}
+ popup.opener=null;
+ const doc=popup.document;doc.title="Certificado interno · "+track.title+" · PROXITI";
+ const style=make("style",
+   "body{font:16px/1.6 Arial,sans-serif;color:#152638;background:#fff;margin:0;padding:35px}"+
+   ".paper{border:6px double #315a7c;padding:45px;max-width:850px;min-height:490px;margin:auto;text-align:center}"+
+   ".brand{font-size:18px;font-weight:800;letter-spacing:4px;color:#32618c}"+
+   "h1{font-size:30px;line-height:1.3;margin:25px 0}p{margin:17px 0}"+
+   ".name{font-size:27px;font-weight:800}.score{font-size:22px;font-weight:800}"+
+   ".meta{font-size:13px;color:#425e73}.note{font-size:12px;margin-top:28px}"+
+   "button{display:block;margin:24px auto;padding:12px 18px}"+
+   "@media print{button{display:none}body{padding:0}.paper{min-height:640px}}");
+ doc.head.append(style);
+ const paper=make("main",null,"paper");
+ paper.append(make("div","PROXITI · UNIPROXITI","brand"),
+   make("h1","Certificado Interno de Conclusão por Trilha"),
+   make("p","Certificamos que"),make("div",cert.holder_name,"name"),
+   make("p","concluiu a trilha "+track.title+
+     ", com duas aulas avaliadas e aprovação na prova final individual."),
+   make("p","Nota final: "+points(cert.overall_score)+" / 100","score"),
+   make("p","Média das aulas: "+points(cert.quiz_average)+
+     " · Prova final: "+points(cert.exam_score),"meta"),
+   make("p","Emitido em "+formatDate(cert.issued_at)+
+     " · Código: "+cert.verification_code,"meta"),
+   make("p","Documento interno e institucional. Não equivale a diploma, habilitação regulada ou certificação profissional externa.","note"));
+ doc.body.append(paper);
+ const print=make("button","Imprimir / Salvar como PDF");print.type="button";
+ print.addEventListener("click",()=>popup.print());doc.body.append(print);
+ popup.focus();
 }
 function printCertificate(){
  const s=session();if(!authorized(s)||!certificate)return;
