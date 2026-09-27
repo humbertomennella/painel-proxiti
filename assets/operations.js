@@ -381,6 +381,59 @@
     state.messageCheckPromise=work;
     return work;
   }
+
+  function renderClients(){
+    const list=el("clients-list"),status=el("clients-status");list.replaceChildren();
+    if(!can("tickets_view")){status.textContent="Acesso restrito.";return;}
+    if(!state.ticketsReady){status.textContent=state.ticketError?"Consulta indisponível. Use Atualizar em Chamados.":"Consultando chamados autorizados…";return;}
+    const people=new Map();
+    for(const ticket of state.tickets){
+      const email=String(ticket.customer_email||"").trim(),name=String(ticket.customer_name||"").trim();
+      const key=(email||name+"|"+String(ticket.customer_phone||"")).toLocaleLowerCase("pt-BR");
+      if(!key)continue;
+      if(!people.has(key))people.set(key,{name:name||"Cliente sem nome informado",email,phone:ticket.customer_phone||"",count:0});
+      people.get(key).count++;
+    }
+    status.textContent=people.size+" "+(people.size===1?"contato":"contatos")+" nos até 100 chamados recentes acessíveis à sua conta.";
+    if(!people.size){list.append(elem("p","Nenhum contato disponível entre os chamados autorizados.","ops-muted"));return;}
+    for(const person of people.values()){
+      const card=elem("article","","central-module-card");card.append(elem("h3",person.name));
+      if(person.email)card.append(elem("p",person.email));
+      if(person.phone)card.append(elem("p",person.phone));
+      card.append(elem("small",person.count+(person.count===1?" chamado acessível":" chamados acessíveis")));
+      card.append(button("Ver chamados",()=>{
+        el("ticket-search").value=person.email||person.name;
+        el("ticket-search").dispatchEvent(new Event("input",{bubbles:true}));
+        window.PROXITI_OPEN_VIEW?.("tickets");
+      },"secondary"));
+      list.append(card);
+    }
+  }
+  function renderReports(){
+    const status=el("reports-status");
+    if(!can("tickets_view")||!state.ticketsReady){
+      for(const key of ["total","open","progress","waiting","resolved","closed"])el("reports-"+key).textContent="—";
+      status.textContent=can("tickets_view")?"Consultando chamados autorizados…":"Acesso restrito.";return;
+    }
+    const count=key=>state.tickets.filter(t=>key==="open"?["new","triage"].includes(t.status):t.status===key).length;
+    const metrics={total:state.tickets.length,open:count("open"),progress:count("in_progress"),waiting:count("waiting_customer"),resolved:count("resolved"),closed:count("closed")};
+    for(const [key,value] of Object.entries(metrics))el("reports-"+key).textContent=String(value);
+    status.textContent=state.ticketError?"Última consulta disponível; atualização temporariamente indisponível.":
+      "Indicadores dos chamados acessíveis, consultados às "+new Date(state.ticketLastUpdated).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})+".";
+  }
+  function renderUsers(){
+    const list=el("users-list"),status=el("users-status");list.replaceChildren();
+    if(!isAdmin()){status.textContent="Área restrita à administração.";return;}
+    status.textContent=state.staff.length+(state.staff.length===1?" conta cadastrada.":" contas cadastradas.");
+    if(!state.staff.length){list.append(elem("p","Nenhuma conta retornada pela consulta autorizada.","ops-muted"));return;}
+    const labels={administrator:"Administrador",technician:"Técnico",pending:"Pendente",active:"Ativo",suspended:"Suspenso"};
+    for(const person of state.staff){
+      const card=elem("article","","central-module-card");
+      card.append(elem("h3",person.display_name||"Conta sem nome informado"),
+        elem("p",(labels[person.role]||"Conta")+" · "+(labels[person.status]||person.status)));
+      list.append(card);
+    }
+  }
   function showView(view){
     state.currentView=view;
     const names={tickets:["Chamados","Prioridades, responsáveis e histórico dos atendimentos."],
