@@ -26,7 +26,7 @@ const rules=Object.freeze([
   S("Inicial","Conter a exposição com orientação","Evite abrir novamente links ou anexos. Se houver atividade maliciosa em curso, avalie desconectar o dispositivo da rede sem destruir evidências.","Não solicite senha, código MFA ou acesso irrestrito."),
   S("Intermediário","Delimitar o incidente e proteger contas","Oriente o titular a trocar credenciais em dispositivo confiável e revisar MFA e sessões, conforme o tipo de incidente; registre somente o necessário."),
   S("Avançado","Encaminhar além do suporte preventivo","Se houver fraude financeira, exfiltração ou ambiente empresarial comprometido, acione o responsável e encaminhe a especialista habilitado.","A PROXITI não oferece perícia, pentest nem SOC.")],["phishing","scams"],"Possível incidente: evite apagar evidências."),
- K("wifi","Conectividade Wi-Fi e internet",["wifi","wi-fi","sem internet","internet caiu","internet lenta","nao conecta","nao conecta no wifi","rede sem fio","roteador","modem","sinal fraco","dns","dhcp","ethernet","cabo de rede","ip 169.254"],[
+ K("wifi","Conectividade Wi-Fi e internet",["wifi","wi-fi","rede","sem internet","internet caiu","internet lenta","nao conecta","nao conecta no wifi","rede sem fio","roteador","modem","sinal fraco","dns","dhcp","ethernet","cabo de rede","ip 169.254"],[
   "O problema ocorre em um ou vários aparelhos? A conexão é Wi-Fi, cabo ou ambas?",
   "O dispositivo conecta à rede local? Há acesso a outros sites e houve mudança recente?"],[
   S("Inicial","Distinguir rede local, aparelho e provedor","Confira estado da conexão, modo avião, cabos e luzes do equipamento; compare com outro dispositivo autorizado."),
