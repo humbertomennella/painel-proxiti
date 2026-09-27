@@ -61,7 +61,7 @@ async function refreshMFA(){
 document.addEventListener("proxiti-session-ready",e=>{void start(e);});
 document.addEventListener("proxiti-session-ended",stop);
 if(window.PROXITI_ACTIVE_SESSION)void start({detail:window.PROXITI_ACTIVE_SESSION});
-el("open-profile").addEventListener("click",()=>window.PROXITI_OPEN_VIEW?.("profile"));
+// O botão do topo abre o menu de conta; o acesso ao perfil fica no item Meu Perfil.
 el("profile-mfa-start").addEventListener("click",async()=>{
  if(!db||!user)return;
  const btn=el("profile-mfa-start");btn.disabled=true;
