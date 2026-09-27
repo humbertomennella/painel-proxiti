@@ -388,27 +388,39 @@
       content:["Conteúdo do site","Textos publicados e personalizações autorizadas."],
       training:["UniProxiti","Programa interno de capacitação PROXITI"],
       agenda:["Agenda","Retornos, visitas e horários planejados por chamado."],
-      tools:["Ferramentas","Inventário e equipamentos atribuídos."]};
+      tools:["Ferramentas","Ferramentas digitais locais."],
+      library:["Biblioteca Técnica","Procedimentos e arquivos internos autorizados."],
+      equipment:["Equipamentos","Inventário de ferramentas e equipamentos atribuídos."],
+      clients:["Clientes","Contatos de chamados autorizados."],
+      reports:["Relatórios","Indicadores de chamados autorizados."],
+      users:["Usuários","Contas e situação de acesso."],
+      settings:["Configurações","Aparência, avisos e segurança da conta."]};
     el("ops-heading").textContent=names[view]?.[0]||"Operação";
     el("ops-description").textContent=names[view]?.[1]||"";
     if(state.user)remember("view",view);
     for(const tab of el("ops-tabs").querySelectorAll("[data-ops-view]"))
       tab.classList.toggle("active",tab.dataset.opsView===view);
-    for(const v of ["tickets","staff","content","agenda","training","tools"])el("ops-"+v).hidden=v!==view;
+    for(const v of ["tickets","staff","content","agenda","training","library","equipment","clients","reports","users","settings","tools"])el("ops-"+v).hidden=v!==view;
     notice("");
     if(view==="tickets")void loadTickets();
     if(view==="staff"&&isAdmin())void loadStaff();
     if(view==="content"&&isAdmin())void loadContent();
     if(view==="training"&&can("training"))void loadTraining();
     if(view==="agenda"&&can("tickets_view"))document.dispatchEvent(new Event("proxiti-agenda-refresh"));
-    if(view==="tools"&&can("resources"))void loadTools();
+    if(view==="equipment"&&can("resources"))void loadTools();
+    if(view==="library"&&can("training"))void loadTraining();
+    if(view==="clients"&&can("tickets_view"))renderClients();
+    if(view==="reports"&&can("tickets_view"))renderReports();
+    if(view==="users"&&isAdmin())void loadStaff();
     document.dispatchEvent(new CustomEvent("proxiti-view-changed",{detail:{view}}));
   }
   function updateNav(){
     for(const node of document.querySelectorAll("#operations [data-admin-only]"))
       node.hidden=!isAdmin();
     const allowed = {tickets:can("tickets_view"),agenda:can("tickets_view"),staff:isAdmin(),content:isAdmin(),
-      training:can("training"),tools:can("resources")};
+      training:can("training"),library:can("training"),tools:can("resources"),
+      equipment:can("resources"),clients:can("tickets_view"),reports:can("tickets_view"),
+      users:isAdmin(),settings:state.profile?.status==="active"};
     for(const tab of el("ops-tabs").querySelectorAll("[data-ops-view]"))
       tab.hidden=!allowed[tab.dataset.opsView];
     el("notifications-toggle").hidden=!can("tickets_view");
