@@ -26,8 +26,8 @@
 <script src="./assets/overview-model.js?v=1" defer></script>
 <script src="./assets/operations.js?v=20260927-3" defer></script>
 <script src="./assets/academy.js?v=20260927-1" defer></script>
-<script src="./assets/academy-curriculum.js?v=20260926-3" defer></script>
-<script src="./assets/academy-learning.js?v=20260926-4" defer></script>
+<script src="./assets/academy-curriculum.js?v=20260927-2" defer></script>
+<script src="./assets/academy-learning.js?v=20260927-2" defer></script>
 <script src="./assets/layout.js" defer></script>
 <script src="./assets/profile.js?v=20260927-1" defer></script>
 <script src="./assets/appearance.js" defer></script>
@@ -41,7 +41,7 @@
 <script src="./assets/agenda.js?v=20260926-1" defer></script>
 <script src="./assets/technical-tools-core.js?v=1" defer></script>
 <script src="./assets/technical-tools.js?v=1" defer></script>
-<script src="./assets/reskin-visual.js?v=20260927-1" defer></script>
+<script src="./assets/reskin-visual.js?v=20260927-2" defer></script>
 <script src="./assets/central-refinement.js?v=20260927-1" defer></script>
 <link rel="stylesheet" href="./assets/ticket-workspace.css?v=20260927-3">
 </head>
@@ -288,16 +288,16 @@
           <article class="uniproxiti-stat uniproxiti-stat-progress"><div class="uniproxiti-ring" id="uniproxiti-progress-ring" role="progressbar" aria-label="Aulas aprovadas em porcentagem" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><strong id="uniproxiti-progress-percent">—</strong></div><div><span>Progresso geral</span><small>Aulas aprovadas do currículo ativo</small></div></article>
           <article class="uniproxiti-stat uniproxiti-stat-approved"><span class="uniproxiti-stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-5 9 5-9 5zM6 12v5c4 3 8 3 12 0v-5M21 9v7"/></svg></span><span>Aulas aprovadas</span><strong id="uniproxiti-approved">—</strong><small id="uniproxiti-approved-note">Consultando as aulas autorizadas…</small></article>
           <article class="uniproxiti-stat uniproxiti-stat-score"><span class="uniproxiti-stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.8 6.3 6.7.6-5.1 4.5 1.5 6.6-5.9-3.5-5.9 3.5 1.5-6.6-5.1-4.5 6.7-.6z"/></svg></span><span>Última nota</span><strong id="uniproxiti-last-score">—</strong><small id="uniproxiti-average-score">Média das aulas aprovadas indisponível</small></article>
-          <article class="uniproxiti-stat uniproxiti-stat-certificate"><span class="uniproxiti-stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v7a5 5 0 0 1-10 0zM7 6H4v3a4 4 0 0 0 4 4M17 6h3v3a4 4 0 0 1-4 4M12 16v4M8 21h8"/></svg></span><span>Certificação interna</span><strong id="uniproxiti-cert-status">Em andamento</strong><small id="uniproxiti-cert-note">Verificando o certificado emitido pelo servidor…</small></article>
+          <article class="uniproxiti-stat uniproxiti-stat-certificate"><span class="uniproxiti-stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v7a5 5 0 0 1-10 0zM7 6H4v3a4 4 0 0 0 4 4M17 6h3v3a4 4 0 0 1-4 4M12 16v4M8 21h8"/></svg></span><span>Certificados por trilha</span><strong id="uniproxiti-cert-status">Aguardando</strong><small id="uniproxiti-cert-note">Cada trilha tem uma prova e um certificado próprios.</small></article>
         </div>
-        <div class="uniproxiti-continue-card"><span aria-hidden="true" class="continue-play">▷</span><button id="uniproxiti-continue" type="button" class="primary" disabled>Continuar estudo</button><small>Retome a próxima aula disponível</small></div></div>
-<div class="uniproxiti-tracks-heading"><div><p class="kicker">PERCURSOS DISPONÍVEIS</p><h5>Trilhas de capacitação</h5></div><p>Os indicadores mostram aulas aprovadas e as exigências registradas no currículo.</p></div>
+        <div class="uniproxiti-continue-card"><span aria-hidden="true" class="continue-play">▷</span><button id="uniproxiti-continue" type="button" class="primary" disabled>Continuar estudo</button><small>Retome sua próxima aula ou escolha a prova de uma trilha.</small></div></div>
+<div class="uniproxiti-tracks-heading"><div><p class="kicker">PERCURSOS DISPONÍVEIS</p><h5>Trilhas de capacitação</h5></div><p>Trilhas essenciais e recomendadas. Cada uma libera seu certificado após as duas aulas e a prova final, sem exigir todo o currículo.</p></div>
 <div id="academy-track-list" class="academy-track-list" aria-label="Trilhas e aulas disponíveis"></div>
 <div class="uniproxiti-dashboard-columns">
           <section class="uniproxiti-resume" aria-labelledby="uniproxiti-resume-heading"><p class="kicker">RETOME SEU PERCURSO</p><h5 id="uniproxiti-resume-heading">Continuar de onde parou</h5><strong id="uniproxiti-resume-title">Consultando seu histórico…</strong><p id="uniproxiti-resume-note">Os dados da aula são carregados da sua conta.</p><div class="uniproxiti-resume-track" id="uniproxiti-resume-track" hidden><span id="uniproxiti-resume-progress">—</span><div class="uniproxiti-resume-bar" role="progressbar" aria-label="Progresso da trilha" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="uniproxiti-resume-fill"></span></div></div><button id="uniproxiti-resume-action" type="button" class="secondary" disabled>Retomar aula</button><small class="uniproxiti-reading-note">O sistema registra tentativas e aprovações, não a porcentagem de leitura da aula.</small></section>
           <section class="uniproxiti-activity" aria-labelledby="uniproxiti-activity-heading"><p class="kicker">REGISTROS DA SUA CONTA</p><h5 id="uniproxiti-activity-heading">Minha atividade recente</h5><ol id="uniproxiti-activity-list" aria-live="polite"><li>Consultando as atividades registradas…</li></ol><p id="uniproxiti-activity-note" class="uniproxiti-note"></p></section>
         </div>
-        <section id="uniproxiti-certificate-card" class="uniproxiti-certificate" aria-labelledby="uniproxiti-certificate-heading" hidden><div><p class="kicker">CERTIFICAÇÃO EMITIDA</p><h5 id="uniproxiti-certificate-heading">Certificado UniProxiti</h5><p id="uniproxiti-certificate-detail">Certificado interno emitido e registrado para sua conta.</p><small>Certificação interna, não credencial formal.</small></div><button id="uniproxiti-certificate-pdf" type="button" class="primary">Imprimir / Salvar PDF</button></section>
+        <section id="uniproxiti-certificate-card" class="uniproxiti-certificate" aria-labelledby="uniproxiti-certificate-heading" hidden><div><p class="kicker">CERTIFICAÇÃO EMITIDA</p><h5 id="uniproxiti-certificate-heading">Certificados UNIPROXITI</h5><p id="uniproxiti-certificate-detail">Seus certificados emitidos e registrados no servidor.</p><small>Certificação interna, não credencial formal.</small></div><button id="uniproxiti-certificate-pdf" type="button" class="primary">Imprimir / Salvar PDF</button></section>
       </section>
       <div id="academy-learning-summary" class="academy-learning-summary" role="status" aria-live="polite">
         <p>Consultando seu progresso individual…</p>
@@ -306,9 +306,9 @@
 <div class="academy-learning-actions">
         <button id="academy-learning-show-tracks" type="button" class="secondary">Ver trilhas</button>
         <button id="academy-learning-show-certificate" type="button" class="secondary">Meu certificado</button>
-        <button id="academy-learning-open-exam" type="button" class="primary" disabled>Prova final · concluir 16 cursos</button>
+        <button id="academy-learning-open-exam" type="button" class="primary" disabled>Certificação geral opcional · 16 aulas</button>
       </div>
-      <details class="uniproxiti-rules"><summary>Critérios de aprovação e certificação interna</summary><p class="academy-learning-policy">Para concluir cada aula: pelo menos 3 de 4 questões corretas (75%). Para o certificado interno: concluir as 16 aulas, obter no mínimo 75 na prova de 24 questões, média final ponderada mínima de 80 e acertar as quatro questões críticas de segurança e privacidade. Média final = 60% da média dos melhores questionários + 40% da prova final.</p></details>
+      <details class="uniproxiti-rules"><summary>Critérios de aprovação e certificados por trilha</summary><p class="academy-learning-policy">Cada trilha é independente e tem duas aulas (50 minutos cada, incluindo atividade prática) e uma prova final (20 minutos), com cerca de 2 horas de estudo orientado. Para concluir cada aula, acerte pelo menos 3 de 4 questões (75%). Após aprovar as duas aulas da trilha, faça sua prova final de 10 questões: mínimo de 80 pontos na prova, média ponderada mínima de 80 e acerto de eventuais questões críticas. A média considera 60% da melhor nota de cada aula e 40% da prova final. Seu certificado interno da trilha é emitido pelo servidor quando todos esses critérios forem cumpridos. Não é necessário concluir as outras trilhas. A antiga certificação geral de 16 aulas continua disponível como opção adicional, sem substituir os certificados individuais.</p></details>
       
       
       <section id="academy-lesson-panel" class="academy-learning-detail" aria-labelledby="academy-lesson-heading" hidden>
@@ -321,9 +321,17 @@
           <div id="academy-quiz-result" class="academy-assessment-result" role="status" aria-live="polite"></div>
         </section>
       </section>
+      <section id="academy-track-exam-panel" class="academy-learning-detail" aria-labelledby="academy-track-exam-heading" hidden>
+        <button type="button" id="academy-track-exam-back" class="secondary">← Voltar às trilhas</button>
+        <h5 id="academy-track-exam-heading">Prova final da trilha</h5>
+        <p>Dez questões sobre as duas aulas desta trilha. Sua nota e o certificado são verificados e registrados no servidor, sem exigir a conclusão das outras trilhas.</p>
+        <p id="academy-track-exam-status" class="ops-muted" role="status" aria-live="polite"></p>
+        <form id="academy-track-exam-form" class="academy-assessment-form"></form>
+        <div id="academy-track-exam-result" class="academy-assessment-result" role="status" aria-live="polite"></div>
+      </section>
       <section id="academy-exam-panel" class="academy-learning-detail" aria-labelledby="academy-exam-heading" hidden>
         <button type="button" id="academy-exam-back" class="secondary">← Voltar às trilhas</button>
-        <h5 id="academy-exam-heading">Avaliação Final · Fundamentos Operacionais PROXITI</h5>
+        <h5 id="academy-exam-heading">Certificação geral opcional · Fundamentos Operacionais PROXITI</h5>
         <p>24 questões objetivas distribuídas entre as oito áreas. A prova é individual e corrigida no Supabase. Quatro questões críticas de segurança e privacidade exigem acerto; você pode refazer após estudar.</p>
         <p id="academy-exam-status" class="ops-muted" role="status" aria-live="polite"></p>
         <form id="academy-exam-form" class="academy-assessment-form"></form>
@@ -331,7 +339,7 @@
       </section>
       <section id="academy-certificate-panel" class="academy-learning-detail" aria-labelledby="academy-certificate-heading" hidden>
         <button type="button" id="academy-certificate-back" class="secondary">← Voltar às trilhas</button>
-        <h5 id="academy-certificate-heading">Certificado de Conclusão Interna</h5>
+        <h5 id="academy-certificate-heading">Meus certificados UNIPROXITI</h5>
         <div id="academy-certificate-detail" class="academy-certificate-detail"></div>
         <button type="button" id="academy-certificate-print" class="primary" hidden>Imprimir / Salvar certificado em PDF</button>
       </section>
