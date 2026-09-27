@@ -2,6 +2,9 @@
    Fotografia local, banners com a mesma régua da UNIPROXITI, busca acessível,
    menu da conta e navegação com expansão por ponteiro. Sem alterar serviços. */
 html[data-theme] body.workspace-mode{--central-banner-height:250px}
+/* O CSS legado aplicava padding:20px ao #ops-tickets, criando faixas nos dois lados. */
+html[data-theme] body.workspace-mode #ops-tickets{padding:0!important}
+
 html[data-theme] body.workspace-mode .panel-main:has(#operations:not([hidden]) .ops-view:not([hidden]) > .central-page-hero) .panel-head,
 html[data-theme] body.workspace-mode .panel-main:has(#profile-section:not([hidden])) .panel-head,
 html[data-theme] body.workspace-mode .panel-main:has(#overview-home:not([hidden])) .panel-head{margin-bottom:0}
