@@ -249,7 +249,7 @@ try{
      assert.equal((await page.textContent("#overview-metric-unread-label")).trim(),"Novos chamados não lidos");
    }finally{await page.close();}
  });
- await test("Visão geral sincroniza mesmo quando a última área foi Academia",async()=>{
+ await test("Visão geral sincroniza mesmo quando a última área foi UniProxiti",async()=>{
    const page=await openScenario({training:true,startView:"training"});
    try{
      await page.waitForFunction(()=>document.querySelector("#overview-sync-state").dataset.phase==="ready");

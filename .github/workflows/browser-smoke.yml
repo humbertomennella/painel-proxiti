@@ -12,6 +12,7 @@ on:
       - "tests/academy-functional.mjs"
       - "tests/academy-learning-functional.mjs"
       - "tests/reskin-visual.mjs"
+      - "tests/uniproxiti-integrity.mjs"
       - ".github/workflows/browser-smoke.yml"
   push:
     branches: [main]
@@ -25,6 +26,7 @@ on:
       - "tests/academy-functional.mjs"
       - "tests/academy-learning-functional.mjs"
       - "tests/reskin-visual.mjs"
+      - "tests/uniproxiti-integrity.mjs"
       - ".github/workflows/browser-smoke.yml"
   workflow_dispatch:
 permissions:
@@ -52,10 +54,13 @@ jobs:
         run: node tests/tickets-functional.mjs
       - name: Verificar agenda com confirmação, paginação, reagendamento e permissões
         run: node tests/agenda-functional.mjs
-      - name: Verificar Academia com busca, publicação, revisão e privacidade
+      - name: Verificar UniProxiti com busca, publicação, revisão e privacidade
         run: node tests/academy-functional.mjs
       - name: Verificar aulas, prova final, nota e certificado interno
         run: node tests/academy-learning-functional.mjs
+      - name: Auditar dashboard UniProxiti, IDs e contraste AA
+        if: github.event_name == 'pull_request' && github.head_ref == 'uniproxiti-dashboard'
+        run: node tests/uniproxiti-integrity.mjs
       - name: Auditoria visual sem alterações em auth, dados ou permissões
         if: github.event_name == 'pull_request' && github.head_ref == 'reskin-visual'
         run: node tests/reskin-visual.mjs

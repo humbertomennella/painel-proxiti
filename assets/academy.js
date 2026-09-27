@@ -53,8 +53,8 @@ function phase(kind){
    (hasMore?". Há mais materiais nesta pesquisa.":".");
  else if(kind==="error")n.textContent=lastSync?
    "Falha na atualização. Os materiais exibidos podem estar desatualizados. Tente novamente.":
-   "Não foi possível consultar a Academia. Use Atualizar para tentar novamente.";
- else n.textContent="A Academia não está habilitada para esta conta.";
+   "Não foi possível consultar a UniProxiti. Use Atualizar para tentar novamente.";
+ else n.textContent="A UniProxiti não está habilitada para esta conta.";
 }
 function kind(){
  const article=el("training-kind").value==="article";
@@ -76,7 +76,7 @@ function clear(){
  signature="";lastSync=0;editorBusy=false;
  if(searchTimer){clearTimeout(searchTimer);searchTimer=null;}
  resetEditor();
- el("training-list").replaceChildren(make("p","Entre na Central para consultar a Academia.","ops-muted"));
+ el("training-list").replaceChildren(make("p","Entre na Central para consultar a UniProxiti.","ops-muted"));
  el("training-search-status").textContent="";
  el("training-load-more").hidden=true;el("training-load-more").disabled=false;
  phase("restricted");

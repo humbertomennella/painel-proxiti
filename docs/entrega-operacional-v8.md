@@ -11,7 +11,7 @@ Cada chamado integra conversa com o cliente, notas internas, checklist por área
 ## Agenda
 A aba Agenda exibe compromissos de chamados acessíveis. Um técnico designado pode planejar retorno, ligação ou visita, depois marcar como confirmado **após combinar com o cliente** e finalmente concluí-lo ou cancelá-lo. A criação do registro não envia convite, e a plataforma não deve afirmar confirmação sem validação humana. Data/hora da tela é local; o banco armazena instante UTC.
 
-## Academia
+## UniProxiti
 Foram publicados **10 procedimentos internos originais**, em Atendimento, Computadores, Redes, Backup, Segurança e Infraestrutura. Conteúdo inicial fica no banco privado, com pesquisa por texto, categoria e data de revisão, além de referência técnica quando aplicável. Revisões pelo administrador preservam a chave editorial dos materiais seed. A opção "Consultado neste navegador" é preferência local; **não é avaliação, certificado ou progresso sincronizado**. Um administrador também pode publicar textos ou PDFs/imagens privados de até 10 MB. Não inserir material sujeito a licenciamento ou dados de cliente sem permissão.
 
 ## Ferramentas

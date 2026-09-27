@@ -115,7 +115,7 @@ const cssV8=get("assets/operations-v8.css");
 assert.equal((cssV8.match(/{/g)||[]).length,(cssV8.match(/}/g)||[]).length,
  "CSS V8 desbalanceado");
 assert(cssV8.includes(".academy-body")&&cssV8.includes(".digital-toolkit"),
- "Academia ou ferramentas sem estilo");
+ "UniProxiti ou ferramentas sem estilo");
 const v8=get("supabase/central_operations_v8.sql"),academy=get("supabase/academy_content_v8.sql");
 for(const rule of ["ticket_appointments","ticket_devices","ticket_reports",
  "proxiti_schedule_appointment","proxiti_update_appointment","proxiti_save_ticket_device",
@@ -123,7 +123,7 @@ for(const rule of ["ticket_appointments","ticket_devices","ticket_reports",
  assert(v8.includes(rule),"Schema V8 sem proteção "+rule);
 }
 assert.equal((academy.match(/insert into public.training_materials\(/g)||[]).length,10,
- "Academia deve ter dez procedimentos completos");
+ "UniProxiti deve ter dez procedimentos completos");
 assert(academy.includes("on conflict(content_key) where content_key is not null do nothing"),
  "Migração editorial precisa preservar edições existentes");
 const ctx={window:{}};
@@ -139,7 +139,7 @@ assert.equal(calculator("0.0.0.0",0).hosts,4294967294);
 assert.throws(()=>calculator("300.0.0.1",24));
 assert.throws(()=>calculator("10.0.0.1",33));
 assert.throws(()=>calculator("001.0.0.1",24));
-console.log("PROXITI V8: Academia, agenda, dispositivos, relatórios e calculadora IPv4 testados.");
+console.log("PROXITI V8: UniProxiti, agenda, dispositivos, relatórios e calculadora IPv4 testados.");
 
 for(const id of ["overview-sync-state","overview-retry","overview-resume","overview-resume-action",
  "overview-data-note","overview-metric-unread-label","overview-metric-unread-description"]){
@@ -259,15 +259,15 @@ console.log("Agenda: migração, permissões, paginação e testes funcionais ve
 
 for(const id of ["training-sync-state","training-status-filter","training-reviewed",
  "training-editor-feedback","training-load-more","training-list"]){
- assert(html.includes('id="'+id+'"'),"Academia sem estado ou controle #"+id);
+ assert(html.includes('id="'+id+'"'),"UniProxiti sem estado ou controle #"+id);
 }
 assert(html.includes('src="./assets/academy.js?v=20260926-1"'),
- "Módulo editorial da Academia não está carregado");
+ "Módulo editorial da UniProxiti não está carregado");
 const academyCode=get("assets/academy.js"),academyDb=get("supabase/academy_integrity_v12.sql");
 for(const rule of ["training_material_versions","training_search_gin_idx",
  "training_publication_review_check","proxiti_training_record_version",
  "revoke delete on public.training_materials from authenticated"]){
- assert(academyDb.includes(rule),"Migração da Academia sem "+rule);
+ assert(academyDb.includes(rule),"Migração da UniProxiti sem "+rule);
 }
 assert(academyDb.includes("m.storage_path=storage.objects.name and m.published"),
  "Arquivos de rascunhos estão acessíveis aos técnicos");
@@ -284,18 +284,18 @@ assert(academyCode.includes("proxiti-academy-read-v2-"),
 assert(get("assets/operations.js").includes('proxiti-academy-refresh'),
  "Navegação não atualiza o módulo independente");
 assert(existsSync(new URL("../tests/academy-functional.mjs",import.meta.url)),
- "Academia sem testes funcionais de sessão simulada");
+ "UniProxiti sem testes funcionais de sessão simulada");
 assert(existsSync(new URL("../docs/academia-homologacao.md",import.meta.url))&&
  get("README.md").includes("docs/academia-homologacao.md"),
- "Academia sem roteiro editorial e de homologação");
-console.log("Academia: integridade, versões, acesso privado e pesquisa validados.");
+ "UniProxiti sem roteiro editorial e de homologação");
+console.log("UniProxiti: integridade, versões, acesso privado e pesquisa validados.");
 
 const curriculumContext={window:{}};
 runInNewContext(get("assets/academy-curriculum.js"),curriculumContext);
 const curriculum=curriculumContext.window.PROXITI_ACADEMY_CURRICULUM;
 assert.equal(curriculum.version,"2026-09-v1");
-assert.equal(curriculum.tracks.length,8,"Academia deve conter oito áreas reais da PROXITI");
-assert.equal(curriculum.courses.length,16,"Academia deve conter dezesseis aulas completas");
+assert.equal(curriculum.tracks.length,8,"UniProxiti deve conter oito áreas reais da PROXITI");
+assert.equal(curriculum.courses.length,16,"UniProxiti deve conter dezesseis aulas completas");
 assert.equal(new Set(curriculum.courses.map(course=>course.id)).size,16);
 for(const course of curriculum.courses){
  assert(course.objectives.length>=3&&course.sections.length>=3&&
@@ -312,7 +312,7 @@ for(const required of ["academy_courses","academy_questions","academy_course_pro
  "proxiti_academy_questions","proxiti_academy_submit_quiz",
  "proxiti_academy_submit_exam","critical_ok","score>=75",
  "final_score>=80","0.60","0.40","verification_code"]){
- assert(learningSql.includes(required),"Avaliações da Academia sem "+required);
+ assert(learningSql.includes(required),"Avaliações da UniProxiti sem "+required);
 }
 assert(learningSql.includes("revoke all on public.academy_courses,public.academy_questions"),
  "Gabarito público por privilégio de tabela");
@@ -326,5 +326,5 @@ assert(get("assets/academy-learning.js").includes('proxiti_academy_submit_exam')
  get("assets/academy-learning.js").includes('from("academy_certificates")'),
  "A nota ou o certificado não são obtidos do servidor");
 assert(existsSync(new URL("../tests/academy-learning-functional.mjs",import.meta.url)),
- "Academia sem testes do curso, avaliação e certificado");
-console.log("Academia V13: 16 aulas, 8 imagens, progresso privado e certificado verificados.");
+ "UniProxiti sem testes do curso, avaliação e certificado");
+console.log("UniProxiti V13: 16 aulas, 8 imagens, progresso privado e certificado verificados.");

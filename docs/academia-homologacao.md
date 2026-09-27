@@ -1,10 +1,10 @@
-# Academia PROXITI · operação editorial e homologação
+# UniProxiti · operação editorial e homologação
 
 Quarta área funcional da Central, após a conclusão da Visão Geral, Chamados e Agenda. Esta entrega aproveita os **dez procedimentos internos existentes**. Nenhum material publicado foi substituído para compor a interface e nenhum registro de cliente ou certificado de curso foi criado.
 
 ## O que está disponível
 
-A Academia reúne artigos e arquivos privados por especialidade. A pesquisa percorre título, descrição e corpo técnico no banco com indexação em português; o resultado pode ser filtrado por especialidade. O administrador também filtra **publicados e rascunhos**. A consulta usa páginas de 40 registros. O indicador mostra somente a quantidade carregada e sinaliza quando existem mais páginas, sem apresentá-la como total histórico absoluto.
+A UniProxiti reúne artigos e arquivos privados por especialidade. A pesquisa percorre título, descrição e corpo técnico no banco com indexação em português; o resultado pode ser filtrado por especialidade. O administrador também filtra **publicados e rascunhos**. A consulta usa páginas de 40 registros. O indicador mostra somente a quantidade carregada e sinaliza quando existem mais páginas, sem apresentá-la como total histórico absoluto.
 
 Artigos usam títulos e etapas em texto seguro, sem injeção de HTML. O administrador pode editar os metadados, revisar o conteúdo e publicar após confirmar sua própria revisão técnica. PDF e imagens ficam no bucket privado e são abertos com autorização temporária de 90 segundos. O bucket não se torna público.
 

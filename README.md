@@ -14,7 +14,7 @@ Repositório público da interface privada da PROXITI. A autenticação, as regr
 - Chat integrado ao chamado: visitantes acompanham e respondem com uma chave aleatória guardada **somente no navegador**; a equipe responde pelo painel. O visitante recebe novas mensagens por atualização automática (~4 s); o painel recebe alterações em tempo real, com atualização periódica de reserva.
 - Presença: um técnico com acesso ao chat e painel visível envia sinal periódico. Quando disponível, pode receber uma conversa iniciada pelo site.
 - Conteúdo gerenciável: edição, publicação e remoção das personalizações de texto integradas do site (atualmente quatro blocos em `public.site_content`).
-- Academia: cadastro de materiais e upload privado de PDF/imagem até 10 MB; liberação apenas a parceiros com permissão.
+- UniProxiti: cadastro de materiais e upload privado de PDF/imagem até 10 MB; liberação apenas a parceiros com permissão.
 - Ferramentas: cadastro, alteração, atribuição a um técnico e exclusão do registro.
 - Proteção por RLS no banco; privilégios não dependem apenas de elementos ocultos no HTML.
 
@@ -32,18 +32,18 @@ Repositório público da interface privada da PROXITI. A autenticação, as regr
 1. Entre no painel e abra **Gestão PROXITI → Chamados** para atender, designar e responder. O contato direto por telefone/e-mail continua no site.
 2. Em **Técnicos e permissões**, convide uma pessoa; o perfil fica pendente até a aprovação. Permita somente os módulos necessários. Suspensão bloqueia o acesso a novos dados.
 3. Em **Conteúdo do site**, edite blocos por identificador. A exclusão da personalização restaura o texto estático original. O editor utiliza `textContent`, nunca HTML arbitrário.
-4. Em **Academia**, publique arquivos no bucket **privado** `proxiti-training`. Em **Ferramentas**, registre e atribua equipamentos.
+4. Em **UniProxiti**, publique arquivos no bucket **privado** `proxiti-training`. Em **Ferramentas**, registre e atribua equipamentos.
 
 ## Limite importante: controle do site
 
 Este painel permite administrar **os dados operacionais, técnicos, arquivos autorizados e os blocos de conteúdo já vinculados**. **Ele ainda não edita todo o HTML, CSS, JavaScript, páginas estáticas, layouts, domínio ou checkout do GitHub.** Para controlar o código-fonte sem abrir o editor do GitHub, falta construir uma integração de publicação por servidor usando uma GitHub App autorizada exclusivamente no repositório da PROXITI, com permissão mínima, proteção de branch e trilha de auditoria. Nunca coloque token GitHub ou chave Supabase privada no navegador.
 
-Os cursos completos com progresso/avaliações, portfólios públicos individuais e alterações arbitrárias do site também não estão implementados. Os materiais privados da Academia já têm upload e gestão.
+As aulas, avaliações e o certificado interno da UniProxiti estão implementados. Portfólios públicos individuais e alterações arbitrárias do código do site continuam fora do escopo. Os materiais privados da UniProxiti têm upload e gestão.
 
 ## Arquitetura
 
 - `index.html`, `assets/style.css`, `assets/app.js`: autenticação e interface.
-- `assets/operations.js`: chamados, chat da equipe, convites, CMS, Academia e Ferramentas.
+- `assets/operations.js`: chamados, chat da equipe, convites, CMS, UniProxiti e Ferramentas.
 - `assets/config.js`: URL e **chave pública** do Supabase. Nunca coloque `service_role`, `sb_secret_` ou dados dos clientes no repositório.
 - `supabase/schema.sql`: perfis V1.
 - `supabase/operations_v2.sql` e `supabase/fix_public_cms_rls_v2.sql`: expansão aditiva e correção de RLS.
@@ -62,17 +62,17 @@ Os cursos completos com progresso/avaliações, portfólios públicos individuai
 
 A Central possui notas internas, checklists de diagnóstico por tipo de serviço, anexos privados de até 5 MB e preparação de relatório para revisão e impressão. O acesso de leitura e escrita é verificado no Supabase; a interface não substitui essas verificações. Chamados encerrados não entram nas pendências acionáveis e não podem receber novos registros técnicos.
 
-A migração aditiva `supabase/ticket_workflow_v7.sql` foi aplicada ao projeto Central Técnica PROXITI em 25/09/2026. A interface utiliza `assets/ticket-workflow.js` e `assets/ticket-workflow.css`. A Academia e o inventário permitem pesquisar os itens já carregados sem novas consultas a cada tecla.
+A migração aditiva `supabase/ticket_workflow_v7.sql` foi aplicada ao projeto Central Técnica PROXITI em 25/09/2026. A interface utiliza `assets/ticket-workflow.js` e `assets/ticket-workflow.css`. A UniProxiti e o inventário permitem pesquisar os itens já carregados sem novas consultas a cada tecla.
 
-**Limites:** o relatório é gerado para revisão no navegador e não é enviado automaticamente; conteúdo real da Academia, segundo técnico, agenda e histórico consolidado de equipamentos exigem implantação operacional específica. A validação com duas contas reais ainda não foi realizada. Consulte [o fluxo, a matriz de acesso e o roteiro de testes](docs/fluxo-tecnico-v7.md).
+**Limites:** o relatório é gerado para revisão no navegador e não é enviado automaticamente; conteúdo real da UniProxiti, segundo técnico, agenda e histórico consolidado de equipamentos exigem implantação operacional específica. A validação com duas contas reais ainda não foi realizada. Consulte [o fluxo, a matriz de acesso e o roteiro de testes](docs/fluxo-tecnico-v7.md).
 
 
 ## Central V8 · Módulos preparados e materiais entregues
 
-- **Visão geral:** indicadores de pendências acionáveis, tema claro/escuro, acessibilidade móvel e atalhos para chamados, Agenda, Academia, Ferramentas e perfil.
+- **Visão geral:** indicadores de pendências acionáveis, tema claro/escuro, acessibilidade móvel e atalhos para chamados, Agenda, UniProxiti, Ferramentas e perfil.
 - **Chamados:** notas internas, checklists, anexos privados, equipamento por atendimento, agendamentos vinculados, relatórios versionados e histórico de auditoria.
 - **Agenda:** compromissos reais com estados planejado, confirmado, concluído ou cancelado. O sistema não confirma horário nem envia convite sem ação humana.
-- **Academia:** dez procedimentos originais publicados em seis áreas, com pesquisa, filtro, revisão editorial e opção de impressão/salvamento em PDF pelo navegador.
+- **UniProxiti:** dez procedimentos originais publicados em seis áreas, com pesquisa, filtro, revisão editorial e opção de impressão/salvamento em PDF pelo navegador.
 - **Ferramentas:** inventário e calculadora IPv4/CIDR, verificação SHA-256 local, sem transmitir arquivo ao Supabase.
 - **Técnicos, conteúdo e perfil:** continuam respeitando os níveis de permissão e o MFA administrativo existente.
 
@@ -88,6 +88,12 @@ A área de **Chamados** agora dispõe de proteção de status no banco, retomada
 
 A **Agenda** agora tem confirmação de contato com canal registrado, reagendamento auditável com motivo preservado, histórico paginado, estados de falha e bloqueios por permissão. Consulte o [roteiro operacional e de homologação da Agenda](docs/agenda-homologacao.md). A verificação com contas reais e contato legítimo com cliente continua separada dos testes automatizados.
 
-A **Academia PROXITI** preserva os dez procedimentos internos publicados, agora com busca técnica em português, revisão explícita, versões anteriores privadas, arquivamento e acesso temporário a arquivos. O [roteiro editorial e de homologação](docs/academia-homologacao.md) distingue os testes automatizados da conferência profissional e das permissões de contas reais.
+A **UniProxiti** preserva os dez procedimentos internos publicados, agora com busca técnica em português, revisão explícita, versões anteriores privadas, arquivamento e acesso temporário a arquivos. O [roteiro editorial e de homologação](docs/academia-homologacao.md) distingue os testes automatizados da conferência profissional e das permissões de contas reais.
 
-A **Academia PROXITI V13** separa os dez procedimentos de consulta da capacitação: [16 aulas em oito trilhas, 64 questões, prova final de 24 questões, pontuação no Supabase e certificado interno](docs/academia-homologacao.md). Há oito ilustrações técnicas SVG originais; o gabarito permanece no banco privado e o certificado depende de critérios registrados no servidor, não de um botão local.
+A **UniProxiti V13** separa os dez procedimentos de consulta da capacitação: [16 aulas em oito trilhas, 64 questões, prova final de 24 questões, pontuação no Supabase e certificado interno](docs/academia-homologacao.md). Há oito ilustrações técnicas SVG originais; o gabarito permanece no banco privado e o certificado depende de critérios registrados no servidor, não de um botão local.
+
+## UniProxiti · Dashboard (Iteração 2)
+
+A UniProxiti foi reorganizada como painel de estudos, com quatro indicadores calculados a partir das tabelas existentes do Supabase, trilhas com a classificação `required` do catálogo, retomada de aula, atividade recente baseada em tentativas registradas e certificado somente após emissão real pelo servidor. A seção de biblioteca técnica, questionários, prova final e PDF mantém os fluxos anteriores. Subtítulo da área: **Programa interno de capacitação PROXITI**.
+
+O banco registra aulas aprovadas, tentativas e notas, mas **não registra percentual de leitura da aula**. A retomada apresenta o percentual real da trilha, sem inventar conclusão de leitura. Veja [fontes, limites e QA da UniProxiti](docs/uniproxiti-dashboard.md). Branch de revisão: `uniproxiti-dashboard`; nenhuma publicação ou merge sem aprovação.
