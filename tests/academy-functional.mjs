@@ -378,7 +378,7 @@ try{
  await test("Falha de consulta não se confunde com biblioteca vazia",async()=>{
    const page=await openScenario({materials:[makeMaterial(1)],failTraining:true});
    try{
-     await page.evaluate(()=>window.PROXITI_OPEN_VIEW("training"));
+     await page.evaluate(()=>window.PROXITI_OPEN_VIEW("library"));
      await page.waitForFunction(()=>document.getElementById("training-sync-state").dataset.phase==="error");
      assert((await page.textContent("#training-sync-state")).includes("Não foi possível consultar"));
      await page.evaluate(()=>window.__fixture.failTraining=false);
@@ -390,7 +390,7 @@ try{
  await test("Revogação durante uma consulta impede vazamento após resposta atrasada",async()=>{
    const page=await openScenario({materials:[makeMaterial(1)],deferTraining:true});
    try{
-     await page.evaluate(()=>window.PROXITI_OPEN_VIEW("training"));
+     await page.evaluate(()=>window.PROXITI_OPEN_VIEW("library"));
      await page.waitForFunction(()=>typeof window.__fixture.releaseTraining==="function");
      await page.evaluate(()=>{
        const active=window.PROXITI_ACTIVE_SESSION;
