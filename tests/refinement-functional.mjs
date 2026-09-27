@@ -97,10 +97,11 @@ try{
     await page.screenshot({path:resolve(artifacts,"refino-"+view+"-"+width+".png"),fullPage:false});
   }
   if(width>=931){
-   const sizes=await page.evaluate(()=>{
+   const sizes=await page.evaluate(async()=>{
     const side=document.getElementById("app-sidebar"),panel=document.getElementById("panel"),main=document.getElementById("panel-main");
     panel.classList.add("sidebar-collapsed");const compact=side.getBoundingClientRect().width,left=main.getBoundingClientRect().left;
-    panel.classList.remove("sidebar-collapsed");const expanded=side.getBoundingClientRect().width;
+    panel.classList.remove("sidebar-collapsed");await new Promise(resolve=>setTimeout(resolve,340));
+    const expanded=side.getBoundingClientRect().width;
     return {compact,expanded,left,transition:getComputedStyle(side).transitionProperty};
    });
    assert(sizes.compact<=73&&sizes.expanded>=239&&sizes.left===72&&sizes.transition.includes("width"),
