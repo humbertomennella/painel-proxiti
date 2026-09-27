@@ -6,7 +6,7 @@
   const bucket="proxiti-ticket-files";
   const formats={"application/pdf":".pdf","image/png":".png","image/jpeg":".jpg","image/webp":".webp"};
   let selected=null,revision=0,taskRows=[];
-  const noteDrafts=new Map();
+  const noteDrafts=new Map(), taskDrafts=new Map(),fileDrafts=new Map();
   const session=()=>window.PROXITI_ACTIVE_SESSION;
   const database=()=>session()?.client;
   const isAdmin=()=>session()?.profile?.role==="administrator"&&session()?.profile?.status==="active";
@@ -38,6 +38,7 @@
     area.replaceChildren(make("li",message,"ticket-workflow-empty"));
   }
   function displayNotes(rows){
+    document.dispatchEvent(new CustomEvent("proxiti-ticket-notes-loaded",{detail:{ticketId:selected?.id,rows}}));
     const list=el("ticket-notes-list");list.replaceChildren();
     if(!rows.length){empty(list,"Nenhuma nota interna registrada.");return;}
     for(const item of rows){
@@ -74,23 +75,31 @@
         for(const [value,label] of [["pending","Pendente"],["done","Concluída"],["skipped","Não aplicável"]]){
           const option=make("option",label);option.value=value;chooser.append(option);
         }
-        chooser.value=task.state;
+        const draft=taskDrafts.get(task.id);
+        chooser.value=draft?.state||task.state;
         const explanation=make("input");explanation.type="text";explanation.maxLength=400;
-        explanation.value=task.note||"";explanation.placeholder="Observação ou motivo de não aplicabilidade";
+        explanation.value=draft?.note??task.note??"";explanation.placeholder="Observação ou motivo de não aplicabilidade";
         explanation.setAttribute("aria-label","Observação da etapa "+task.position);
         const save=make("button","Salvar","secondary");save.type="button";
+        const dirty=make('small','','ticket-task-save-state');dirty.setAttribute('role','status');
+        const updateDirty=()=>{const changed=chooser.value!==task.state||explanation.value!==(task.note||'');item.dataset.dirty=String(changed);dirty.textContent=changed?'Alteração não salva':'Registro salvo';if(changed)taskDrafts.set(task.id,{state:chooser.value,note:explanation.value});else taskDrafts.delete(task.id);};
+        chooser.addEventListener('change',updateDirty);explanation.addEventListener('input',updateDirty);updateDirty();
         save.addEventListener("click",async()=>{
           if(selected?.id!==task.ticket_id||!canEdit())return;
+          if(chooser.value==='skipped'&&!explanation.value.trim()){note('Informe o motivo de não aplicabilidade.',true);return;}
+          const ticketId=selected.id,rev=revision,client=database(),uid=session()?.user?.id;
+          const still=()=>selected?.id===ticketId&&rev===revision&&database()===client&&session()?.user?.id===uid&&canEdit();
           save.disabled=true;note("");
           try{
             await rpc("proxiti_update_ticket_task",{
               p_task:task.id,p_state:chooser.value,p_note:explanation.value.trim()
             });
-            note("Etapa salva.");document.dispatchEvent(new CustomEvent("proxiti-ticket-activity",{detail:{id:task.ticket_id}}));await refresh("tasks",selected.id);
-          }catch(error){note(error.message,true);}
+            if(!still())return;taskDrafts.delete(task.id);
+            note("Etapa salva.");document.dispatchEvent(new CustomEvent("proxiti-ticket-activity",{detail:{id:task.ticket_id}}));await refresh("tasks",ticketId);
+          }catch(error){if(still())note(error.message,true);}
           finally{save.disabled=false;}
         });
-        controls.append(chooser,explanation,save);item.append(controls);
+        controls.append(chooser,explanation,save,dirty);item.append(controls);
       }else{
         const stateLabel={pending:"Pendente",done:"Concluída",skipped:"Não aplicável"};
         item.append(make("small",stateLabel[task.state]||task.state,"ticket-workflow-task-status"));
@@ -158,7 +167,8 @@
     const changed=selected?.id!==ticket?.id;
     selected=ticket||null;
     root.hidden=!selected||!canRead();
-    if(!selected){
+    if(!selected||!canRead()){
+      noteDrafts.clear();taskDrafts.clear();fileDrafts.clear();
       el("ticket-note-body").value="";el("ticket-file-form").reset();
       el("ticket-report-form").reset();el("ticket-report-panel").open=false;
       empty(el("ticket-notes-list"),"Selecione um chamado.");
@@ -176,6 +186,7 @@
     el("ticket-report-panel").hidden=!canReport();
     if(changed){
       el("ticket-note-body").value=noteDrafts.get(selected.id)||"";el("ticket-file-form").reset();
+      const pendingFile=fileDrafts.get(selected.id);if(pendingFile&&canEdit()){const transfer=new DataTransfer();transfer.items.add(pendingFile);el('ticket-file-input').files=transfer.files;}
       el("ticket-report-form").reset();el("ticket-report-panel").open=false;
       note("");empty(el("ticket-notes-list"),"Carregando notas…");
       empty(el("ticket-tasks-list"),"Carregando roteiro…");
@@ -222,6 +233,7 @@
     }catch(error){if(selected?.id===ticket.id)note(error.message,true);}
     finally{button.disabled=false;}
   });
+  el('ticket-file-input').addEventListener('change',()=>{if(!selected)return;const file=el('ticket-file-input').files?.[0];if(file)fileDrafts.set(selected.id,file);else fileDrafts.delete(selected.id);});
   el("ticket-file-form").addEventListener("submit",async event=>{
     event.preventDefault();if(!canEdit())return;
     const ticket=selected,form=event.currentTarget,send=form.querySelector('[type="submit"]');
@@ -247,7 +259,7 @@
         p_ticket:ticket.id,p_path:path,p_name:file.name,p_mime:file.type,p_size:file.size
       }));
       if(valid()){
-        form.reset();note("Anexo privado registrado.");
+        form.reset();fileDrafts.delete(ticket.id);note("Anexo privado registrado.");
         document.dispatchEvent(new CustomEvent("proxiti-ticket-activity",{detail:{id:ticket.id}}));
         await refresh("files",ticket.id);
       }
@@ -262,7 +274,7 @@
       }
       if(verification){
         if(valid()){
-          form.reset();note("O anexo foi registrado. A confirmação chegou após a verificação.");
+          form.reset();fileDrafts.delete(ticket.id);note("O anexo foi registrado. A confirmação chegou após a verificação.");
           await refresh("files",ticket.id);
         }
       }else if(uploaded&&verification===null){
@@ -313,11 +325,12 @@
   el("ticket-note-body").addEventListener("input",()=>{
     if(selected?.id)noteDrafts.set(selected.id,el("ticket-note-body").value);
   });
-  document.addEventListener("proxiti-session-ended",()=>{choose(null);noteDrafts.clear();});
+  document.addEventListener("proxiti-session-ended",()=>{choose(null);noteDrafts.clear();taskDrafts.clear();fileDrafts.clear();});
   document.addEventListener("proxiti-session-ready",event=>{
+    taskDrafts.clear();noteDrafts.clear();fileDrafts.clear();
     if(event.detail?.profile?.status!=="active"||
        (event.detail?.profile?.role!=="administrator"&&event.detail?.profile?.permissions?.tickets_view!==true)){
-      choose(null);noteDrafts.clear();
+      choose(null);noteDrafts.clear();taskDrafts.clear();fileDrafts.clear();
     }
   });
   if(window.PROXITI_ACTIVE_TICKET)choose(window.PROXITI_ACTIVE_TICKET);

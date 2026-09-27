@@ -17,13 +17,13 @@
 <link rel="stylesheet" href="./assets/uniproxiti-dashboard.css?v=20260926-2">
 <link rel="stylesheet" href="./assets/central-expansion.css?v=20260926-1">
 <link rel="stylesheet" href="./assets/central-refinement.css?v=20260927-1">
-<link rel="stylesheet" href="./assets/ticket-desk.css?v=20260927-2">
+<link rel="stylesheet" href="./assets/ticket-desk.css?v=20260927-3">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js" defer></script>
 <script src="./assets/config.js" defer></script>
 <script src="./assets/app.js" defer></script>
 <script src="./assets/alerts.js?v=20260927-1" defer></script>
 <script src="./assets/overview-model.js?v=1" defer></script>
-<script src="./assets/operations.js?v=20260927-1" defer></script>
+<script src="./assets/operations.js?v=20260927-3" defer></script>
 <script src="./assets/academy.js?v=20260927-1" defer></script>
 <script src="./assets/academy-curriculum.js?v=20260926-3" defer></script>
 <script src="./assets/academy-learning.js?v=20260926-4" defer></script>
@@ -31,16 +31,18 @@
 <script src="./assets/profile.js?v=20260927-1" defer></script>
 <script src="./assets/appearance.js" defer></script>
 <script src="./assets/overview.js?v=20260925-3" defer></script>
-<script src="./assets/ticket-workflow.js?v=20260927-2" defer></script>
-<script src="./assets/ticket-extras.js?v=20260926-2" defer></script>
-<script src="./assets/ticket-solutions.js?v=20260927-2" defer></script>
-<script src="./assets/ticket-diagnostics-core.js?v=20260927-2" defer></script>
-<script src="./assets/ticket-desk.js?v=20260927-2" defer></script>
+<script src="./assets/ticket-workflow.js?v=20260927-3" defer></script>
+<script src="./assets/ticket-extras.js?v=20260927-3" defer></script>
+<script src="./assets/ticket-solutions.js?v=20260927-3" defer></script>
+<script src="./assets/ticket-diagnostics-core.js?v=20260927-3" defer></script>
+<script src="./assets/ticket-workspace.js?v=20260927-3" defer></script>
+<script src="./assets/ticket-desk.js?v=20260927-3" defer></script>
 <script src="./assets/agenda.js?v=20260926-1" defer></script>
 <script src="./assets/technical-tools-core.js?v=1" defer></script>
 <script src="./assets/technical-tools.js?v=1" defer></script>
 <script src="./assets/reskin-visual.js?v=20260927-1" defer></script>
 <script src="./assets/central-refinement.js?v=20260927-1" defer></script>
+<link rel="stylesheet" href="./assets/ticket-workspace.css?v=20260927-3">
 </head>
 <body>
 <a class="skip" href="#main">Ir para o conteúdo</a>
@@ -127,13 +129,13 @@
       <div class="ticket-list-pane" id="ticket-list-pane"><div class="ticket-list-head"><strong>Caixa de entrada</strong><span id="ticket-table-result" class="ticket-table-result" role="status" aria-live="polite"></span><button type="button" id="ticket-queue-toggle" class="secondary" aria-controls="ticket-list" aria-expanded="true" hidden>Recolher fila</button></div><div id="ticket-list" class="ticket-list" role="list" aria-label="Chamados disponíveis"><p class="ticket-list-empty">Carregando chamados…</p></div></div>
       <div class="ticket-detail-pane"><div id="ticket-empty-state" class="ticket-empty-state"><span class="ticket-empty-mark" aria-hidden="true">↗</span><h3>Selecione um atendimento</h3><p>O histórico, as mensagens e as ações do chamado aparecerão aqui, sem sair da caixa de entrada.</p></div>
     <article id="ticket-detail" class="ops-detail" hidden>
-      <div class="ops-section-head"><div><span id="ticket-code" class="kicker">CHAMADO</span><div class="ticket-detail-title"><h3 id="ticket-subject"></h3><span id="ticket-current-status" aria-live="polite"></span></div><p id="ticket-customer" class="ops-muted"></p></div><button type="button" class="secondary" id="close-detail">Fechar detalhes</button></div>
-      <p id="ticket-description" class="ops-description"></p>
+      <div class="ops-section-head"><div><span id="ticket-code" class="kicker">CHAMADO</span><div class="ticket-detail-title"><h3 id="ticket-subject"></h3><span id="ticket-current-status" aria-live="polite"></span></div><p id="ticket-context" class="ops-muted"></p></div><button type="button" class="secondary" id="close-detail" aria-label="Fechar detalhes" title="Fechar detalhes">×</button></div>
+      <details class="ticket-context-details"><summary>Descrição, contato e ações do chamado</summary><p id="ticket-customer" class="ops-muted"></p><p id="ticket-description" class="ops-description"></p>
       <div class="ops-controls"><button type="button" id="claim-ticket" class="primary">Assumir atendimento</button>
       <label>Situação <select id="ticket-status"><option value="new">Novo</option><option value="triage">Em triagem</option><option value="in_progress">Em atendimento</option><option value="waiting_customer">Aguardando cliente</option><option value="resolved">Resolvido</option><option value="closed">Encerrado</option></select></label>
       <button type="button" id="save-status" class="secondary">Salvar situação</button><span id="ticket-status-help" class="ticket-status-help" role="status">O histórico de um chamado encerrado é somente leitura.</span>
       <label id="assign-group" data-admin-only>Designar técnico <select id="ticket-assignee"></select></label>
-      <button type="button" id="save-assignee" class="secondary" data-admin-only>Designar</button></div>
+      <button type="button" id="save-assignee" class="secondary" data-admin-only>Designar</button></div></details>
 
       <nav class="ticket-desk-shortcuts" id="ticket-desk-shortcuts" aria-label="Acesso rápido ao atendimento"><button type="button" data-ticket-jump="queue" class="ticket-jump-queue">Fila</button><button type="button" data-ticket-jump="chat" class="ticket-jump-chat">Conversa</button><button type="button" data-ticket-jump="diagnostic" class="ticket-jump-diagnostic">Diagnóstico</button><button type="button" data-ticket-jump="notes" class="ticket-jump-notes">Notas</button><button type="button" data-ticket-jump="tasks" class="ticket-jump-tasks">Roteiro</button><button type="button" data-ticket-jump="device" class="ticket-jump-device">Equipamento</button><button type="button" data-ticket-jump="appointments" class="ticket-jump-appointments">Agenda</button><button type="button" data-ticket-jump="attachments" class="ticket-jump-attachments">Anexos</button><button type="button" data-ticket-jump="report" class="ticket-jump-report">Relatório</button><button type="button" data-ticket-jump="history" class="ticket-jump-history">Histórico</button></nav>
       <div class="ticket-service-layout"><div class="ticket-chat-column" id="ticket-chat-column">
@@ -219,6 +221,7 @@
         </section>
         <details id="ticket-report-panel" class="ticket-workflow-report">
           <summary>Preparar relatório de atendimento <span>Revisar antes de imprimir ou salvar em PDF</span></summary>
+          <section id="ticket-report-assist"></section><div id="ticket-report-suggestions"></div>
           <form id="ticket-report-form" class="ticket-workflow-form">
             <p class="ticket-workflow-help">O documento inclui dados do chamado e apenas os campos abaixo. Notas internas, conversa e anexos não entram no relatório.</p>
             <label for="ticket-report-diagnosis">Diagnóstico realizado</label><textarea id="ticket-report-diagnosis" maxlength="3000" minlength="5" rows="3" required></textarea>

@@ -11,6 +11,7 @@ const symptoms=$("ticket-diagnostic-symptoms"),results=$("ticket-diagnostic-resu
  checklist=$("ticket-preflight"),progress=$("ticket-preflight-progress");
 const memory=new Map();const checks=new Map();
 let selected=null,answer=null,account=null,debounce=null,guided=null;
+let storedGuide=null;
 const guideMemory=new Map();
 const make=(tag,txt,className)=>{
  const node=document.createElement(tag);if(txt!==undefined&&txt!==null)node.textContent=txt;
@@ -82,10 +83,26 @@ function renderGuide(panel,item){
  nav.append(makeGuideButton("Recomeçar guia",()=>{
   guided.step=0;guided.outcomes=[];saveGuide();renderGuide(panel,item);
  }));
- panel.append(nav);
+ nav.append(makeGuideButton('Salvar progresso em nota interna',async()=>{
+  const session=window.PROXITI_ACTIVE_SESSION,ticketId=selected?.id;
+  if(!canNote()||!session?.client||!guided)return;
+  const checkpoint={version:engine.version,caseId:guided.caseId,step:guided.step,outcomes:guided.outcomes};
+  try{
+   const {error}=await session.client.rpc('proxiti_add_ticket_note',{p_ticket:ticketId,p_body:'Guia assistido · hipótese não confirmada. Resultados informados pelo técnico.\nPROXITI-GUIA:'+JSON.stringify(checkpoint)});
+   if(error)throw error;
+   if(selected?.id===ticketId&&window.PROXITI_ACTIVE_SESSION===session){setStatus('Progresso salvo como nota interna privada. Para retomar, abra a mesma hipótese e escolha Retomar progresso salvo.');document.dispatchEvent(new CustomEvent('proxiti-ticket-activity',{detail:{id:ticketId}}));}
+  }catch(error){if(selected?.id===ticketId&&window.PROXITI_ACTIVE_SESSION===session)setStatus('Não foi possível salvar o progresso: '+error.message,true);}
+ },!canNote()));
+ if(storedGuide?.version===engine.version&&storedGuide.caseId===item.id)nav.append(makeGuideButton('Retomar progresso salvo',()=>{
+  if(!selected||!storedGuide)return;
+  guided.step=Math.max(0,Math.min(Number(storedGuide.step)||0,plan.steps.length-1));
+  guided.outcomes=storedGuide.outcomes.slice(0,plan.steps.length).map(v=>['resolved','failed'].includes(v)?v:null);
+  saveGuide();renderGuide(panel,item);setStatus('Progresso retomado da nota interna. Confirme se a hipótese ainda se aplica.');
+ }));
+ panel.append(nav,make("p","Critério de validação final: "+plan.verification,"ticket-solution-expected"));
  if(position===plan.steps.length-1&&outcome==="failed")
   panel.append(make("p","As etapas propostas não resolveram. Registre o resultado e encaminhe ao suporte responsável. Não marque o chamado como resolvido automaticamente.","ticket-solution-escalate"));
- panel.append(make("p","O guia só registra a sua navegação nesta sessão. Não executa comandos, não altera chamados e não comprova autorização do cliente.","ticket-diagnostic-disclaimer"));
+ panel.append(make("p","A navegação fica apenas nesta sessão até você salvar o progresso em nota interna. Sintomas e segredos não entram nesse registro. Nenhum comando é executado.","ticket-diagnostic-disclaimer"));
 }
 function activateGuide(item,panel){
  if(!selected||!item?.solution)return;
@@ -159,21 +176,7 @@ function schedule(){
  if(!selected)return;
  debounce=setTimeout(()=>{debounce=null;analyzeNow();},350);
 }
-function setQueue(collapsed){
- const pane=$("ticket-list-pane"),toggle=$("ticket-queue-toggle");
- const small=window.matchMedia("(max-width: 767px)").matches;
- const closed=!!selected&&small&&!!collapsed;
- pane.dataset.mobileCollapsed=String(closed);
- toggle.hidden=!small||!selected;
- toggle.textContent=closed?"Abrir fila":"Recolher fila";
- toggle.setAttribute("aria-expanded",String(!closed));
-}
-$("ticket-queue-toggle").addEventListener("click",()=>{
- const pane=$("ticket-list-pane");
- setQueue(pane.dataset.mobileCollapsed!=="true");
- if(pane.dataset.mobileCollapsed!=="true")pane.scrollIntoView({block:"start",behavior:"smooth"});
-});
-window.addEventListener("resize",()=>setQueue($("ticket-list-pane").dataset.mobileCollapsed==="true"));
+function setQueue(collapsed){window.PROXITI_TICKET_WORKSPACE?.queue(collapsed);}
 const listObserver=new MutationObserver(()=>{
  const list=$("ticket-list"),empty=list.querySelector(".ticket-list-empty");
  if(!empty||!empty.textContent.includes("corresponde aos filtros")||list.querySelector(".ticket-list-clear"))return;
@@ -186,25 +189,7 @@ const listObserver=new MutationObserver(()=>{
  list.append(reset);
 });
 listObserver.observe($("ticket-list"),{childList:true});
-function jump(key){
- const targets={
-  queue:$("ticket-list-pane")||document.querySelector(".ticket-list-pane"),
-  chat:$("ticket-conversation"),diagnostic:$("ticket-diagnostic"),
-  notes:$("ticket-note-heading"),tasks:$("ticket-tasks-heading"),
-  device:$("ticket-device-heading"),appointments:$("ticket-appointments-heading"),
-  attachments:$("ticket-files-heading"),report:$("ticket-report-panel"),
-  history:document.querySelector("#ticket-detail .ticket-audit-panel")
- };
- const target=targets[key];if(!target||target.hidden)return;
- if(key==="report")target.open=true;
- if(key==="history")target.open=true;
- const reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
- target.scrollIntoView({behavior:reduced?"instant":"smooth",block:"start"});
- for(const btn of document.querySelectorAll("[data-ticket-jump]")){
-  const active=btn.dataset.ticketJump===key;
-  btn.classList.toggle("active",active);btn.setAttribute("aria-current",active?"location":"false");
- }
-}
+function jump(key){window.PROXITI_TICKET_WORKSPACE?.open(key);}
 document.querySelectorAll("[data-ticket-jump]").forEach(button=>{
  button.addEventListener("click",()=>jump(button.dataset.ticketJump));
 });
@@ -262,8 +247,10 @@ function updatePreflight(){
 }
 checklist.addEventListener("change",updatePreflight);
 function choose(ticket){
+ if(!ticket){memory.clear();checks.clear();guideMemory.clear();guided=null;storedGuide=null;selected=null;}
  if(debounce){clearTimeout(debounce);debounce=null;}
  if(selected?.id)memory.set(selected.id,{text:symptoms.value,platform:platform.value,impact:impact.value});
+ if(selected?.id!==ticket?.id)storedGuide=null;
  selected=ticket||null;answer=null;results.replaceChildren();
  const saved=selected?memory.get(selected.id):null;
  symptoms.value=saved?saved.text:redact([selected?.subject,selected?.description].filter(Boolean).join("\n"));
@@ -276,8 +263,13 @@ function choose(ticket){
  updateActions();
  const nav=$("ticket-desk-shortcuts");nav.hidden=!selected;
  if(selected)document.querySelector('[data-ticket-jump="chat"]')?.classList.add("active");
- setQueue(!!selected);
+ if(window.matchMedia("(max-width: 767px)").matches)setQueue(!!selected);
 }
+document.addEventListener('proxiti-ticket-notes-loaded',event=>{
+ if(event.detail?.ticketId!==selected?.id)return;storedGuide=null;
+ for(const row of event.detail.rows){const marker=row.body?.split('PROXITI-GUIA:')[1];if(!marker)continue;try{const value=JSON.parse(marker);if(value.version===engine.version&&typeof value.caseId==='string'&&Array.isArray(value.outcomes)){storedGuide=value;break;}}catch{}}
+ if(answer)renderAnalysis(answer);
+});
 document.addEventListener("proxiti-ticket-selected",event=>choose(event.detail?.ticket||null));
 document.addEventListener("proxiti-session-ready",event=>{
  const uid=event.detail?.user?.id||null;

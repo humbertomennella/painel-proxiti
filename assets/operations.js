@@ -316,6 +316,7 @@
         !t.subject.toLocaleLowerCase("pt-BR").includes(search))return false;
       return true;
     });
+    document.dispatchEvent(new CustomEvent("proxiti-ticket-filtered",{detail:{outside:!!state.active&&!rows.some(t=>t.id===state.active.id)}}));
     const signature=JSON.stringify([filter,search,rows.map(t=>[
       t.id,t.status,t.assigned_to,t.customer_name,t.subject,seenTicket(t.id),unreadMessages(t.id),state.active?.id
     ])]);
@@ -555,7 +556,7 @@
   }
   function clearTicketPresentation(){
     for(const id of ["ticket-code","ticket-subject","ticket-customer",
-      "ticket-description","ticket-audit-list","ticket-current-status"])
+      "ticket-description","ticket-audit-list","ticket-current-status","ticket-context"])
       el(id).replaceChildren();
     state.threadRevision++;state.threadRows.clear();state.threadExpanded=false;
     state.threadHasMore=false;state.threadOlderBusy=false;
@@ -636,6 +637,7 @@
     el("ticket-current-status").replaceChildren(statusPill(t.status));
     el("ticket-customer").textContent=t.customer_name+" · "+t.customer_email+
       (t.customer_phone?" · "+t.customer_phone:"");
+    el("ticket-context").textContent=t.customer_name+" · Responsável: "+(t.assigned_to===state.user.id?(state.profile?.display_name||"Você"):staffName(t.assigned_to));
     el("ticket-description").textContent=t.description;
     el("ticket-status").value=t.status;
     el("ticket-assignee").value=t.assigned_to||"";
