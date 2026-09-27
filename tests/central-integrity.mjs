@@ -417,7 +417,7 @@ assert(html.includes('src="./assets/ticket-solutions.js?v=20260927-2"')&&
  html.indexOf("ticket-solutions.js")<html.indexOf("ticket-diagnostics-core.js"),
  "Planos devem carregar antes do motor de diagnóstico");
 assert(solutions.includes("bitlocker:plan")&&solutions.includes("firmware:plan")&&
- !/(?:fetch|XMLHttpRequest|sendBeacon)\\s*\\(/.test(solutions),
+ !/(?:fetch|XMLHttpRequest|sendBeacon)\s*\(/.test(solutions),
  "Planos não possuem cobertura de recuperação ou fazem chamadas externas");
 assert(desk.includes('proxiti-ticket-selected')&&desk.includes('proxiti-session-ended')&&
  desk.includes('canNote()')&&desk.includes('canReply()'),
