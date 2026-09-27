@@ -402,3 +402,32 @@ html[data-theme] body.workspace-mode #ops-tickets [hidden]{display:none!importan
 }
 
 html[data-theme] body.workspace-mode #ops-tickets #ticket-queue-toggle[hidden]{display:none!important}
+
+/* Destacar o atalho para a conversa e preservar a legibilidade dos contadores. */
+html[data-theme] body.workspace-mode #ops-tickets .ticket-head-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+html[data-theme] body.workspace-mode #ops-tickets #ticket-go-chat{
+ min-height:40px;border:1px solid var(--px-blue);
+ background:color-mix(in srgb,var(--px-blue) 9%,var(--desk-surface));color:var(--desk-ink);
+}
+html[data-theme] body.workspace-mode #ops-tickets #ticket-go-chat:hover{
+ background:color-mix(in srgb,var(--px-blue) 16%,var(--desk-surface));
+}
+html[data-theme] body.workspace-mode #ops-tickets #ticket-go-chat[hidden]{display:none!important}
+html[data-theme] body.workspace-mode #ops-tickets .ticket-metric{
+ background:var(--desk-surface)!important;opacity:1;color:var(--desk-ink);
+ border:1px solid var(--desk-border);box-shadow:none;
+}
+html[data-theme] body.workspace-mode #ops-tickets .ticket-metric[aria-pressed="true"]{
+ border-color:var(--px-blue);box-shadow:0 0 0 1px var(--px-blue);
+}
+html[data-theme] body.workspace-mode #ops-tickets #ticket-detail:has(#ticket-conversation[hidden]) .ticket-service-layout{
+ grid-template-columns:minmax(0,1fr);
+}
+html[data-theme] body.workspace-mode #ops-tickets #ticket-detail:has(#ticket-conversation[hidden]) .ticket-chat-column{
+ display:none;
+}
+@media(max-width:500px){
+ html[data-theme] body.workspace-mode #ops-tickets>.ops-section-head{align-items:center;flex-wrap:wrap}
+ html[data-theme] body.workspace-mode #ops-tickets .ticket-head-actions{width:100%;justify-content:flex-end}
+ html[data-theme] body.workspace-mode #ops-tickets .ticket-head-actions button{flex:1 1 auto;min-width:0}
+}
