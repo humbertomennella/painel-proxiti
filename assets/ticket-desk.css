@@ -604,3 +604,12 @@ html[data-theme] body.workspace-mode #ops-tickets .ticket-diagnostic-choose{
  html[data-theme] body.workspace-mode #ops-tickets .ticket-solution-choices button{flex:1 1 150px}
  html[data-theme] body.workspace-mode #ops-tickets .ticket-diagnostic-input-actions button{font-size:13px}
 }
+
+/* Tipografia de leitura restrita à página Chamados, sem downloads externos. */
+html[data-theme] body.workspace-mode #ops-tickets{
+ font-family:"Noto Sans","Segoe UI","DejaVu Sans",Arial,sans-serif;
+ letter-spacing:.002em;text-rendering:optimizeLegibility;
+}
+html[data-theme] body.workspace-mode #ops-tickets :is(button,input,select,textarea){
+ font-family:"Noto Sans","Segoe UI","DejaVu Sans",Arial,sans-serif;
+}
