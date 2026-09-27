@@ -458,7 +458,6 @@
     if(view==="tickets")void loadTickets();
     if(view==="staff"&&isAdmin())void loadStaff();
     if(view==="content"&&isAdmin())void loadContent();
-    if(view==="training"&&can("training"))void loadTraining();
     if(view==="agenda"&&can("tickets_view"))document.dispatchEvent(new Event("proxiti-agenda-refresh"));
     if(view==="equipment"&&can("resources"))void loadTools();
     if(view==="library"&&can("training"))void loadTraining();
