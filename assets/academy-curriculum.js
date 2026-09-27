@@ -27,72 +27,88 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       "title": "Atendimento e conduta",
       "subtitle": "Escuta, diagnóstico autorizado e comunicação responsável.",
       "color": "#457eb6",
-      "image": "assets/academy-visuals/atendimento.svg?v=20260926-1",
+      "image": "assets/photos/support.webp",
       "source": "Procedimentos internos PROXITI",
-      "classification": "Essencial"
+      "classification": "Essencial",
+      "illustration": "assets/academy-visuals/atendimento.svg?v=20260926-1",
+      "photoAlt": "Headset de atendimento junto a um notebook e caderno em uma bancada de suporte."
     },
     {
       "id": "computadores",
       "title": "Computadores e notebooks",
       "subtitle": "Triagem, manutenção preventiva e documentação.",
       "color": "#478e86",
-      "image": "assets/academy-visuals/computadores.svg?v=20260926-1",
+      "image": "assets/photos/computer.webp",
       "source": "Microsoft Learn e procedimentos internos",
-      "classification": "Essencial"
+      "classification": "Essencial",
+      "illustration": "assets/academy-visuals/computadores.svg?v=20260926-1",
+      "photoAlt": "Notebook em bancada técnica de manutenção de computadores."
     },
     {
       "id": "redes",
       "title": "Redes e Wi-Fi",
       "subtitle": "Conectividade, roteadores e isolamento de falhas.",
       "color": "#5575b9",
-      "image": "assets/academy-visuals/redes.svg?v=20260926-1",
+      "image": "assets/photos/networks.webp",
       "source": "Microsoft Learn e CISA",
-      "classification": "Essencial"
+      "classification": "Essencial",
+      "illustration": "assets/academy-visuals/redes.svg?v=20260926-1",
+      "photoAlt": "Roteador de rede e cabo em bancada de conectividade."
     },
     {
       "id": "seguranca",
       "title": "Segurança digital preventiva",
       "subtitle": "Identificação de golpes, contas e dispositivos protegidos.",
       "color": "#7a70b6",
-      "image": "assets/academy-visuals/seguranca.svg?v=20260926-1",
+      "image": "assets/photos/security.webp",
       "source": "CISA",
-      "classification": "Essencial"
+      "classification": "Essencial",
+      "illustration": "assets/academy-visuals/seguranca.svg?v=20260926-1",
+      "photoAlt": "Cadeado metálico e unidade de armazenamento externo ilustrando proteção digital."
     },
     {
       "id": "backup",
       "title": "Backup e continuidade",
       "subtitle": "Cópias recuperáveis, restauração e proteção de dados.",
       "color": "#418d96",
-      "image": "assets/academy-visuals/backup.svg?v=20260926-1",
+      "image": "assets/photos/backup-pexels.jpg",
       "source": "CISA e procedimentos internos",
-      "classification": "Recomendada"
+      "classification": "Recomendada",
+      "illustration": "assets/academy-visuals/backup.svg?v=20260926-1",
+      "photoAlt": "Disco externo conectado por cabo a um notebook para cópia de arquivos."
     },
     {
       "id": "infraestrutura",
       "title": "Infraestrutura e instalações",
       "subtitle": "Ambientes organizados, equipamento identificado e prevenção.",
       "color": "#98744e",
-      "image": "assets/academy-visuals/infraestrutura.svg?v=20260926-1",
+      "image": "assets/photos/technical-hero.webp",
       "source": "Procedimentos internos PROXITI",
-      "classification": "Recomendada"
+      "classification": "Recomendada",
+      "illustration": "assets/academy-visuals/infraestrutura.svg?v=20260926-1",
+      "photoAlt": "Bancada de infraestrutura com notebook e equipamentos de rede."
     },
     {
       "id": "privacidade",
       "title": "Privacidade e autorização",
       "subtitle": "Minimização de dados, acesso autorizado e incidentes.",
       "color": "#5e85ad",
-      "image": "assets/academy-visuals/privacidade.svg?v=20260926-1",
+      "image": "assets/photos/privacidade-pexels.jpg",
       "source": "ANPD",
-      "classification": "Essencial"
+      "classification": "Essencial",
+      "illustration": "assets/academy-visuals/privacidade.svg?v=20260926-1",
+      "photoAlt": "Notebook com símbolo de proteção e cadeado na tela."
     },
     {
       "id": "operacao",
       "title": "Operação residencial e empresarial",
       "subtitle": "Chamados, relatórios, continuidade e orientação final.",
       "color": "#647d97",
-      "image": "assets/academy-visuals/operacao.svg?v=20260926-1",
+      "image": "assets/photos/operacao-pexels.jpg",
       "source": "Procedimentos internos PROXITI",
-      "classification": "Recomendada"
+      "classification": "Recomendada",
+      "illustration": "assets/academy-visuals/operacao.svg?v=20260926-1",
+      "photoAlt": "Headset profissional apoiado sobre notebook em estação de atendimento."
     }
   ],
   "courses": [
@@ -153,7 +169,8 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
         "readingMinutes": 15,
         "questionnaireMinutes": 10,
         "activityMinutes": 25
-      }
+      },
+      "photoFocus": "Identifique que dados técnicos você pediria durante um primeiro atendimento sem solicitar senhas ou informações pessoais desnecessárias."
     },
     {
       "id": "at-02",
@@ -213,7 +230,8 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
         "readingMinutes": 15,
         "questionnaireMinutes": 10,
         "activityMinutes": 25
-      }
+      },
+      "photoFocus": "Planeje como informar o resultado do diagnóstico e os próximos passos com uma linguagem clara para o cliente."
     },
     {
       "id": "pc-01",
@@ -275,7 +293,8 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
         "readingMinutes": 15,
         "questionnaireMinutes": 10,
         "activityMinutes": 25
-      }
+      },
+      "photoFocus": "Enumere os indicadores de software e armazenamento que você verificaria antes de propor uma formatação."
     },
     {
       "id": "pc-02",
@@ -337,7 +356,8 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
         "readingMinutes": 15,
         "questionnaireMinutes": 10,
         "activityMinutes": 25
-      }
+      },
+      "photoFocus": "Liste o que precisa ser documentado antes de uma atualização ou intervenção física autorizada."
     },
     {
       "id": "re-01",
@@ -399,7 +419,8 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
         "readingMinutes": 15,
         "questionnaireMinutes": 10,
         "activityMinutes": 25
-      }
+      },
+      "photoFocus": "Desenhe o caminho entre dispositivo, sinal Wi-Fi, roteador, provedor e serviço de internet."
     },
     {
       "id": "re-02",
@@ -461,7 +482,8 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
         "readingMinutes": 15,
         "questionnaireMinutes": 10,
         "activityMinutes": 25
-      }
+      },
+      "photoFocus": "Pense em como separar visitantes e equipamentos de trabalho sem interromper a operação."
     },
     {
       "id": "se-01",
@@ -522,7 +544,8 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
         "readingMinutes": 15,
         "questionnaireMinutes": 10,
         "activityMinutes": 25
-      }
+      },
+      "photoFocus": "Explique como proteger credenciais, identificar pedidos de código MFA e orientar um usuário diante de mensagem suspeita."
     },
     {
       "id": "se-02",
@@ -583,7 +606,8 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
         "readingMinutes": 15,
         "questionnaireMinutes": 10,
         "activityMinutes": 25
-      }
+      },
+      "photoFocus": "Diferencie proteção preventiva, triagem de alerta e encaminhamento de incidente."
     },
     {
       "id": "bk-01",
@@ -644,7 +668,8 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
         "readingMinutes": 15,
         "questionnaireMinutes": 10,
         "activityMinutes": 25
-      }
+      },
+      "photoFocus": "Descreva como distinguir uma cópia recuperável de um arquivo apenas sincronizado."
     },
     {
       "id": "bk-02",
@@ -705,7 +730,8 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
         "readingMinutes": 15,
         "questionnaireMinutes": 10,
         "activityMinutes": 25
-      }
+      },
+      "photoFocus": "Planeje a restauração de um arquivo fictício sem sobrescrever a versão original."
     },
     {
       "id": "in-01",
@@ -764,7 +790,8 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
         "readingMinutes": 15,
         "questionnaireMinutes": 10,
         "activityMinutes": 25
-      }
+      },
+      "photoFocus": "Observe riscos de ventilação, energia e cabos e defina o que está fora do escopo do técnico de TI."
     },
     {
       "id": "in-02",
@@ -823,7 +850,8 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
         "readingMinutes": 15,
         "questionnaireMinutes": 10,
         "activityMinutes": 25
-      }
+      },
+      "photoFocus": "Planeje um inventário mínimo e uma janela segura para uma mudança em equipamento compartilhado."
     },
     {
       "id": "pr-01",
@@ -885,7 +913,8 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
         "readingMinutes": 15,
         "questionnaireMinutes": 10,
         "activityMinutes": 25
-      }
+      },
+      "photoFocus": "Decida quais dados da tela poderiam ser ocultados antes de salvar uma evidência de suporte."
     },
     {
       "id": "pr-02",
@@ -946,7 +975,8 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
         "readingMinutes": 15,
         "questionnaireMinutes": 10,
         "activityMinutes": 25
-      }
+      },
+      "photoFocus": "Defina limites de uma sessão remota e confirme o encerramento dos acessos."
     },
     {
       "id": "op-01",
@@ -1005,7 +1035,8 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
         "readingMinutes": 15,
         "questionnaireMinutes": 10,
         "activityMinutes": 25
-      }
+      },
+      "photoFocus": "Relacione conversa, diagnóstico, roteiro, agenda e relatório ao histórico de um mesmo chamado."
     },
     {
       "id": "op-02",
@@ -1064,7 +1095,8 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
         "readingMinutes": 15,
         "questionnaireMinutes": 10,
         "activityMinutes": 25
-      }
+      },
+      "photoFocus": "Priorize dois atendimentos pelo impacto e planeje comunicação de retorno para ambos."
     }
   ]
 }
