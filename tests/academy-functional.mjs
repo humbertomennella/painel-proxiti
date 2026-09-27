@@ -38,7 +38,7 @@ const messages=baseline.map((t,i)=>({
  id:"00000000-0000-4000-8000-00000000020"+(i+1),
  ticket_id:t.id,sender_kind:"customer",created_at:stamp,body:"Mensagem de teste"
 }));
-async function openScenario({materials=[],admin=false,failTraining=false,deferTraining=false,ambiguousSave=false,conflictSave=false,startView="training"}={}){
+async function openScenario({materials=[],admin=false,failTraining=false,deferTraining=false,ambiguousSave=false,conflictSave=false,startView="library"}={}){
  const page=await browser.newPage({viewport:{width:375,height:850},deviceScaleFactor:1});
  page.__errors=[];
  page.on("pageerror",error=>page.__errors.push(error.message));
@@ -268,7 +268,7 @@ const makeMaterial=(n,options={})=>({
  updated_at:new Date(Date.now()+n*1000).toISOString(),...options
 });
 async function academy(page){
- await page.evaluate(()=>window.PROXITI_OPEN_VIEW("training"));
+ await page.evaluate(()=>window.PROXITI_OPEN_VIEW("library"));
  await page.waitForFunction(()=>document.getElementById("training-sync-state").dataset.phase==="ready");
 }
 try{
@@ -462,7 +462,7 @@ try{
                }
                return parents;
              })(),
-             offenders:[...document.querySelectorAll("#ops-training *")].map(node=>{
+             offenders:[...document.querySelectorAll("#ops-library *")].map(node=>{
                const rect=node.getBoundingClientRect();
                return {element:node.tagName.toLowerCase()+(node.id?"#"+node.id:""),
                  left:Math.round(rect.left),right:Math.round(rect.right),width:Math.round(rect.width)};
