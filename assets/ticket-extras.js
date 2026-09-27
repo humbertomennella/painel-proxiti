@@ -194,6 +194,7 @@
    el("ticket-report-save-box").hidden=!writable();
    feedback("");
    if(!selected||!canView()){
+     drafts.clear();savedDevice=null;
      el("ticket-device-form").reset();el("ticket-appointment-form").reset();
      empty("ticket-appointments-list","Selecione um chamado.");
      empty("ticket-report-history","Selecione um chamado.");
@@ -218,6 +219,7 @@
  el("ticket-device-form").addEventListener("submit",async event=>{
    event.preventDefault();if(!writable())return;
    const ticket=selected,button=event.currentTarget.querySelector('[type="submit"]');
+   const rev=revision,client=db(),uid=session()?.user?.id;
    button.disabled=true;feedback("");
    try{
      await rpc("proxiti_save_ticket_device",{
@@ -226,8 +228,8 @@
        p_os:el("ticket-device-os").value.trim(),p_ref:el("ticket-device-ref").value.trim(),
        p_observations:el("ticket-device-observations").value.trim()
      });
-     if(selected?.id===ticket.id){drafts.delete(ticket.id);rememberDrafts();feedback("Identificação salva.");activity(ticket.id);await loadDevice(ticket.id);}
-   }catch(error){feedback(error.message,true);}finally{button.disabled=false;}
+     if(same(rev,ticket.id,client,uid)&&writable()){rememberDrafts();feedback("Identificação salva.");activity(ticket.id);await loadDevice(ticket.id);}
+   }catch(error){if(same(rev,ticket.id,client,uid))feedback(error.message,true);}finally{button.disabled=false;}
  });
  el("ticket-appointment-form").addEventListener("submit",async event=>{
    event.preventDefault();if(!writable()||selected.status==="resolved")return;
@@ -265,6 +267,7 @@
  el("ticket-report-save").addEventListener("click",async event=>{
    if(!writable())return;
    const ticket=selected,button=event.currentTarget;
+   const rev=revision,client=db(),uid=session()?.user?.id;
    const diagnosis=el("ticket-report-diagnosis").value.trim();
    const work=el("ticket-report-service").value.trim();
    const advice=el("ticket-report-advice").value.trim();
@@ -277,12 +280,12 @@
        p_ticket:ticket.id,p_diagnosis:diagnosis,p_work:work,
        p_recommendations:advice,p_finalized:final
      });
-     if(selected?.id===ticket.id){
+     if(same(rev,ticket.id,client,uid)&&writable()){
        el("ticket-report-reviewed").checked=false;
        feedback("Relatório versão "+version+" registrado como "+(final?"final":"rascunho")+".");
        activity(ticket.id);await loadReports(ticket.id);
      }
-   }catch(error){feedback(error.message,true);}finally{button.disabled=false;}
+   }catch(error){if(same(rev,ticket.id,client,uid))feedback(error.message,true);}finally{button.disabled=false;}
  });
  document.addEventListener("proxiti-ticket-selected",event=>choose(event.detail?.ticket||null));
  document.addEventListener("proxiti-session-ended",()=>{

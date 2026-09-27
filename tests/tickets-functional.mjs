@@ -434,6 +434,27 @@ try{
   }finally{await page.close();}
  });
 
+ await test('Progresso do guia é retomado da nota privada após reiniciar a sessão',async()=>{
+  const page=await openScenario();
+  try{
+   await visit(page,102);await page.click('[data-ticket-jump="diagnostic"]');
+   await page.locator('.ticket-solution-choices').getByRole('button',{name:'Ainda não resolveu'}).click();
+   await page.getByRole('button',{name:'Próxima etapa'}).click();
+   await page.getByRole('button',{name:'Salvar progresso em nota interna'}).click();
+   await page.waitForFunction(()=>window.__fixture.notes.length===1);
+   const body=await page.evaluate(()=>window.__fixture.notes[0].body);
+   assert(body.includes('PROXITI-GUIA:'));assert(!body.includes('Sintoma de teste'));
+   await page.evaluate(()=>{
+    const session=window.PROXITI_ACTIVE_SESSION;
+    document.dispatchEvent(new Event('proxiti-session-ended'));
+    window.PROXITI_ACTIVE_SESSION=session;
+    document.dispatchEvent(new CustomEvent('proxiti-session-ready',{detail:session}));
+   });
+   await visit(page,102);await page.click('[data-ticket-jump="diagnostic"]');
+   await page.getByRole('button',{name:'Retomar progresso salvo'}).click();
+   assert((await page.textContent('.ticket-solution-counter')).includes('Etapa 2'));
+  }finally{await page.close();}
+ });
  await test('Abas reais, teclado, fila desktop, edição isolada, roteiro e relatório assistido',async()=>{
   const page=await openScenario();
   try{
@@ -475,6 +496,26 @@ try{
    await page.fill('#ticket-search','nao-corresponde');
    await page.waitForFunction(()=>!document.getElementById('ticket-outside-filter').hidden);
    assert.equal(await page.isVisible('#ticket-detail'),true);
+   await page.fill('#ticket-search','');
+   const artifacts=resolve(root,'artifacts');await mkdir(artifacts,{recursive:true});
+   for(const width of [320,375,430,768,1024,1366,1920]){
+    await page.setViewportSize({width,height:900});
+    for(const theme of ['light','dark']){
+     await page.evaluate(theme=>document.documentElement.dataset.theme=theme,theme);
+     for(const key of ['diagnostic','notes','tasks','device','appointments','attachments','report','history']){
+      await page.click('[data-ticket-jump="'+key+'"]');
+      assert.equal(await page.locator('[role=tabpanel]:visible').count(),1);
+      const box=await page.locator('[role=tabpanel]:visible').boundingBox();
+      assert(box.x>=-1&&box.x+box.width<=width+1,width+'/'+theme+'/'+key+' extrapola largura');
+      assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2));
+      assert.equal(await page.isVisible('#ticket-conversation'),width>=768);
+      if([375,1366].includes(width)){
+       await page.locator('#ticket-desk-shortcuts').scrollIntoViewIfNeeded();
+       await page.screenshot({path:resolve(artifacts,'workspace-'+width+'-'+theme+'-'+key+'.png')});
+      }
+     }
+    }
+   }
    assert.deepEqual(page.__errors,[]);
   }finally{await page.close();}
  });

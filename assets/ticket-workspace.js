@@ -12,7 +12,10 @@ for(const [key,panel] of Object.entries(panels)){
 }
 nav.append(tabs);
 const notice=document.createElement('p');notice.id='ticket-outside-filter';notice.hidden=true;notice.setAttribute('role','status');notice.textContent='Este atendimento está aberto fora do filtro atual.';nav.before(notice);
+const unavailable=document.createElement('p');unavailable.className='ticket-workflow-help';unavailable.textContent='Esta ferramenta não está disponível para sua permissão neste chamado.';unavailable.hidden=true;column.prepend(unavailable);
 let active='diagnostic';
+function permissions(){unavailable.hidden=!(panels[active].hidden||panels[active].closest('#ticket-workflow[hidden]'));}
+new MutationObserver(permissions).observe($('ticket-workflow'),{attributes:true,subtree:true,attributeFilter:['hidden']});
 function queue(closed){
  closed=!!window.PROXITI_ACTIVE_TICKET&&!!closed;
  root.querySelector('.ticket-workspace').dataset.queueCollapsed=String(closed);
@@ -36,7 +39,7 @@ function open(key,focus=false){
   const button=$('ticket-tab-'+name);button.setAttribute('aria-selected',String(on));button.tabIndex=on?0:-1;button.classList.toggle('active',on);
   if(on&&panel.tagName==='DETAILS')panel.open=true;
  }
- column.dataset.tool=key;column.scrollTop=0;
+ column.dataset.tool=key;column.scrollTop=0;permissions();
  if(focus)$('ticket-tab-'+key).focus({preventScroll:true});
 }
 tabs.addEventListener('keydown',event=>{

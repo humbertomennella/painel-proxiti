@@ -167,7 +167,8 @@
     const changed=selected?.id!==ticket?.id;
     selected=ticket||null;
     root.hidden=!selected||!canRead();
-    if(!selected){
+    if(!selected||!canRead()){
+      noteDrafts.clear();taskDrafts.clear();
       el("ticket-note-body").value="";el("ticket-file-form").reset();
       el("ticket-report-form").reset();el("ticket-report-panel").open=false;
       empty(el("ticket-notes-list"),"Selecione um chamado.");
@@ -324,7 +325,7 @@
   });
   document.addEventListener("proxiti-session-ended",()=>{choose(null);noteDrafts.clear();taskDrafts.clear();});
   document.addEventListener("proxiti-session-ready",event=>{
-    taskDrafts.clear();
+    taskDrafts.clear();noteDrafts.clear();
     if(event.detail?.profile?.status!=="active"||
        (event.detail?.profile?.role!=="administrator"&&event.detail?.profile?.permissions?.tickets_view!==true)){
       choose(null);noteDrafts.clear();taskDrafts.clear();

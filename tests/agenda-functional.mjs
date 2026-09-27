@@ -326,6 +326,7 @@ try{
    await page.evaluate(()=>window.PROXITI_OPEN_VIEW("tickets"));
    await page.locator(".ticket-inbox-card").filter({hasText:"#102 ·"}).click();
    await page.waitForFunction(()=>document.getElementById("ticket-code").textContent.includes("#102"));
+   if(!(await page.locator(".ticket-context-details").getAttribute("open")))await page.locator(".ticket-context-details summary").click();
    await page.selectOption("#ticket-status","resolved");
    await page.click("#save-status");
    await page.waitForFunction(()=>document.getElementById("ops-message").textContent.includes("Finalize ou cancele"));

@@ -247,6 +247,7 @@ function updatePreflight(){
 }
 checklist.addEventListener("change",updatePreflight);
 function choose(ticket){
+ if(!ticket){memory.clear();checks.clear();guideMemory.clear();guided=null;storedGuide=null;selected=null;}
  if(debounce){clearTimeout(debounce);debounce=null;}
  if(selected?.id)memory.set(selected.id,{text:symptoms.value,platform:platform.value,impact:impact.value});
  if(selected?.id!==ticket?.id)storedGuide=null;
@@ -262,7 +263,7 @@ function choose(ticket){
  updateActions();
  const nav=$("ticket-desk-shortcuts");nav.hidden=!selected;
  if(selected)document.querySelector('[data-ticket-jump="chat"]')?.classList.add("active");
- setQueue(!!selected&&window.matchMedia("(max-width: 767px)").matches);
+ if(window.matchMedia("(max-width: 767px)").matches)setQueue(!!selected);
 }
 document.addEventListener('proxiti-ticket-notes-loaded',event=>{
  if(event.detail?.ticketId!==selected?.id)return;storedGuide=null;
