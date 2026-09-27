@@ -184,3 +184,20 @@ html[data-theme] body.workspace-mode #ops-training .academy-lesson-photo figcapt
     padding:0 13px 13px;
   }
 }
+
+/* Evita que a largura intrínseca (960px/880px) das imagens expanda o grid no celular. */
+html[data-theme] body.workspace-mode #ops-training #academy-lesson-content,
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-intro,
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-photo,
+html[data-theme] body.workspace-mode #ops-training .academy-activity{
+  min-width:0;max-width:100%;box-sizing:border-box;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-intro,
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-photo,
+html[data-theme] body.workspace-mode #ops-training .academy-activity{
+  grid-template-columns:minmax(0,1fr);
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-intro>img,
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-photo>img{
+  display:block;min-width:0;max-width:100%;box-sizing:border-box;
+}
