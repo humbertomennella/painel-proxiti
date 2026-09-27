@@ -193,8 +193,9 @@ html[data-theme] body.workspace-mode .panel-head :is(.theme-switch,.notification
 }
 /* Sidebar compacta por padrão, expandida sobre o conteúdo com fade/slide; sem reflow horizontal. */
 @media(min-width:931px){
- html[data-theme] body.workspace-mode .panel,
  html[data-theme] body.workspace-mode .panel.sidebar-collapsed{--side-width:72px!important}
+ html[data-theme] body.workspace-mode .panel:not(.sidebar-collapsed){--side-width:238px!important}
+ html[data-theme] body.workspace-mode .panel{transition:grid-template-columns .28s cubic-bezier(.2,.75,.2,1)}
  html[data-theme] body.workspace-mode .app-sidebar{
   width:72px;transition:width .28s cubic-bezier(.2,.75,.2,1),box-shadow .28s ease;
   will-change:width;box-shadow:none;
