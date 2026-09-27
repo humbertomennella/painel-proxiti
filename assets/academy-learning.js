@@ -274,8 +274,8 @@ function renderLesson(course){
  const host=el("academy-lesson-content");host.replaceChildren();
  const track=tracks.get(course.track);
  const top=make("div",null,"academy-lesson-intro");
- const image=make("img");image.src=track.image;image.alt="Diagrama original: "+
-   track.title+". "+track.subtitle;image.width=960;image.height=440;
+ const image=make("img");image.src=course.image||track.image;image.alt="Ilustração original desta aula: "+course.title;
+ image.width=960;image.height=440;image.decoding="async";
  top.append(image,make("p","TRILHA · "+track.title+" · "+course.minutes+" min estimados","kicker"),
    make("h5",course.title),make("p",track.subtitle));
  host.append(top);
