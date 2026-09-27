@@ -65,7 +65,7 @@ for(const id of ["ticket-workflow","ticket-note-form","ticket-note-body","ticket
  "ticket-file-input","ticket-files-list","ticket-report-form"]){
  assert(html.includes('id="'+id+'"'),"Fluxo técnico sem #"+id);
 }
-assert(html.includes('src="./assets/ticket-workflow.js?v=20260926-1"'),"Script técnico não carregado");
+assert(html.includes('src="./assets/ticket-workflow.js?v=20260927-2"'),"Script técnico não carregado");
 assert(html.includes('href="./assets/ticket-workflow.css?v=20260926-1"'),"Estilos técnicos não carregados");
 const techCss=get("assets/ticket-workflow.css");
 assert.equal((techCss.match(/{/g)||[]).length,(techCss.match(/}/g)||[]).length,"CSS técnico incompleto");
