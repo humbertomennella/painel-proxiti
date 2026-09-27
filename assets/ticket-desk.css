@@ -400,3 +400,5 @@ html[data-theme] body.workspace-mode #ops-tickets [hidden]{display:none!importan
 @media(prefers-reduced-motion:reduce){
  html[data-theme] body.workspace-mode #ops-tickets *{scroll-behavior:auto!important;transition:none!important}
 }
+
+html[data-theme] body.workspace-mode #ops-tickets #ticket-queue-toggle[hidden]{display:none!important}
