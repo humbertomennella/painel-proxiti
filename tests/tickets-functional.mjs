@@ -403,6 +403,7 @@ try{
   const page=await openScenario();
   try{
    await visit(page,102);
+   await page.locator(".ticket-context-details summary").click();
    const artifacts=resolve(root,"artifacts");await mkdir(artifacts,{recursive:true});
    for(const width of [320,375,430,768,1024,1366,1920]){
     await page.setViewportSize({width,height:875});
@@ -486,7 +487,7 @@ try{
    assert.equal(await page.inputValue('#ticket-report-diagnosis'),'Diagnóstico em edição');
    await page.getByRole('button',{name:'Preparar rascunho com registros salvos'}).click();
    await page.waitForFunction(()=>document.querySelectorAll('.report-suggestion').length===2);
-   const texts=await page.locator('.report-suggestion textarea').allTextContents();
+   const texts=await page.locator('.report-suggestion textarea').evaluateAll(nodes=>nodes.map(n=>n.value));
    assert(!texts.join('').includes('PATRIMONIO-NAO-INCLUIR'));
    await page.locator('.report-suggestion').first().getByRole('button',{name:'Incluir texto revisado'}).click();
    await page.locator('.report-suggestion').first().getByRole('button',{name:'Incluir texto revisado'}).click();
@@ -497,6 +498,7 @@ try{
    await page.waitForFunction(()=>!document.getElementById('ticket-outside-filter').hidden);
    assert.equal(await page.isVisible('#ticket-detail'),true);
    await page.fill('#ticket-search','');
+   await page.locator('.ticket-context-details summary').click();
    const artifacts=resolve(root,'artifacts');await mkdir(artifacts,{recursive:true});
    for(const width of [320,375,430,768,1024,1366,1920]){
     await page.setViewportSize({width,height:900});

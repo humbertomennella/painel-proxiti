@@ -6,7 +6,7 @@
   const bucket="proxiti-ticket-files";
   const formats={"application/pdf":".pdf","image/png":".png","image/jpeg":".jpg","image/webp":".webp"};
   let selected=null,revision=0,taskRows=[];
-  const noteDrafts=new Map(), taskDrafts=new Map();
+  const noteDrafts=new Map(), taskDrafts=new Map(),fileDrafts=new Map();
   const session=()=>window.PROXITI_ACTIVE_SESSION;
   const database=()=>session()?.client;
   const isAdmin=()=>session()?.profile?.role==="administrator"&&session()?.profile?.status==="active";
@@ -168,7 +168,7 @@
     selected=ticket||null;
     root.hidden=!selected||!canRead();
     if(!selected||!canRead()){
-      noteDrafts.clear();taskDrafts.clear();
+      noteDrafts.clear();taskDrafts.clear();fileDrafts.clear();
       el("ticket-note-body").value="";el("ticket-file-form").reset();
       el("ticket-report-form").reset();el("ticket-report-panel").open=false;
       empty(el("ticket-notes-list"),"Selecione um chamado.");
@@ -186,6 +186,7 @@
     el("ticket-report-panel").hidden=!canReport();
     if(changed){
       el("ticket-note-body").value=noteDrafts.get(selected.id)||"";el("ticket-file-form").reset();
+      const pendingFile=fileDrafts.get(selected.id);if(pendingFile&&canEdit()){const transfer=new DataTransfer();transfer.items.add(pendingFile);el('ticket-file-input').files=transfer.files;}
       el("ticket-report-form").reset();el("ticket-report-panel").open=false;
       note("");empty(el("ticket-notes-list"),"Carregando notas…");
       empty(el("ticket-tasks-list"),"Carregando roteiro…");
@@ -232,6 +233,7 @@
     }catch(error){if(selected?.id===ticket.id)note(error.message,true);}
     finally{button.disabled=false;}
   });
+  el('ticket-file-input').addEventListener('change',()=>{if(!selected)return;const file=el('ticket-file-input').files?.[0];if(file)fileDrafts.set(selected.id,file);else fileDrafts.delete(selected.id);});
   el("ticket-file-form").addEventListener("submit",async event=>{
     event.preventDefault();if(!canEdit())return;
     const ticket=selected,form=event.currentTarget,send=form.querySelector('[type="submit"]');
@@ -257,7 +259,7 @@
         p_ticket:ticket.id,p_path:path,p_name:file.name,p_mime:file.type,p_size:file.size
       }));
       if(valid()){
-        form.reset();note("Anexo privado registrado.");
+        form.reset();fileDrafts.delete(ticket.id);note("Anexo privado registrado.");
         document.dispatchEvent(new CustomEvent("proxiti-ticket-activity",{detail:{id:ticket.id}}));
         await refresh("files",ticket.id);
       }
@@ -272,7 +274,7 @@
       }
       if(verification){
         if(valid()){
-          form.reset();note("O anexo foi registrado. A confirmação chegou após a verificação.");
+          form.reset();fileDrafts.delete(ticket.id);note("O anexo foi registrado. A confirmação chegou após a verificação.");
           await refresh("files",ticket.id);
         }
       }else if(uploaded&&verification===null){
@@ -323,12 +325,12 @@
   el("ticket-note-body").addEventListener("input",()=>{
     if(selected?.id)noteDrafts.set(selected.id,el("ticket-note-body").value);
   });
-  document.addEventListener("proxiti-session-ended",()=>{choose(null);noteDrafts.clear();taskDrafts.clear();});
+  document.addEventListener("proxiti-session-ended",()=>{choose(null);noteDrafts.clear();taskDrafts.clear();fileDrafts.clear();});
   document.addEventListener("proxiti-session-ready",event=>{
-    taskDrafts.clear();noteDrafts.clear();
+    taskDrafts.clear();noteDrafts.clear();fileDrafts.clear();
     if(event.detail?.profile?.status!=="active"||
        (event.detail?.profile?.role!=="administrator"&&event.detail?.profile?.permissions?.tickets_view!==true)){
-      choose(null);noteDrafts.clear();taskDrafts.clear();
+      choose(null);noteDrafts.clear();taskDrafts.clear();fileDrafts.clear();
     }
   });
   if(window.PROXITI_ACTIVE_TICKET)choose(window.PROXITI_ACTIVE_TICKET);

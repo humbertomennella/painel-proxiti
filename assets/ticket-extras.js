@@ -4,16 +4,16 @@
  let selected=null,revision=0;
  const drafts=new Map();let savedDevice=null;
  const draftForms=['ticket-device-form','ticket-appointment-form','ticket-report-form'];
- function rememberDrafts(){
+ function rememberDrafts(formId){
    if(!selected)return;
-   const values={};for(const id of draftForms)for(const field of el(id).querySelectorAll('input,select,textarea'))if(field.id)values[field.id]=field.value;
+   const values={...drafts.get(selected.id)};for(const id of (formId?[formId]:draftForms))for(const field of el(id).querySelectorAll('input,select,textarea'))if(field.id)values[field.id]=field.value;
    drafts.set(selected.id,values);
  }
  function restoreDrafts(){
    const values=drafts.get(selected?.id);if(!values)return;
    for(const [id,value] of Object.entries(values))el(id).value=value;
  }
- for(const id of draftForms)el(id).addEventListener('input',()=>{rememberDrafts();el('ticket-report-reviewed').checked=false;});
+ for(const id of draftForms)el(id).addEventListener('input',()=>{rememberDrafts(id);el('ticket-report-reviewed').checked=false;});
 
  const session=()=>window.PROXITI_ACTIVE_SESSION;
  const db=()=>session()?.client;
@@ -55,7 +55,7 @@
      if(data){
        for(const [field,key] of [["category","category"],["brand","brand"],["model","model"],
          ["os","operating_system"],["ref","asset_reference"],["observations","observations"]])
-         if(!drafts.has(ticketId))el("ticket-device-"+field).value=data[key]|| (field==="category"?"other":"");
+         if(!Object.hasOwn(drafts.get(ticketId)||{},"ticket-device-brand"))el("ticket-device-"+field).value=data[key]|| (field==="category"?"other":"");
        el("ticket-device-summary").textContent="Última atualização: "+date(data.updated_at)+
          " · "+[data.brand,data.model].filter(Boolean).join(" ")+" · "+data.category;
      }else el("ticket-device-summary").textContent="Nenhum equipamento identificado neste chamado.";

@@ -54,3 +54,17 @@ html[data-theme] body.workspace-mode #ops-tickets .report-suggestion button{widt
  html[data-theme] body.workspace-mode #ops-tickets .central-page-hero-copy p:not(.kicker){font-size:13px;margin:4px 0}
 }
 @media(prefers-reduced-motion:reduce){#ops-tickets *{scroll-behavior:auto!important;transition:none!important}}
+html[data-theme] body.workspace-mode #ops-tickets .ticket-metric{background:var(--desk-surface);color:var(--desk-ink);border:1px solid var(--desk-border)}
+html[data-theme] body.workspace-mode #ops-tickets .ticket-metric[aria-pressed=true]{background:color-mix(in srgb,var(--px-blue) 12%,var(--desk-surface));border-color:var(--px-blue)}
+html[data-theme] body.workspace-mode #ops-tickets .ticket-metric :is(small,.metric-top){color:var(--desk-muted)}
+html[data-theme] body.workspace-mode #ops-tickets .central-ticket-search{padding:8px 16px;margin-bottom:8px}
+html[data-theme] body.workspace-mode #ops-tickets>.ops-section-head{margin-bottom:0}
+html[data-theme] body.workspace-mode #ops-tickets>.ops-section-head h3{font-size:18px}
+html[data-theme] body.workspace-mode #ops-tickets>#ticket-sync-status{margin:5px 18px 8px;padding:5px 9px}
+html[data-theme] body.workspace-mode #ops-tickets .ticket-toolbar{margin-bottom:8px;padding:5px 9px}
+html[data-theme] body.workspace-mode #ops-tickets #ticket-detail>.ops-section-head{display:grid;grid-template-columns:minmax(0,1fr) 44px;align-items:start}
+html[data-theme] body.workspace-mode #ops-tickets #close-detail{width:44px;min-width:44px;height:44px;padding:0;font-size:22px}
+@media(max-width:767px){
+ html[data-theme] body.workspace-mode #ops-tickets [role=tablist]{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;max-width:100%}
+ html[data-theme] body.workspace-mode #ops-tickets #ticket-detail>.ops-section-head{position:sticky;top:0}
+}
