@@ -14,7 +14,12 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
     "quizWeight": 0.6,
     "examWeight": 0.4,
     "criticalRequired": true,
-    "certificateType": "Certificado de Conclusão Interna — UniProxiti"
+    "certificateType": "Certificado de Conclusão Interna — UniProxiti",
+    "trackExamQuestions": 10,
+    "trackExamMinutes": 20,
+    "trackLessonMinutes": 50,
+    "trackMinutes": 120,
+    "trackCertificate": "Certificado Interno de Conclusão por Trilha — UNIPROXITI"
   },
   "tracks": [
     {
@@ -23,7 +28,8 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       "subtitle": "Escuta, diagnóstico autorizado e comunicação responsável.",
       "color": "#457eb6",
       "image": "assets/academy-visuals/atendimento.svg?v=20260926-1",
-      "source": "Procedimentos internos PROXITI"
+      "source": "Procedimentos internos PROXITI",
+      "classification": "Essencial"
     },
     {
       "id": "computadores",
@@ -31,7 +37,8 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       "subtitle": "Triagem, manutenção preventiva e documentação.",
       "color": "#478e86",
       "image": "assets/academy-visuals/computadores.svg?v=20260926-1",
-      "source": "Microsoft Learn e procedimentos internos"
+      "source": "Microsoft Learn e procedimentos internos",
+      "classification": "Essencial"
     },
     {
       "id": "redes",
@@ -39,7 +46,8 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       "subtitle": "Conectividade, roteadores e isolamento de falhas.",
       "color": "#5575b9",
       "image": "assets/academy-visuals/redes.svg?v=20260926-1",
-      "source": "Microsoft Learn e CISA"
+      "source": "Microsoft Learn e CISA",
+      "classification": "Essencial"
     },
     {
       "id": "seguranca",
@@ -47,7 +55,8 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       "subtitle": "Identificação de golpes, contas e dispositivos protegidos.",
       "color": "#7a70b6",
       "image": "assets/academy-visuals/seguranca.svg?v=20260926-1",
-      "source": "CISA"
+      "source": "CISA",
+      "classification": "Essencial"
     },
     {
       "id": "backup",
@@ -55,7 +64,8 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       "subtitle": "Cópias recuperáveis, restauração e proteção de dados.",
       "color": "#418d96",
       "image": "assets/academy-visuals/backup.svg?v=20260926-1",
-      "source": "CISA e procedimentos internos"
+      "source": "CISA e procedimentos internos",
+      "classification": "Recomendada"
     },
     {
       "id": "infraestrutura",
@@ -63,7 +73,8 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       "subtitle": "Ambientes organizados, equipamento identificado e prevenção.",
       "color": "#98744e",
       "image": "assets/academy-visuals/infraestrutura.svg?v=20260926-1",
-      "source": "Procedimentos internos PROXITI"
+      "source": "Procedimentos internos PROXITI",
+      "classification": "Recomendada"
     },
     {
       "id": "privacidade",
@@ -71,7 +82,8 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       "subtitle": "Minimização de dados, acesso autorizado e incidentes.",
       "color": "#5e85ad",
       "image": "assets/academy-visuals/privacidade.svg?v=20260926-1",
-      "source": "ANPD"
+      "source": "ANPD",
+      "classification": "Essencial"
     },
     {
       "id": "operacao",
@@ -79,7 +91,8 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       "subtitle": "Chamados, relatórios, continuidade e orientação final.",
       "color": "#647d97",
       "image": "assets/academy-visuals/operacao.svg?v=20260926-1",
-      "source": "Procedimentos internos PROXITI"
+      "source": "Procedimentos internos PROXITI",
+      "classification": "Recomendada"
     }
   ],
   "courses": [
@@ -88,7 +101,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       "track": "atendimento",
       "image": "assets/academy-course-visuals/at-01.svg",
       "title": "Primeiro contato e autorização",
-      "minutes": 15,
+      "minutes": 50,
       "level": "Fundamentos",
       "objectives": [
         "Coletar sintomas sem presumir a causa.",
@@ -122,14 +135,32 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
         "Nenhuma senha ou arquivo pessoal solicitado sem necessidade.",
         "Próximo passo e responsável definidos."
       ],
-      "references": []
+      "references": [],
+      "activity": {
+        "minutes": 25,
+        "title": "Simulação de triagem com consentimento",
+        "setup": "Use um cenário fictício e um colega que represente o cliente. Não acesse equipamentos, contas ou dados reais.",
+        "steps": [
+          "Escreva três perguntas abertas para descobrir o sintoma, o impacto e o momento em que começou, sem antecipar a solução.",
+          "Conduza cinco minutos de escuta e repita o problema com suas palavras. Marque separadamente relato, observação e hipótese.",
+          "Desenhe o limite da autorização: dados necessários, finalidade, ferramenta de acesso, duração e o que fica fora do escopo.",
+          "Simule o pedido de autorização expressa e a recusa de acesso a uma pasta pessoal. Explique como você interromperia a atividade.",
+          "Registre em um chamado fictício as evidências mínimas, a hipótese em aberto, a autorização e um próximo passo verificável."
+        ],
+        "deliverable": "Um registro de triagem fictício com sintomas, hipótese não confirmada, limites de acesso, autorização e próximo responsável."
+      },
+      "studyGuide": {
+        "readingMinutes": 15,
+        "questionnaireMinutes": 10,
+        "activityMinutes": 25
+      }
     },
     {
       "id": "at-02",
       "track": "atendimento",
       "image": "assets/academy-course-visuals/at-02.svg",
       "title": "Comunicação, prazos e orientação final",
-      "minutes": 15,
+      "minutes": 50,
       "level": "Fundamentos",
       "objectives": [
         "Explicar diagnóstico sem jargões desnecessários.",
@@ -164,14 +195,32 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
         "Validação realizada com o cliente quando possível.",
         "Relatório e orientações finais registrados."
       ],
-      "references": []
+      "references": [],
+      "activity": {
+        "minutes": 25,
+        "title": "De um diagnóstico técnico a uma orientação clara",
+        "setup": "Monte uma resposta fictícia para uma pessoa cujo notebook está lento e uma verificação apontou risco no armazenamento.",
+        "steps": [
+          "Escreva o relato técnico em quatro campos: sintoma, teste, evidência e limite da conclusão.",
+          "Reescreva o diagnóstico em linguagem compreensível, sem falar que a troca de uma peça garante recuperação de todos os dados.",
+          "Crie duas alternativas de encaminhamento com riscos, necessidade de cópia e dependências de prazo; diferencie orçamento de autorização.",
+          "Simule a descoberta de falha adicional e redija uma solicitação objetiva de nova aprovação antes da intervenção.",
+          "Elabore três perguntas para validar o resultado com o cliente e um resumo final que indique trabalho feito e pendências."
+        ],
+        "deliverable": "Mensagem de diagnóstico, pedido de aprovação de escopo e resumo de encerramento para um cenário simulado."
+      },
+      "studyGuide": {
+        "readingMinutes": 15,
+        "questionnaireMinutes": 10,
+        "activityMinutes": 25
+      }
     },
     {
       "id": "pc-01",
       "track": "computadores",
       "image": "assets/academy-course-visuals/pc-01.svg",
       "title": "Diagnóstico de lentidão e travamentos",
-      "minutes": 15,
+      "minutes": 50,
       "level": "Fundamentos",
       "objectives": [
         "Diferenciar sinais de software, armazenamento, temperatura e memória.",
@@ -208,14 +257,32 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       ],
       "references": [
         "https://learn.microsoft.com/pt-br/windows/client-management/troubleshoot-startup-issues"
-      ]
+      ],
+      "activity": {
+        "minutes": 25,
+        "title": "Diagnóstico comparativo sem alterações destrutivas",
+        "setup": "Utilize um computador próprio ou máquina virtual sem dados pessoais, ou descreva um cenário de laboratório caso não haja equipamento.",
+        "steps": [
+          "Registre condições iniciais: tempo aproximado de abertura de aplicativo, espaço livre e sintomas observáveis.",
+          "Separe hipóteses de software, memória, armazenamento e temperatura; escolha um indicador seguro para cada hipótese.",
+          "Observe processos, uso de memória e mensagens de erro com ferramentas nativas; não instale otimizadores ou executáveis desconhecidos.",
+          "Simule a hipótese de armazenamento com falha e defina quais operações devem parar para reduzir risco aos dados.",
+          "Documente resultados, limites, prioridade de cópia de segurança e os testes que seriam repetidos após uma intervenção autorizada."
+        ],
+        "deliverable": "Tabela de evidências antes/depois, hipóteses descartadas ou pendentes e decisão de preservação de dados."
+      },
+      "studyGuide": {
+        "readingMinutes": 15,
+        "questionnaireMinutes": 10,
+        "activityMinutes": 25
+      }
     },
     {
       "id": "pc-02",
       "track": "computadores",
       "image": "assets/academy-course-visuals/pc-02.svg",
       "title": "Manutenção preventiva e atualizações",
-      "minutes": 15,
+      "minutes": 50,
       "level": "Fundamentos",
       "objectives": [
         "Planejar atualizações com compatibilidade e reversão.",
@@ -252,14 +319,32 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       ],
       "references": [
         "https://www.microsoft.com/pt-br/windows/end-of-support"
-      ]
+      ],
+      "activity": {
+        "minutes": 25,
+        "title": "Plano de manutenção com reversão",
+        "setup": "Escolha um ambiente próprio ou virtualizado. Não atualize BIOS, firmware nem drivers de produção durante a atividade.",
+        "steps": [
+          "Faça um inventário básico de sistema, versão, armazenamento, fonte de atualização e situação do backup.",
+          "Compare a versão instalada com a recomendada pelo fabricante e registre incompatibilidades ou dependências possíveis.",
+          "Classifique as ações entre rotina de software, verificação física externa e intervenção que exige profissional habilitado.",
+          "Escreva a ordem de execução com ponto de retorno, janela de manutenção e confirmação do responsável.",
+          "Simule a falha de uma atualização e descreva como interromperia o processo e comunicaria a contingência."
+        ],
+        "deliverable": "Checklist de manutenção com origem de cada atualização, autorização, risco, validação e reversão planejada."
+      },
+      "studyGuide": {
+        "readingMinutes": 15,
+        "questionnaireMinutes": 10,
+        "activityMinutes": 25
+      }
     },
     {
       "id": "re-01",
       "track": "redes",
       "image": "assets/academy-course-visuals/re-01.svg",
       "title": "Diagnóstico de internet e Wi-Fi",
-      "minutes": 15,
+      "minutes": 50,
       "level": "Fundamentos",
       "objectives": [
         "Separar falha de sinal, roteador, provedor e dispositivo.",
@@ -296,14 +381,32 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       ],
       "references": [
         "https://learn.microsoft.com/pt-br/troubleshoot/windows-client/networking/wireless-network-connectivity-issues-troubleshooting"
-      ]
+      ],
+      "activity": {
+        "minutes": 25,
+        "title": "Mapa de isolamento de uma falha de Wi-Fi",
+        "setup": "Utilize rede própria ou um cenário fictício. Não altere credenciais, roteadores de terceiros nem configuração de clientes.",
+        "steps": [
+          "Desenhe os elementos do caminho: dispositivo, Wi-Fi, roteador, link do provedor e serviço remoto.",
+          "Liste três sintomas com alcances distintos: um dispositivo, um ambiente e todos os dispositivos.",
+          "Planeje testes graduais de conexão local, IP, DNS e serviço final, anotando o que cada resultado confirma ou não.",
+          "Simule uma falha apenas no cômodo distante e diferencie cobertura ruim de falha do provedor.",
+          "Redija uma conclusão curta com evidências, limitações e próximos testes autorizados."
+        ],
+        "deliverable": "Árvore de decisão e registro da falha com local, horário, dispositivos e resultados reproduzíveis."
+      },
+      "studyGuide": {
+        "readingMinutes": 15,
+        "questionnaireMinutes": 10,
+        "activityMinutes": 25
+      }
     },
     {
       "id": "re-02",
       "track": "redes",
       "image": "assets/academy-course-visuals/re-02.svg",
       "title": "Roteadores e rede de pequenos negócios",
-      "minutes": 15,
+      "minutes": 50,
       "level": "Intermediário",
       "objectives": [
         "Configurar Wi-Fi com separação e proteção proporcionais.",
@@ -340,14 +443,32 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       ],
       "references": [
         "https://www.cisa.gov/secure-our-world"
-      ]
+      ],
+      "activity": {
+        "minutes": 25,
+        "title": "Proposta de rede de convidados para uma loja",
+        "setup": "Projete uma rede fictícia de pequena empresa. Não aplique alterações em equipamentos reais sem autorização e janela definida.",
+        "steps": [
+          "Levante dispositivos e serviços que não podem ficar indisponíveis, como caixa, impressão e internet de trabalho.",
+          "Desenhe segmentos separados para operação, convidados e dispositivos de apoio, com objetivo de cada rede.",
+          "Defina autenticação apropriada, troca de credenciais e política para acesso administrativo sem expor senhas no relatório.",
+          "Planeje a janela, o teste de isolamento e a forma de retorno caso o acesso do caixa falhe.",
+          "Prepare um registro da configuração aprovada sem guardar segredos nem dados pessoais em material de estudo."
+        ],
+        "deliverable": "Diagrama simples e plano de validação de cobertura, isolamento e continuidade."
+      },
+      "studyGuide": {
+        "readingMinutes": 15,
+        "questionnaireMinutes": 10,
+        "activityMinutes": 25
+      }
     },
     {
       "id": "se-01",
       "track": "seguranca",
       "image": "assets/academy-course-visuals/se-01.svg",
       "title": "Phishing, senhas e MFA",
-      "minutes": 15,
+      "minutes": 50,
       "level": "Fundamentos",
       "objectives": [
         "Reconhecer abordagens de engenharia social.",
@@ -383,14 +504,32 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       ],
       "references": [
         "https://www.cisa.gov/secure-our-world"
-      ]
+      ],
+      "activity": {
+        "minutes": 25,
+        "title": "Triagem de mensagem suspeita sem divulgar segredos",
+        "setup": "Use uma mensagem fictícia de cobrança urgente. Não abra links suspeitos nem peça códigos reais de autenticação.",
+        "steps": [
+          "Separe sinais verificáveis de engenharia social: domínio, urgência, pedido de credencial e desvio do canal habitual.",
+          "Escreva orientações para validar a cobrança por um canal independente, sem responder ao remetente suspeito.",
+          "Simule a pessoa informando que clicou no link. Liste medidas proporcionais para conter novas ações e preservar evidências.",
+          "Explique a ativação de MFA com linguagem acessível e reforce que o técnico não solicita códigos ou senhas.",
+          "Monte uma resposta ao cliente e um registro de incidente sem copiar a mensagem completa com dados pessoais."
+        ],
+        "deliverable": "Roteiro de orientação de phishing, contenção inicial e proteção de conta, sem segredos."
+      },
+      "studyGuide": {
+        "readingMinutes": 15,
+        "questionnaireMinutes": 10,
+        "activityMinutes": 25
+      }
     },
     {
       "id": "se-02",
       "track": "seguranca",
       "image": "assets/academy-course-visuals/se-02.svg",
       "title": "Proteção de dispositivos e resposta inicial",
-      "minutes": 15,
+      "minutes": 50,
       "level": "Intermediário",
       "objectives": [
         "Aplicar medidas preventivas sem prometer perícia.",
@@ -426,14 +565,32 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       ],
       "references": [
         "https://www.cisa.gov/secure-our-world"
-      ]
+      ],
+      "activity": {
+        "minutes": 25,
+        "title": "Resposta inicial proporcional a um alerta",
+        "setup": "Trabalhe sobre um relatório de antivírus fictício. Não execute malware nem faça perícia em dispositivo real.",
+        "steps": [
+          "Registre origem do alerta, horário, dispositivo e impactos percebidos, separando informação confirmada de suposição.",
+          "Classifique o que pode ser isolado com segurança e o que exige escalação antes de qualquer ação.",
+          "Liste evidências necessárias e quais dados pessoais não precisam ser copiados para o chamado.",
+          "Descreva os critérios para validar atualizações, privilégios e a integridade do retorno ao trabalho.",
+          "Escreva a orientação final com limitações da triagem e sinais que justificam atendimento especializado."
+        ],
+        "deliverable": "Plano de contenção inicial e encaminhamento, sem promessa de erradicação ou perícia."
+      },
+      "studyGuide": {
+        "readingMinutes": 15,
+        "questionnaireMinutes": 10,
+        "activityMinutes": 25
+      }
     },
     {
       "id": "bk-01",
       "track": "backup",
       "image": "assets/academy-course-visuals/bk-01.svg",
       "title": "Cópias de segurança que realmente recuperam",
-      "minutes": 15,
+      "minutes": 50,
       "level": "Fundamentos",
       "objectives": [
         "Distinguir sincronização de backup.",
@@ -469,14 +626,32 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       ],
       "references": [
         "https://www.cisa.gov/secure-our-world"
-      ]
+      ],
+      "activity": {
+        "minutes": 25,
+        "title": "Plano de cópias que suporta falha e exclusão",
+        "setup": "Use arquivos fictícios criados em uma pasta de laboratório, nunca documentos pessoais ou de clientes.",
+        "steps": [
+          "Classifique três tipos de arquivo por impacto e frequência de alteração, definindo o que precisaria ser recuperado primeiro.",
+          "Projete cópias em dois meios com uma cópia separada da origem e controle de acesso adequado.",
+          "Simule a exclusão de um arquivo em pasta sincronizada e explique por que sincronização pode propagar a perda.",
+          "Defina periodicidade, retenção, criptografia, responsável pela chave e verificação de capacidade.",
+          "Descreva o procedimento de teste de recuperação sem sobrescrever a pasta original."
+        ],
+        "deliverable": "Plano de backup com escopo, RPO aproximado, localização, proteção e teste previsto."
+      },
+      "studyGuide": {
+        "readingMinutes": 15,
+        "questionnaireMinutes": 10,
+        "activityMinutes": 25
+      }
     },
     {
       "id": "bk-02",
       "track": "backup",
       "image": "assets/academy-course-visuals/bk-02.svg",
       "title": "Teste de restauração e continuidade",
-      "minutes": 15,
+      "minutes": 50,
       "level": "Intermediário",
       "objectives": [
         "Demonstrar recuperação antes de confiar no backup.",
@@ -512,14 +687,32 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       ],
       "references": [
         "https://www.cisa.gov/secure-our-world"
-      ]
+      ],
+      "activity": {
+        "minutes": 25,
+        "title": "Restauração de um arquivo sem afetar o original",
+        "setup": "Use apenas um arquivo fictício e uma cópia isolada em ambiente de laboratório.",
+        "steps": [
+          "Crie ou descreva um arquivo de referência e uma cópia separada, anotando nome, versão e destino seguro.",
+          "Defina um local alternativo de restauração para não sobrescrever o original e registre a autorização necessária.",
+          "Realize ou simule a recuperação da cópia; confira abertura, conteúdo e integridade do arquivo de teste.",
+          "Registre tempo de recuperação, falhas encontradas, dependências e o que o teste não comprovou.",
+          "Desenhe um plano simples de retorno em caso de indisponibilidade do computador ou da conexão."
+        ],
+        "deliverable": "Evidência de recuperação de arquivo fictício com data, destino, tempo e limites."
+      },
+      "studyGuide": {
+        "readingMinutes": 15,
+        "questionnaireMinutes": 10,
+        "activityMinutes": 25
+      }
     },
     {
       "id": "in-01",
       "track": "infraestrutura",
       "image": "assets/academy-course-visuals/in-01.svg",
       "title": "Instalações, cabos e segurança física",
-      "minutes": 15,
+      "minutes": 50,
       "level": "Fundamentos",
       "objectives": [
         "Reconhecer riscos elétricos e de ventilação.",
@@ -553,14 +746,32 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
         "Cabos e portas identificados.",
         "Limites do serviço registrados."
       ],
-      "references": []
+      "references": [],
+      "activity": {
+        "minutes": 25,
+        "title": "Inspeção segura de uma bancada fictícia",
+        "setup": "Analise uma foto própria sem dados pessoais ou um desenho de laboratório. Não abra quadros elétricos nem intervenha em circuitos.",
+        "steps": [
+          "Identifique riscos de ventilação, acesso de pessoas, cabos no trajeto, líquidos e pontos de alimentação sobrecarregados.",
+          "Organize os cabos em um mapa lógico com identificação de origem, destino e função.",
+          "Separe ações de organização de baixo risco daquelas que exigem eletricista ou profissional habilitado.",
+          "Desenhe uma rota de cabos que preserve acesso de manutenção e evite tração, aquecimento e obstruções.",
+          "Monte um checklist de inspeção final e uma legenda que outro técnico consiga seguir."
+        ],
+        "deliverable": "Croqui da bancada com perigos, encaminhamentos e esquema de identificação."
+      },
+      "studyGuide": {
+        "readingMinutes": 15,
+        "questionnaireMinutes": 10,
+        "activityMinutes": 25
+      }
     },
     {
       "id": "in-02",
       "track": "infraestrutura",
       "image": "assets/academy-course-visuals/in-02.svg",
       "title": "Inventário e continuidade de pequeno escritório",
-      "minutes": 15,
+      "minutes": 50,
       "level": "Intermediário",
       "objectives": [
         "Mapear dispositivos e dependências de serviço.",
@@ -594,14 +805,32 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
         "Teste de serviços críticos concluído.",
         "Inventário atualizado com acesso restrito."
       ],
-      "references": []
+      "references": [],
+      "activity": {
+        "minutes": 25,
+        "title": "Inventário e janela de mudança de um escritório",
+        "setup": "Considere uma microempresa fictícia com um roteador, duas estações e uma impressora de rede.",
+        "steps": [
+          "Relacione ativos e dependências: qual equipamento atende qual serviço e quem é afetado se ele parar.",
+          "Registre somente identificadores operacionais necessários, evitando dados de usuários e credenciais.",
+          "Escolha a alteração hipotética de maior impacto e planeje aviso, autorização, janela e ponto de retorno.",
+          "Descreva testes de internet, impressão e continuidade após a mudança, incluindo o que comprovaria falha.",
+          "Prepare uma entrega simples para que outra pessoa localize equipamentos, histórico e responsáveis."
+        ],
+        "deliverable": "Inventário mínimo e plano de mudança com impacto, validação e retorno."
+      },
+      "studyGuide": {
+        "readingMinutes": 15,
+        "questionnaireMinutes": 10,
+        "activityMinutes": 25
+      }
     },
     {
       "id": "pr-01",
       "track": "privacidade",
       "image": "assets/academy-course-visuals/pr-01.svg",
       "title": "LGPD, minimização e autorização prática",
-      "minutes": 15,
+      "minutes": 50,
       "level": "Fundamentos",
       "objectives": [
         "Coletar apenas dados técnicos necessários.",
@@ -638,14 +867,32 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       "references": [
         "https://www.gov.br/anpd/pt-br/centrais-de-conteudo/materiais-educativos-e-publicacoes",
         "https://www.gov.br/anpd/pt-br/acesso-a-informacao/institucional/atos-normativos/regulamentacoes_anpd/resolucao-cd-anpd-no-2-de-27-de-janeiro-de-2022"
-      ]
+      ],
+      "activity": {
+        "minutes": 25,
+        "title": "Minimização de dados em um chamado",
+        "setup": "Utilize um chamado fictício com uma captura de tela contendo nome, endereço e uma mensagem de erro.",
+        "steps": [
+          "Marque que campos são indispensáveis para investigar a falha e quais dados podem ser ocultados.",
+          "Reescreva a descrição do atendimento usando apenas sintoma, contexto técnico, impacto e evidência mínima.",
+          "Diferencie autorização de diagnóstico de autorização para acessar mensagens, fotos ou outros arquivos pessoais.",
+          "Simule um pedido de compartilhamento de tela e descreva como pedir permissão e encerrar quando o objetivo for atingido.",
+          "Revise a retenção e o destino das evidências simuladas antes de registrar o atendimento."
+        ],
+        "deliverable": "Antes/depois de um relato fictício com dados minimizados e autorização delimitada."
+      },
+      "studyGuide": {
+        "readingMinutes": 15,
+        "questionnaireMinutes": 10,
+        "activityMinutes": 25
+      }
     },
     {
       "id": "pr-02",
       "track": "privacidade",
       "image": "assets/academy-course-visuals/pr-02.svg",
       "title": "Suporte remoto seguro e incidentes de dados",
-      "minutes": 15,
+      "minutes": 50,
       "level": "Intermediário",
       "objectives": [
         "Conduzir sessão remota com controle do cliente.",
@@ -681,14 +928,32 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
       ],
       "references": [
         "https://www.gov.br/anpd/pt-br/centrais-de-conteudo/materiais-educativos-e-publicacoes"
-      ]
+      ],
+      "activity": {
+        "minutes": 25,
+        "title": "Sessão remota segura e encerramento",
+        "setup": "Faça um roteiro para uma sessão remota simulada, sem instalar software de acesso em dispositivos de terceiros.",
+        "steps": [
+          "Defina quem acompanha a sessão, finalidade, ferramenta autorizada e quais telas permanecem fora do escopo.",
+          "Descreva como o cliente concede e pode revogar o acesso, e por que senhas e códigos não devem ser informados ao técnico.",
+          "Simule identificar uma exposição de arquivo durante a sessão; registre o ocorrido sem duplicar o conteúdo.",
+          "Indique o canal interno de encaminhamento, as medidas de contenção que dependem de autorização e os registros necessários.",
+          "Escreva o checklist de término: desconexão, remoção de acesso persistente quando aplicável, validação e orientação final."
+        ],
+        "deliverable": "Roteiro completo de sessão remota com minimização, resposta inicial e confirmação de encerramento."
+      },
+      "studyGuide": {
+        "readingMinutes": 15,
+        "questionnaireMinutes": 10,
+        "activityMinutes": 25
+      }
     },
     {
       "id": "op-01",
       "track": "operacao",
       "image": "assets/academy-course-visuals/op-01.svg",
       "title": "Chamados, agenda e relatórios PROXITI",
-      "minutes": 15,
+      "minutes": 50,
       "level": "Fundamentos",
       "objectives": [
         "Manter o histórico operacional de cada atendimento.",
@@ -722,14 +987,32 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
         "Compromisso no estado verdadeiro.",
         "Encerramento após validação."
       ],
-      "references": []
+      "references": [],
+      "activity": {
+        "minutes": 25,
+        "title": "Linha do tempo de um atendimento completo",
+        "setup": "Monte um chamado fictício de suporte em uma loja, sem clientes reais ou dados pessoais.",
+        "steps": [
+          "Registre o pedido inicial, o impacto e o que ainda precisa ser confirmado antes de alterar sistemas.",
+          "Separe uma observação privada necessária de uma informação que pode integrar o relatório ao cliente.",
+          "Agende uma visita hipotética, distinguindo solicitação, confirmação, reagendamento e conclusão.",
+          "Marque as etapas do roteiro conforme execução real e descreva como documentaria uma etapa não aplicável.",
+          "Redija o relatório final com diagnóstico sustentado por teste, serviço autorizado, validação e próximos passos."
+        ],
+        "deliverable": "Linha do tempo consistente de chamado, agenda, roteiro, nota e relatório."
+      },
+      "studyGuide": {
+        "readingMinutes": 15,
+        "questionnaireMinutes": 10,
+        "activityMinutes": 25
+      }
     },
     {
       "id": "op-02",
       "track": "operacao",
       "image": "assets/academy-course-visuals/op-02.svg",
       "title": "Residências, microempresas e pós-atendimento",
-      "minutes": 15,
+      "minutes": 50,
       "level": "Intermediário",
       "objectives": [
         "Adaptar diagnóstico ao impacto do cliente.",
@@ -763,8 +1046,27 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
         "Recomendações justificadas por evidências.",
         "Cliente recebeu validação e próximos passos."
       ],
-      "references": []
+      "references": [],
+      "activity": {
+        "minutes": 25,
+        "title": "Priorizar sem abandonar nenhum cliente",
+        "setup": "Compare uma solicitação de PC residencial lento e outra de loja com vendas interrompidas.",
+        "steps": [
+          "Levante impacto, urgência, riscos aos dados e alternativas temporárias para cada situação.",
+          "Separe ações que exigem presença, autorização do cliente ou suporte de outro profissional.",
+          "Monte uma priorização justificada sem prometer solução ou prazo que dependa de fornecedor.",
+          "Escreva uma mensagem de atualização para cada cliente, incluindo o que já foi identificado e o próximo retorno.",
+          "Elabore orientações preventivas proporcionais aos riscos comprovados, sem usar medo para justificar serviços adicionais."
+        ],
+        "deliverable": "Plano de prioridades, comunicação de retorno e resumo de pós-atendimento para os dois casos fictícios."
+      },
+      "studyGuide": {
+        "readingMinutes": 15,
+        "questionnaireMinutes": 10,
+        "activityMinutes": 25
+      }
     }
   ]
-});
+}
+);
 })();
