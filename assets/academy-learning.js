@@ -19,7 +19,7 @@ const make=(tag,text="",cls="")=>{
 };
 const request=async promise=>{
  const {data,error}=await promise;
- if(error)throw new Error(String(error.message||"Operação não confirmada.").replaceAll("Academia","UniProxiti"));
+ if(error)throw new Error(String(error.message||"Operação não confirmada.").replaceAll("Academia","UNIPROXITI"));
  return data;
 };
 const points=n=>Number.isFinite(Number(n))?Number(n).toFixed(2).replace(".",","):"—";
@@ -540,7 +540,7 @@ function printCertificate(){
  const paper=make("main",null,"paper");
  paper.append(make("div","PROXITI","brand"),
    make("h1","Certificado de Conclusão Interna"),
-   make("p","A UniProxiti certifica que"),
+   make("p","A UNIPROXITI certifica que"),
    make("div",certificate.holder_name,"name"),
    make("p","concluiu a capacitação interna Fundamentos Operacionais PROXITI, "+
      "com 16 aulas nas oito áreas de atendimento, computadores, redes, "+
@@ -591,7 +591,7 @@ async function loadProgress(silent=true){
    if(!silent)setStatus("Progresso atualizado na sua conta.");
  }catch(error){
    if(valid(g,s))setStatus("Não foi possível sincronizar o progresso: "+
-     error.message+". Tente atualizar a UniProxiti.","error");
+     error.message+". Tente atualizar a UNIPROXITI.","error");
  }finally{if(valid(g,s))loading=false;}
 }
 el("uniproxiti-continue").addEventListener("click",navigateStudy);
