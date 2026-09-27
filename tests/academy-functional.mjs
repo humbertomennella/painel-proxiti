@@ -540,17 +540,19 @@ try{
    await page.evaluate(()=>window.PROXITI_OPEN_VIEW("library"));
    await page.mouse.move(700,60); // Na inicialização, o ponteiro do Chromium pode estar sobre a sidebar.
    await page.waitForFunction(()=>document.getElementById("panel").classList.contains("sidebar-collapsed"));
+   await page.waitForTimeout(350); // Esperar transição CSS, não apenas a alteração da classe.
    const initial=await page.locator("#app-sidebar").evaluate(n=>n.getBoundingClientRect().width);
+   assert(initial<=90,"Sidebar inicial não está compacta: "+initial+"px");
    await page.hover('#sidebar-nav [data-side-view="library"]');
    await page.waitForFunction(()=>!document.getElementById("panel").classList.contains("sidebar-collapsed"));
    await page.waitForTimeout(350);
    const expanded=await page.locator("#app-sidebar").evaluate(n=>n.getBoundingClientRect().width);
-   assert(expanded>initial+100,"Sidebar não expandiu");
+   assert(expanded>initial+100,"Sidebar não expandiu: "+initial+" → "+expanded+"px");
    await page.mouse.move(700,60);
    await page.waitForFunction(()=>document.getElementById("panel").classList.contains("sidebar-collapsed"));
    await page.waitForTimeout(350);
    const collapsed=await page.locator("#app-sidebar").evaluate(n=>n.getBoundingClientRect().width);
-   assert(collapsed<expanded-100,"Sidebar não recolheu");
+   assert(collapsed<expanded-100,"Sidebar não recolheu: "+expanded+" → "+collapsed+"px");
    const folder=resolve(root,"artifacts");await mkdir(folder,{recursive:true});
    await page.screenshot({path:resolve(folder,"refinamento-biblioteca-1366.png"),fullPage:false});
    assert.deepEqual(page.__errors,[]);
