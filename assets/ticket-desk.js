@@ -99,7 +99,7 @@ function renderGuide(panel,item){
   guided.outcomes=storedGuide.outcomes.slice(0,plan.steps.length).map(v=>['resolved','failed'].includes(v)?v:null);
   saveGuide();renderGuide(panel,item);setStatus('Progresso retomado da nota interna. Confirme se a hipótese ainda se aplica.');
  }));
- panel.append(nav);
+ panel.append(nav,make("p","Critério de validação final: "+plan.verification,"ticket-solution-expected"));
  if(position===plan.steps.length-1&&outcome==="failed")
   panel.append(make("p","As etapas propostas não resolveram. Registre o resultado e encaminhe ao suporte responsável. Não marque o chamado como resolvido automaticamente.","ticket-solution-escalate"));
  panel.append(make("p","A navegação fica apenas nesta sessão até você salvar o progresso em nota interna. Sintomas e segredos não entram nesse registro. Nenhum comando é executado.","ticket-diagnostic-disclaimer"));

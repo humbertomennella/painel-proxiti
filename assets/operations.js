@@ -637,7 +637,7 @@
     el("ticket-current-status").replaceChildren(statusPill(t.status));
     el("ticket-customer").textContent=t.customer_name+" · "+t.customer_email+
       (t.customer_phone?" · "+t.customer_phone:"");
-    el("ticket-context").textContent=t.customer_name+" · Responsável: "+staffName(t.assigned_to);
+    el("ticket-context").textContent=t.customer_name+" · Responsável: "+(t.assigned_to===state.user.id?(state.profile?.display_name||"Você"):staffName(t.assigned_to));
     el("ticket-description").textContent=t.description;
     el("ticket-status").value=t.status;
     el("ticket-assignee").value=t.assigned_to||"";
