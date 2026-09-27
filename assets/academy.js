@@ -243,6 +243,22 @@ function history(item,card){
  more.addEventListener("click",()=>void fetchHistory());
  return details;
 }
+const PHOTO_BY_CATEGORY={
+ atendimento:"support",computadores:"computer",redes:"networks",
+ backup:"security",seguranca:"security",infraestrutura:"technical-hero",
+ geral:"technical-hero"
+};
+function categoryPhoto(item){
+ const category=String(item.category||"Geral").normalize("NFD")
+  .replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase("pt-BR");
+ const photo=PHOTO_BY_CATEGORY[category]||"technical-hero";
+ const figure=make("figure",null,"academy-entry-photo");
+ const image=make("img");
+ image.src="./assets/photos/"+photo+".webp";
+ image.alt="Fotografia ilustrativa da especialidade "+(item.category||"técnica")+".";
+ image.width=560;image.height=315;image.loading="lazy";image.decoding="async";
+ figure.append(image);return figure;
+}
 function card(item,g,s){
  const entry=make("article",null,"ops-list-item academy-entry");
  entry.dataset.category=item.category||"Geral";entry.dataset.materialId=item.id;
@@ -250,7 +266,7 @@ function card(item,g,s){
  head.append(make("strong",item.title),make("span",item.category||"Geral","ops-badge"));
  const pub=make("span",item.published?"Publicado":"Rascunho","ops-badge");
  pub.dataset.published=String(!!item.published);head.append(pub);
- entry.append(head,make("p",item.description||"Sem descrição"),
+ entry.append(categoryPhoto(item),head,make("p",item.description||"Sem descrição"),
    make("small",(item.kind==="article"?"Procedimento interno":"Arquivo privado")+
      " · "+(item.reviewed_at?"Revisão: "+shortDate(item.reviewed_at):"Revisão pendente"),
      "academy-meta"));

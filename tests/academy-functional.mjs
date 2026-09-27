@@ -480,6 +480,85 @@ try{
      assert.deepEqual(page.__errors,[]);
    }finally{await page.close();}
  });
+ await test("Menu de conta, som e pesquisa global com acesso restrito",async()=>{
+  const page=await openScenario({materials:[makeMaterial(1)]});
+  try{
+   await academy(page);await page.setViewportSize({width:1366,height:870});
+   await page.click("#open-profile");
+   assert.equal(await page.isVisible("#central-account-menu"),true);
+   assert.equal((await page.textContent(".panel-account-name small")).trim(),"Técnico");
+   assert.equal(await page.textContent("#account-sound-label"),"Desativar som");
+   await page.click("#account-menu-sound");
+   assert.equal(await page.evaluate(()=>window.PROXITI_ALERTS.enabled),false);
+   assert.equal(await page.textContent("#account-sound-label"),"Ativar som");
+   await page.click("#account-menu-sound");
+   assert.equal(await page.evaluate(()=>window.PROXITI_ALERTS.enabled),true);
+   await page.click("#account-menu-profile");
+   assert.equal(await page.isVisible("#profile-section"),true);
+   await page.fill("#central-global-query","Clientes");
+   assert.equal(await page.locator('#central-global-results [data-search-view="clients"]').count(),0);
+   await page.fill("#central-global-query","Procedimento técnico 1");
+   await page.press("#central-global-query","Enter");
+   await page.waitForFunction(()=>document.getElementById("training-search").value.includes("Procedimento técnico 1"));
+   assert.equal(await page.isVisible("#ops-library"),true);
+   await page.locator("#training-list .academy-entry-photo img").first().evaluate(img=>img.decode());
+   assert((await page.locator("#training-list .academy-entry-photo img").first().evaluate(img=>img.naturalWidth))>0);
+   await page.click("#open-profile");
+   await page.evaluate(()=>{window.__menuLogout=0;document.getElementById("logout").addEventListener("click",()=>window.__menuLogout++);});
+   await page.click("#account-menu-logout");
+   assert.equal(await page.evaluate(()=>window.__menuLogout),1,"Menu não delegou o logout existente");
+   assert.deepEqual(page.__errors,[]);
+  }finally{await page.close();}
+ });
+ await test("Banners com régua única, fotos e sidebar que expande e recolhe",async()=>{
+  const page=await openScenario({materials:[makeMaterial(1)],admin:true});
+  try{
+   await page.setViewportSize({width:1366,height:900});
+   const measure=async(view,selector)=>{
+    await page.evaluate(v=>window.PROXITI_OPEN_VIEW(v),view);
+    await page.locator(selector).waitFor({state:"visible"});
+    return page.locator(selector).evaluate(node=>{
+     const r=node.getBoundingClientRect(),p=document.getElementById("panel-main").getBoundingClientRect();
+     return {left:r.left,right:r.right,height:r.height,mainLeft:p.left,mainRight:p.right,
+      image:node.querySelector("img")?.getAttribute("src")||""};
+    });
+   };
+   const uni=await measure("training","#ops-training .academy-learning-hero");
+   assert(Math.abs(uni.height-250)<=2,"UNIPROXITI fora da régua de 250px");
+   for(const [view,selector] of [
+    ["overview","#overview-home .overview-banner"],["tickets","#ops-tickets>.central-page-hero"],
+    ["agenda","#ops-agenda>.central-page-hero"],["library","#ops-library>.central-page-hero"],
+    ["equipment","#ops-equipment>.central-page-hero"],["clients","#ops-clients>.central-page-hero"],
+    ["reports","#ops-reports>.central-page-hero"],["users","#ops-users>.central-page-hero"],
+    ["settings","#ops-settings>.central-page-hero"],["profile","#profile-section>.central-page-hero"]]){
+    const r=await measure(view,selector);
+    assert(Math.abs(r.height-uni.height)<=2,view+" tem altura diferente");
+    assert(Math.abs(r.left-r.mainLeft)<=2&&Math.abs(r.right-r.mainRight)<=2,
+      view+" deixa faixas laterais: "+JSON.stringify(r));
+    if(view!=="overview")assert(r.image.endsWith(".webp"),view+" sem fotografia local");
+   }
+   await page.evaluate(()=>window.PROXITI_OPEN_VIEW("library"));
+   await page.mouse.move(700,60); // Na inicialização, o ponteiro do Chromium pode estar sobre a sidebar.
+   await page.waitForFunction(()=>document.getElementById("panel").classList.contains("sidebar-collapsed"));
+   await page.waitForTimeout(350); // Esperar transição CSS, não apenas a alteração da classe.
+   const initial=await page.locator("#app-sidebar").evaluate(n=>n.getBoundingClientRect().width);
+   assert(initial<=90,"Sidebar inicial não está compacta: "+initial+"px");
+   await page.hover('#sidebar-nav [data-side-view="library"]');
+   await page.waitForFunction(()=>!document.getElementById("panel").classList.contains("sidebar-collapsed"));
+   await page.waitForTimeout(350);
+   const expanded=await page.locator("#app-sidebar").evaluate(n=>n.getBoundingClientRect().width);
+   assert(expanded>initial+100,"Sidebar não expandiu: "+initial+" → "+expanded+"px");
+   await page.mouse.move(700,60);
+   await page.waitForFunction(()=>document.getElementById("panel").classList.contains("sidebar-collapsed"));
+   await page.waitForTimeout(350);
+   const collapsed=await page.locator("#app-sidebar").evaluate(n=>n.getBoundingClientRect().width);
+   assert(collapsed<expanded-100,"Sidebar não recolheu: "+expanded+" → "+collapsed+"px");
+   const folder=resolve(root,"artifacts");await mkdir(folder,{recursive:true});
+   await page.screenshot({path:resolve(folder,"refinamento-biblioteca-1366.png"),fullPage:false});
+   assert.deepEqual(page.__errors,[]);
+  }finally{await page.close();}
+ });
+ console.log("PASS: busca, som, menu e banners da Central revisados no Chromium.");
  console.log("PASS: 11 cenários de UniProxiti em Chromium, sem alterar materiais reais.");
 }finally{
  await browser.close();

@@ -7,7 +7,7 @@ const html=get("index.html");
 const scriptPaths=[
   "assets/app.js","assets/alerts.js","assets/operations.js","assets/academy.js","assets/academy-curriculum.js","assets/academy-learning.js","assets/layout.js",
   "assets/profile.js","assets/appearance.js","assets/overview-model.js","assets/overview.js","assets/ticket-workflow.js",
-  "assets/ticket-extras.js","assets/agenda.js","assets/technical-tools-core.js","assets/technical-tools.js"
+  "assets/ticket-extras.js","assets/agenda.js","assets/technical-tools-core.js","assets/technical-tools.js","assets/central-refinement.js"
 ];
 for (const path of scriptPaths) new Script(get(path),{filename:path});
 const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);
@@ -37,7 +37,8 @@ assert(html.includes('data-theme="light"'),"Tema claro inicial ausente");
 assert(get("assets/appearance.js").includes('proxiti-theme-v3'),"Preferência de tema incompatível com o site");
 assert(get("assets/layout.js").includes('sidebar.addEventListener("pointerenter"'),"Hover lateral ausente");
 assert(get("assets/layout.js").includes('sidebar.addEventListener("pointerleave"'),"Recolhimento lateral ausente");
-assert(get("assets/alerts.js").includes("get enabled(){return true;}")&&
+assert(get("assets/alerts.js").includes("get enabled(){return enabled}")&&
+ get("assets/alerts.js").includes("function setEnabled(value)")&&
  !html.includes('id="toggle-alerts"'),"Som habilitado sem botão na topbar");
 const interfaceCss=get("assets/interface.css");
 assert(interfaceCss.includes('html[data-theme="light"]')&&interfaceCss.includes('html[data-theme="dark"]'),"Temas incompletos");
@@ -262,7 +263,7 @@ for(const id of ["training-sync-state","training-status-filter","training-review
  "training-editor-feedback","training-load-more","training-list"]){
  assert(html.includes('id="'+id+'"'),"UniProxiti sem estado ou controle #"+id);
 }
-assert(html.includes('src="./assets/academy.js?v=20260926-2"'),
+assert(html.includes('src="./assets/academy.js?v=20260927-1"'),
  "Módulo editorial da UniProxiti não está carregado");
 const academyCode=get("assets/academy.js"),academyDb=get("supabase/academy_integrity_v12.sql");
 for(const rule of ["training_material_versions","training_search_gin_idx",
@@ -353,10 +354,36 @@ assert(equipmentBegin>libraryEnd&&html.indexOf('id="tools-list"')>equipmentBegin
 assert(html.indexOf('id="ticket-search"')<html.indexOf('id="ticket-metric-open"'),
  "Pesquisa de Chamados não está no topo");
 assert(!html.includes('id="toggle-alerts"')&&
- get("assets/alerts.js").includes("get enabled(){return true;}"),
+ get("assets/alerts.js").includes("get enabled(){return enabled}"),
  "Som de chamado deve ficar ligado sem botão");
 assert(html.includes('class="overview-view-controls" hidden aria-hidden="true"'),
  "Controles Focar/Leitura/Ajuda continuam na Visão Geral");
 assert(get("assets/central-expansion.css").includes('.notification-trigger[hidden]{display:none!important}'),
  "Ocultação do sino sem permissão não é preservada");
 console.log("Expansão: seis páginas, banners, Biblioteca separada, busca superior e alertas validados.");
+
+/* REFINAMENTO 27/09: apresentação, navegação, busca e áudio por conta. */
+for(const id of ["central-global-search","central-global-query","central-global-results",
+ "central-global-status","central-account-menu","account-menu-profile","account-menu-sound",
+ "account-menu-logout","account-sound-label"])
+ assert(html.includes('id="'+id+'"'),"Busca/menu sem #"+id);
+assert(!html.includes('data-side-view="content"')&&!html.includes('data-ops-view="content"'),
+ "Conteúdo do Site ainda aparece na navegação");
+assert(html.includes('data-side-view="overview" class="side-link" title="Início"')&&
+ html.includes('<h2 id="overview-heading">Início</h2>'),"Início não foi renomeado");
+assert(html.includes('<h4 id="academy-learning-heading">UNI<span class="hero-blue">PROXITI</span></h4>'),
+ "Título da UNIPROXITI não foi padronizado");
+assert((html.match(/uniproxiti-stat-medal/g)||[]).length===3,"Emblemas estatísticos ausentes");
+for(const id of ["tickets","staff","agenda","tools","library","equipment","clients",
+ "reports","users","settings","profile"]){
+ const match=html.match(new RegExp('central-hero-'+id+'[\\s\\S]*?<img src="([^"]+)"'));
+ assert(match?.[1]?.startsWith("./assets/photos/"),"Banner não é fotografia local: "+id);
+}
+assert(get("assets/academy.js").includes("categoryPhoto(item)"),
+ "Biblioteca sem fotografia por especialidade");
+for(const path of ["assets/central-refinement.css","assets/central-expansion.css"]){
+ const css=get(path);
+ assert.equal((css.match(/{/g)||[]).length,(css.match(/}/g)||[]).length,
+  "CSS desbalanceado: "+path);
+}
+console.log("Refinamento: busca global, conta, áudio por usuário, banners fotográficos e acervo validados.");
