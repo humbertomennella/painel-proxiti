@@ -7,7 +7,7 @@ const html=get("index.html");
 const scriptPaths=[
   "assets/app.js","assets/alerts.js","assets/operations.js","assets/academy.js","assets/academy-curriculum.js","assets/academy-learning.js","assets/layout.js",
   "assets/profile.js","assets/appearance.js","assets/overview-model.js","assets/overview.js","assets/ticket-workflow.js",
-  "assets/ticket-extras.js","assets/ticket-diagnostics-core.js","assets/ticket-desk.js","assets/agenda.js","assets/technical-tools-core.js","assets/technical-tools.js"
+  "assets/ticket-extras.js","assets/ticket-solutions.js","assets/ticket-diagnostics-core.js","assets/ticket-desk.js","assets/agenda.js","assets/technical-tools-core.js","assets/technical-tools.js"
 ];
 for (const path of scriptPaths) new Script(get(path),{filename:path});
 const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);
@@ -407,11 +407,18 @@ for(const id of [
  "ticket-diagnostic-message","ticket-diagnostic-to-note","ticket-diagnostic-to-reply",
  "ticket-diagnostic-to-steps","ticket-preflight","ticket-preflight-progress"
 ])assert(ids.includes(id),"Chamados: ID novo ausente: "+id);
-assert(html.includes('src="./assets/ticket-desk.js?v=20260927-1"')&&
- html.includes('src="./assets/ticket-diagnostics-core.js?v=20260927-1"')&&
- html.includes('href="./assets/ticket-desk.css?v=20260927-1"'),
+assert(html.includes('src="./assets/ticket-desk.js?v=20260927-2"')&&
+ html.includes('src="./assets/ticket-diagnostics-core.js?v=20260927-2"')&&
+ html.includes('href="./assets/ticket-desk.css?v=20260927-2"'),
  "Assets da mesa técnica não estão carregados");
-const desk=get("assets/ticket-desk.js"),diagnostics=get("assets/ticket-diagnostics-core.js");
+const desk=get("assets/ticket-desk.js"),diagnostics=get("assets/ticket-diagnostics-core.js"),
+ solutions=get("assets/ticket-solutions.js");
+assert(html.includes('src="./assets/ticket-solutions.js?v=20260927-2"')&&
+ html.indexOf("ticket-solutions.js")<html.indexOf("ticket-diagnostics-core.js"),
+ "Planos devem carregar antes do motor de diagnóstico");
+assert(solutions.includes("bitlocker:plan")&&solutions.includes("firmware:plan")&&
+ !/(?:fetch|XMLHttpRequest|sendBeacon)\\s*\\(/.test(solutions),
+ "Planos não possuem cobertura de recuperação ou fazem chamadas externas");
 assert(desk.includes('proxiti-ticket-selected')&&desk.includes('proxiti-session-ended')&&
  desk.includes('canNote()')&&desk.includes('canReply()'),
  "Diagnóstico não acompanha seleção, logout ou permissões");
@@ -423,6 +430,6 @@ assert(!desk.includes('ticket-note-form").submit(')&&
 const deskCss=get("assets/ticket-desk.css");
 assert.equal((deskCss.match(/{/g)||[]).length,(deskCss.match(/}/g)||[]).length,
  "CSS da mesa técnica está desbalanceado");
-assert(deskCss.includes("ticket-service-layout")&&deskCss.includes("max-width:420px"),
+assert(deskCss.includes("ticket-service-layout")&&deskCss.includes("max-width:420px")&&deskCss.includes("ticket-solution-current"),
  "Layout do chat não possui adaptação para mobile");
 console.log("PASS: mesa técnica, direitos, segurança e IDs preservados.");
