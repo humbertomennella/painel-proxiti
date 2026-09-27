@@ -184,7 +184,7 @@ function show(next){
  const btn=el("academy-learning-open-exam");
  btn.disabled=passedCount()!==data.courses.length||!authorized(session());
  btn.textContent=passedCount()===data.courses.length?
-   "Iniciar / refazer prova final":"Prova final · concluir 16 cursos";
+   "Fazer prova geral opcional":"Certificação geral opcional · 16 aulas";
 }
 function summary(){
  if(!authorized(session()))return;
