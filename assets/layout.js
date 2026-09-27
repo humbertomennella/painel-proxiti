@@ -84,7 +84,7 @@ function showTooltip(node){
 sidebar.addEventListener("pointerenter",()=>{
  if(!ready||!desktopHover())return;
  clearTimeout(hoverTimer);
- hoverTimer=setTimeout(()=>{hideTooltip();setCollapsed(false)},220);
+ hoverTimer=setTimeout(()=>{hideTooltip();setCollapsed(false)},105);
 });
 sidebar.addEventListener("pointerleave",()=>{
  clearTimeout(hoverTimer);hideTooltip();
