@@ -136,6 +136,25 @@ async function openScenario({tickets=baseline,chat=true,failTickets=false,failMe
          }
          return Promise.resolve(commit());
        }
+       if(name==='proxiti_add_ticket_note'){
+         fixture.notes.unshift({id:'note-'+fixture.notes.length,ticket_id:target.id,body:args.p_body,created_at:new Date().toISOString()});return ok(null);
+       }
+       if(name==='proxiti_prepare_ticket_checklist'){
+         fixture.tasks.push({id:'task-1',ticket_id:target.id,position:1,title:'Confirmar o problema e a autorização do cliente',state:'pending',note:''});return ok(1);
+       }
+       if(name==='proxiti_update_ticket_task'){
+         const row=fixture.tasks.find(t=>t.id===args.p_task);Object.assign(row,{state:args.p_state,note:args.p_note});return ok(null);
+       }
+       if(name==='proxiti_save_ticket_device'){
+         const row={ticket_id:target.id,category:args.p_category,brand:args.p_brand,model:args.p_model,operating_system:args.p_os,asset_reference:args.p_ref,observations:args.p_observations,updated_at:new Date().toISOString()};
+         fixture.devices=fixture.devices.filter(d=>d.ticket_id!==target.id);fixture.devices.push(row);return ok(null);
+       }
+       if(name==='proxiti_save_ticket_report'){
+         fixture.reports.push({id:'report-'+fixture.reports.length,ticket_id:target.id,version:fixture.reports.length+1,diagnosis:args.p_diagnosis,work_performed:args.p_work,recommendations:args.p_recommendations,finalized:args.p_finalized,created_at:new Date().toISOString()});return ok(fixture.reports.length);
+       }
+       if(name==='proxiti_schedule_appointment'){
+         fixture.appointments.push({id:'appointment-1',ticket_id:target.id,title:args.p_title,starts_at:args.p_starts_at,duration_minutes:args.p_duration,modality:args.p_modality,status:'planned'});return ok(null);
+       }
        if(name==="proxiti_attach_ticket_file"){
          fixture.attachments.push({id:"attach-"+fixture.attachments.length,ticket_id:target.id,
            storage_path:args.p_path,file_name:args.p_name,byte_size:args.p_size,
@@ -176,6 +195,7 @@ async function visit(page,ref){
   await page.click("#ticket-queue-toggle");
  await page.locator(".ticket-inbox-card").filter({hasText:"#"+ref+" ·"}).click();
  await page.waitForFunction(ref=>document.getElementById("ticket-code").textContent.includes("#"+ref),ref);
+ await page.locator(".ticket-context-details").evaluate(el=>el.open=true);
 }
 try{
  await test("Assumir atendimento em curso preserva situação",async()=>{
@@ -276,7 +296,7 @@ try{
  await test("Rascunho de nota é preservado entre chamados e eliminado no logout",async()=>{
   const page=await openScenario();
   try{
-   await visit(page,102);await page.fill("#ticket-note-body","Nota privada ainda não salva.");
+   await visit(page,102);await page.click('[data-ticket-jump="notes"]');await page.fill("#ticket-note-body","Nota privada ainda não salva.");
    await visit(page,101);await visit(page,102);
    assert.equal(await page.inputValue("#ticket-note-body"),"Nota privada ainda não salva.");
    await page.evaluate(()=>{window.PROXITI_ACTIVE_SESSION=null;
@@ -303,6 +323,7 @@ try{
   const page=await openScenario({attachAmbiguous:true});
   try{
    await visit(page,102);
+   await page.click('[data-ticket-jump="attachments"]');
    await page.locator("#ticket-file-input").setInputFiles({
     name:"evidencia.pdf",mimeType:"application/pdf",buffer:Buffer.from("%PDF-1.4 test")
    });
@@ -324,12 +345,15 @@ try{
    assert.equal(await page.getAttribute('[data-ticket-jump="chat"]',"aria-current"),"location");
    assert.equal(await page.getAttribute("#ticket-list-pane","data-mobile-collapsed"),"true");
    assert.equal(await page.isVisible("#ticket-queue-toggle"),true);
+   await page.click('[data-ticket-jump="diagnostic"]');
    await page.click("#ticket-diagnostic-to-note");
    assert((await page.inputValue("#ticket-note-body")).includes("Triagem assistida local"));
    assert.equal(await page.evaluate(()=>window.__fixture.notes.length),0,"Nota não pode ser salva automaticamente");
+   await page.click('[data-ticket-jump="diagnostic"]');
    await page.click("#ticket-diagnostic-to-reply");
    assert((await page.inputValue("#staff-reply")).includes("Para entender melhor"));
    assert.equal(await page.evaluate(()=>window.__fixture.messages.length),3,"Resposta não pode ser enviada automaticamente");
+   await page.click('[data-ticket-jump="diagnostic"]');
    await page.fill("#ticket-diagnostic-symptoms","Disco SSD falhou e arquivos sumiram; preciso recuperar arquivos.");
    await page.waitForFunction(()=>document.getElementById("ticket-diagnostic-results").textContent.includes("Armazenamento"));
    assert((await page.textContent("#ticket-diagnostic-results")).includes("Não formate"));
@@ -354,6 +378,7 @@ try{
    assert(!(await page.inputValue("#ticket-diagnostic-symptoms")).includes("BitLocker ativado"));
    await visit(page,102);
    assert((await page.inputValue("#ticket-diagnostic-symptoms")).includes("BitLocker ativado"));
+   await page.click('[data-ticket-jump="diagnostic"]');
    await page.click("#ticket-diagnostic-clear");
    assert.equal(await page.inputValue("#ticket-diagnostic-symptoms"),"");
    assert.equal(await page.isDisabled("#ticket-diagnostic-to-note"),true);
@@ -367,6 +392,7 @@ try{
    assert.equal(await page.isHidden("#ticket-go-chat"),true);
    assert.equal(await page.isDisabled("#ticket-diagnostic-message"),true);
    assert.equal(await page.isDisabled("#ticket-diagnostic-to-reply"),true);
+   await page.click('[data-ticket-jump="notes"]');
    assert.equal(await page.isHidden("#ticket-workflow"),false);
    await visit(page,103);
    assert.equal(await page.isDisabled("#ticket-diagnostic-to-note"),true);
@@ -378,7 +404,7 @@ try{
   try{
    await visit(page,102);
    const artifacts=resolve(root,"artifacts");await mkdir(artifacts,{recursive:true});
-   for(const width of [320,375,430,768,1366]){
+   for(const width of [320,375,430,768,1024,1366,1920]){
     await page.setViewportSize({width,height:875});
     for(const theme of ["light","dark"]){
      await page.evaluate(theme=>document.documentElement.dataset.theme=theme,theme);
@@ -407,7 +433,53 @@ try{
    assert.deepEqual(page.__errors,[]);
   }finally{await page.close();}
  });
- console.log("PASS: 10 cenários de Chamados em Chromium, incluindo 10 medidas de layout.");
+
+ await test('Abas reais, teclado, fila desktop, edição isolada, roteiro e relatório assistido',async()=>{
+  const page=await openScenario();
+  try{
+   await page.setViewportSize({width:1366,height:900});await visit(page,102);
+   for(const key of ['diagnostic','notes','tasks','device','appointments','attachments','report','history']){
+    await page.click('[data-ticket-jump="'+key+'"]');
+    assert.equal(await page.locator('[role=tabpanel]:visible').count(),1,key);
+    assert.equal(await page.isVisible('#ticket-conversation'),true,'Conversa permanente');
+   }
+   await page.click('[data-ticket-jump="notes"]');await page.keyboard.press('ArrowRight');
+   assert.equal(await page.getAttribute('#ticket-tab-tasks','aria-selected'),'true');
+   await page.click('#ticket-queue-toggle');assert.equal(await page.isVisible('#ticket-list-pane'),false);
+   await page.click('#ticket-queue-toggle');assert.equal(await page.isVisible('#ticket-list-pane'),true);
+   await page.click('[data-ticket-jump="device"]');await page.fill('#ticket-device-brand','Fabricante teste');
+   await page.fill('#ticket-device-ref','PATRIMONIO-NAO-INCLUIR');
+   await page.click('[data-ticket-jump="report"]');await page.fill('#ticket-report-diagnosis','Diagnóstico em edição');
+   await visit(page,101);await visit(page,102);await page.click('[data-ticket-jump="device"]');
+   assert.equal(await page.inputValue('#ticket-device-brand'),'Fabricante teste');
+   await page.locator('#ticket-device-form button[type=submit]').click();
+   await page.waitForFunction(()=>window.__fixture.devices.length===1);
+   await page.click('[data-ticket-jump="tasks"]');await page.click('#ticket-tasks-create');
+   await page.waitForFunction(()=>document.querySelector('#ticket-tasks-list select'));
+   await page.locator('#ticket-tasks-list select').selectOption('done');
+   await page.locator('#ticket-tasks-list input').fill('Autorização confirmada pelo canal registrado.');
+   assert((await page.textContent('#ticket-tasks-list')).includes('Alteração não salva'));
+   await page.locator('#ticket-tasks-list button').click();
+   await page.waitForFunction(()=>window.__fixture.tasks[0].state==='done');
+   await page.click('[data-ticket-jump="report"]');
+   assert.equal(await page.inputValue('#ticket-report-diagnosis'),'Diagnóstico em edição');
+   await page.getByRole('button',{name:'Preparar rascunho com registros salvos'}).click();
+   await page.waitForFunction(()=>document.querySelectorAll('.report-suggestion').length===2);
+   const texts=await page.locator('.report-suggestion textarea').allTextContents();
+   assert(!texts.join('').includes('PATRIMONIO-NAO-INCLUIR'));
+   await page.locator('.report-suggestion').first().getByRole('button',{name:'Incluir texto revisado'}).click();
+   await page.locator('.report-suggestion').first().getByRole('button',{name:'Incluir texto revisado'}).click();
+   assert.equal(await page.evaluate(()=>window.__fixture.reports.length),0);
+   await page.click('#ticket-report-save');await page.waitForFunction(()=>window.__fixture.reports.length===1);
+   assert.equal(await page.evaluate(()=>window.__fixture.reports[0].finalized),false);
+   await page.fill('#ticket-search','nao-corresponde');
+   await page.waitForFunction(()=>!document.getElementById('ticket-outside-filter').hidden);
+   assert.equal(await page.isVisible('#ticket-detail'),true);
+   assert.deepEqual(page.__errors,[]);
+  }finally{await page.close();}
+ });
+ console.log('PASS: suíte operacional de Chamados e matriz de sete larguras concluídas.');
+
 }finally{
  await browser.close();
  await new Promise((resolve,reject)=>server.close(error=>error?reject(error):resolve()));

@@ -2,6 +2,19 @@
  "use strict";
  const el=id=>document.getElementById(id);
  let selected=null,revision=0;
+ const drafts=new Map();let savedDevice=null;
+ const draftForms=['ticket-device-form','ticket-appointment-form','ticket-report-form'];
+ function rememberDrafts(){
+   if(!selected)return;
+   const values={};for(const id of draftForms)for(const field of el(id).querySelectorAll('input,select,textarea'))if(field.id)values[field.id]=field.value;
+   drafts.set(selected.id,values);
+ }
+ function restoreDrafts(){
+   const values=drafts.get(selected?.id);if(!values)return;
+   for(const [id,value] of Object.entries(values))el(id).value=value;
+ }
+ for(const id of draftForms)el(id).addEventListener('input',()=>{rememberDrafts();el('ticket-report-reviewed').checked=false;});
+
  const session=()=>window.PROXITI_ACTIVE_SESSION;
  const db=()=>session()?.client;
  const admin=()=>session()?.profile?.role==="administrator"&&session()?.profile?.status==="active";
@@ -38,10 +51,11 @@
        .select("category,brand,model,operating_system,asset_reference,observations,updated_at")
        .eq("ticket_id",ticketId).maybeSingle());
      if(!same(rev,ticketId,client,uid))return;
+     savedDevice=data;
      if(data){
        for(const [field,key] of [["category","category"],["brand","brand"],["model","model"],
          ["os","operating_system"],["ref","asset_reference"],["observations","observations"]])
-         el("ticket-device-"+field).value=data[key]|| (field==="category"?"other":"");
+         if(!drafts.has(ticketId))el("ticket-device-"+field).value=data[key]|| (field==="category"?"other":"");
        el("ticket-device-summary").textContent="Última atualização: "+date(data.updated_at)+
          " · "+[data.brand,data.model].filter(Boolean).join(" ")+" · "+data.category;
      }else el("ticket-device-summary").textContent="Nenhum equipamento identificado neste chamado.";
@@ -161,7 +175,7 @@
          el("ticket-report-diagnosis").value=row.diagnosis;
          el("ticket-report-service").value=row.work_performed;
          el("ticket-report-advice").value=row.recommendations;
-         el("ticket-report-reviewed").checked=false;
+         el("ticket-report-reviewed").checked=false;rememberDrafts();
          el("ticket-report-panel").open=true;
          el("ticket-report-diagnosis").focus({preventScroll:true});
          el("ticket-report-panel").scrollIntoView({behavior:"smooth",block:"start"});
@@ -173,6 +187,8 @@
  }
  function choose(ticket){
    const changed=selected?.id!==ticket?.id;revision++;selected=ticket||null;
+   el("ticket-report-suggestions")?.replaceChildren();
+   if(changed)savedDevice=null;
    el("ticket-device-form").hidden=!writable();
    el("ticket-appointment-form").hidden=!writable()||selected?.status==="resolved";
    el("ticket-report-save-box").hidden=!writable();
@@ -190,9 +206,11 @@
      empty("ticket-appointments-list","Carregando compromissos…");
      empty("ticket-report-history","Carregando versões…");
      el("ticket-device-summary").textContent="Carregando equipamento…";
+     restoreDrafts();
      const id=selected.id;
      void loadDevice(id);void loadAppointments(id);void loadReports(id);
    }else{
+     restoreDrafts();
      const id=selected.id;
      void loadDevice(id);void loadAppointments(id);void loadReports(id);
    }
@@ -208,7 +226,7 @@
        p_os:el("ticket-device-os").value.trim(),p_ref:el("ticket-device-ref").value.trim(),
        p_observations:el("ticket-device-observations").value.trim()
      });
-     if(selected?.id===ticket.id){feedback("Identificação salva.");activity(ticket.id);await loadDevice(ticket.id);}
+     if(selected?.id===ticket.id){drafts.delete(ticket.id);rememberDrafts();feedback("Identificação salva.");activity(ticket.id);await loadDevice(ticket.id);}
    }catch(error){feedback(error.message,true);}finally{button.disabled=false;}
  });
  el("ticket-appointment-form").addEventListener("submit",async event=>{
@@ -231,7 +249,7 @@
        p_private_details:el("ticket-appointment-details").value.trim()
      }));
      if(!still())return;
-     el("ticket-appointment-form").reset();
+     el("ticket-appointment-form").reset();rememberDrafts();
      feedback("Horário planejado. Combine com o cliente e registre a confirmação.");
      activity(ticket.id);await loadAppointments(ticket.id);
      document.dispatchEvent(new Event("proxiti-agenda-refresh"));
@@ -268,7 +286,39 @@
  });
  document.addEventListener("proxiti-ticket-selected",event=>choose(event.detail?.ticket||null));
  document.addEventListener("proxiti-session-ended",()=>{
-   selected=null;revision++;choose(null);
+   selected=null;revision++;drafts.clear();savedDevice=null;choose(null);
+ });
+ document.addEventListener('proxiti-session-ready',()=>{drafts.clear();savedDevice=null;choose(null);});
+ const assist=el('ticket-report-assist');assist.className='ticket-report-assist';
+ const prepare=make('button','Preparar rascunho com registros salvos','secondary');prepare.type='button';
+ const hint=make('p','Selecione e revise cada sugestão. Etapas concluídas não comprovam, por si só, um serviço. Nenhuma hipótese, nota privada ou conversa é importada.','ticket-workflow-help');
+ const suggestions=el('ticket-report-suggestions');
+ assist.append(prepare,hint);
+ prepare.addEventListener('click',async()=>{
+   if(!canView()||el('ticket-report-panel').hidden)return;
+   const rev=revision,ticketId=selected.id,client=db(),uid=session().user.id;
+   suggestions.replaceChildren();prepare.disabled=true;
+   try{
+     const rows=await query(client.from('ticket_tasks').select('title,position,state,note').eq('ticket_id',ticketId).order('position',{ascending:true}).limit(150));
+     if(!same(rev,ticketId,client,uid))return;
+     const items=[];
+     if(savedDevice)items.push({label:'Equipamento registrado',text:[savedDevice.category,savedDevice.brand,savedDevice.model,savedDevice.operating_system].filter(Boolean).join(' · '),target:'ticket-report-diagnosis'});
+     for(const row of rows||[])if(row.state==='done'||row.state==='skipped')items.push({label:'Etapa '+row.position+' · '+(row.state==='done'?'Concluída':'Não aplicável'),text:row.title+(row.note?' — Registro: '+row.note:' — Sem descrição de execução registrada; confirme antes de incluir.'),target:'ticket-report-service'});
+     if(!items.length)suggestions.append(make('p','Nenhum equipamento ou etapa registrada disponível para sugerir.'));
+     for(const item of items){
+       const card=make('div','','report-suggestion'),label=make('label',item.label),editor=make('textarea');editor.value=item.text;editor.maxLength=1500;label.append(editor);
+       const target=make('select');target.setAttribute('aria-label','Destino de '+item.label);
+       for(const [value,title] of [['ticket-report-diagnosis','Diagnóstico realizado'],['ticket-report-service','Serviço ou encaminhamento'],['ticket-report-advice','Testes e orientações']]){const option=make('option',title);option.value=value;target.append(option);}target.value=item.target;
+       const accept=make('button','Incluir texto revisado','secondary'),discard=make('button','Descartar','secondary');accept.type=discard.type='button';
+       accept.addEventListener('click',()=>{
+         if(!same(rev,ticketId,client,uid))return;
+         const field=el(target.value),value=[field.value.trim(),editor.value.trim()].filter(Boolean).join('\n\n');
+         if(value.length>field.maxLength){feedback('O texto excede o limite do campo. Reduza a sugestão.',true);return;}
+         field.value=value;field.dispatchEvent(new Event('input',{bubbles:true}));card.remove();
+       });discard.addEventListener('click',()=>card.remove());card.append(label,target,accept,discard);suggestions.append(card);
+     }
+   }catch(error){if(same(rev,ticketId,client,uid))feedback('Não foi possível preparar sugestões: '+error.message,true);}
+   finally{prepare.disabled=false;}
  });
  if(window.PROXITI_ACTIVE_TICKET)choose(window.PROXITI_ACTIVE_TICKET);
 })();

@@ -7,7 +7,7 @@ const html=get("index.html");
 const scriptPaths=[
   "assets/app.js","assets/alerts.js","assets/operations.js","assets/academy.js","assets/academy-curriculum.js","assets/academy-learning.js","assets/layout.js",
   "assets/profile.js","assets/appearance.js","assets/overview-model.js","assets/overview.js","assets/ticket-workflow.js",
-  "assets/ticket-extras.js","assets/ticket-solutions.js","assets/ticket-diagnostics-core.js","assets/ticket-desk.js","assets/agenda.js","assets/technical-tools-core.js","assets/technical-tools.js"
+  "assets/ticket-extras.js","assets/ticket-workspace.js","assets/ticket-solutions.js","assets/ticket-diagnostics-core.js","assets/ticket-desk.js","assets/agenda.js","assets/technical-tools-core.js","assets/technical-tools.js"
 ];
 for (const path of scriptPaths) new Script(get(path),{filename:path});
 const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);
@@ -65,7 +65,7 @@ for(const id of ["ticket-workflow","ticket-note-form","ticket-note-body","ticket
  "ticket-file-input","ticket-files-list","ticket-report-form"]){
  assert(html.includes('id="'+id+'"'),"Fluxo técnico sem #"+id);
 }
-assert(html.includes('src="./assets/ticket-workflow.js?v=20260927-2"'),"Script técnico não carregado");
+assert(html.includes('src="./assets/ticket-workflow.js?v=20260927-3"'),"Script técnico não carregado");
 assert(html.includes('href="./assets/ticket-workflow.css?v=20260926-1"'),"Estilos técnicos não carregados");
 const techCss=get("assets/ticket-workflow.css");
 assert.equal((techCss.match(/{/g)||[]).length,(techCss.match(/}/g)||[]).length,"CSS técnico incompleto");
@@ -407,13 +407,13 @@ for(const id of [
  "ticket-diagnostic-message","ticket-diagnostic-to-note","ticket-diagnostic-to-reply",
  "ticket-diagnostic-to-steps","ticket-preflight","ticket-preflight-progress"
 ])assert(ids.includes(id),"Chamados: ID novo ausente: "+id);
-assert(html.includes('src="./assets/ticket-desk.js?v=20260927-2"')&&
- html.includes('src="./assets/ticket-diagnostics-core.js?v=20260927-2"')&&
- html.includes('href="./assets/ticket-desk.css?v=20260927-2"'),
+assert(html.includes('src="./assets/ticket-desk.js?v=20260927-3"')&&
+ html.includes('src="./assets/ticket-diagnostics-core.js?v=20260927-3"')&&
+ html.includes('href="./assets/ticket-desk.css?v=20260927-3"'),
  "Assets da mesa técnica não estão carregados");
 const desk=get("assets/ticket-desk.js"),diagnostics=get("assets/ticket-diagnostics-core.js"),
  solutions=get("assets/ticket-solutions.js");
-assert(html.includes('src="./assets/ticket-solutions.js?v=20260927-2"')&&
+assert(html.includes('src="./assets/ticket-solutions.js?v=20260927-3"')&&
  html.indexOf("ticket-solutions.js")<html.indexOf("ticket-diagnostics-core.js"),
  "Planos devem carregar antes do motor de diagnóstico");
 assert(solutions.includes("bitlocker:plan")&&solutions.includes("firmware:plan")&&
