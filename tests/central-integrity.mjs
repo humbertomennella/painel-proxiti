@@ -37,7 +37,7 @@ assert(html.includes('data-theme="light"'),"Tema claro inicial ausente");
 assert(get("assets/appearance.js").includes('proxiti-theme-v3'),"Preferência de tema incompatível com o site");
 assert(get("assets/layout.js").includes('sidebar.addEventListener("pointerenter"'),"Hover lateral ausente");
 assert(get("assets/layout.js").includes('sidebar.addEventListener("pointerleave"'),"Recolhimento lateral ausente");
-assert(get("assets/alerts.js").includes("get enabled(){return enabled;}")&&
+assert(get("assets/alerts.js").includes("get enabled(){return enabled}")&&
  get("assets/alerts.js").includes("function setEnabled(value)")&&
  !html.includes('id="toggle-alerts"'),"Som habilitado sem botão na topbar");
 const interfaceCss=get("assets/interface.css");
@@ -354,7 +354,7 @@ assert(equipmentBegin>libraryEnd&&html.indexOf('id="tools-list"')>equipmentBegin
 assert(html.indexOf('id="ticket-search"')<html.indexOf('id="ticket-metric-open"'),
  "Pesquisa de Chamados não está no topo");
 assert(!html.includes('id="toggle-alerts"')&&
- get("assets/alerts.js").includes("get enabled(){return true;}"),
+ get("assets/alerts.js").includes("get enabled(){return enabled}"),
  "Som de chamado deve ficar ligado sem botão");
 assert(html.includes('class="overview-view-controls" hidden aria-hidden="true"'),
  "Controles Focar/Leitura/Ajuda continuam na Visão Geral");
