@@ -59,18 +59,10 @@ try{
    });
    assert(v.scrollWidth<=v.viewport+2,
      width+"px: rolagem horizontal ("+v.scrollWidth+">"+v.viewport+"). Excedentes: "+JSON.stringify(v.offenders));
-   for(const [id,r]of Object.entries(v.buttons)){
-     assert(r.width>=44&&r.height>=44,width+"px: alvo muito pequeno "+id);
-     assert(r.left>=-1&&r.right<=width+1,width+"px: botão fora da tela "+id);
-   }
-   assert(v.icon.width<=24&&v.icon.height<=24,
-     width+"px: ícone de ajuda desproporcional ("+v.icon.width+"x"+v.icon.height+")");
-   if(width<=760){
-     assert(v.buttons["overview-focus-toggle"].bottom<=v.buttons["overview-reading-toggle"].top+2,
-       width+"px: controles móveis sem fluxo vertical");
-     assert(Math.abs(v.buttons["overview-reading-toggle"].top-v.buttons["overview-guide-toggle"].top)<=2,
-       width+"px: Leitura e Ajuda não estão alinhados");
-   }
+   for(const [id,r]of Object.entries(v.buttons))
+     assert(r.width===0&&r.height===0,width+"px: controle antigo continua visível: "+id);
+   assert(v.banner.width>0&&v.banner.height>0,width+"px: banner de Visão Geral não está visível");
+   assert(v.icon.width===0&&v.icon.height===0,width+"px: ícone de ajuda antigo continua visível");
    if(width===375||width===1366){
      await page.screenshot({path:resolve(artifacts,"central-"+width+"-light.png"),fullPage:false});
      await page.evaluate(()=>document.documentElement.dataset.theme="dark");
