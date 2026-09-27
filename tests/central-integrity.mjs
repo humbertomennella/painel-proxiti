@@ -340,7 +340,7 @@ for(const view of ["library","equipment","clients","reports","users","settings"]
 for(const id of ["tickets","staff","content","agenda","tools","library","equipment","clients","reports","users","settings","profile"]){
  const match=html.match(new RegExp('central-hero-'+id+'[\\s\\S]*?<img src="([^"]+)"'));
  assert(match,"Banner contextual ausente: "+id);
- const src=match[1].replace(/^\\.\\//,"").split("?")[0];
+ const src=match[1].startsWith("./")?match[1].slice(2).split("?")[0]:match[1].split("?")[0];
  assert(existsSync(new URL("../"+src,import.meta.url)),"Imagem do banner não encontrada: "+id);
 }
 const libraryBegin=html.indexOf('id="ops-library"'),libraryEnd=html.indexOf('id="ops-tools"',libraryBegin);
