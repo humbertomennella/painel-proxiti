@@ -334,6 +334,10 @@ try{
    await page.waitForFunction(()=>document.getElementById("ticket-diagnostic-results").textContent.includes("Armazenamento"));
    assert((await page.textContent("#ticket-diagnostic-results")).includes("Não formate"));
    await page.fill("#ticket-diagnostic-symptoms","Windows com BitLocker ativado não inicia e BIOS travada com senha");
+   await page.waitForFunction(()=>document.getElementById("ticket-diagnostic-results")?.textContent.includes("Recuperação do BitLocker"));
+   const bitlockerCase=page.locator(".ticket-diagnostic-case").filter({hasText:"Recuperação do BitLocker"});
+   if((await bitlockerCase.getAttribute("open"))===null)await bitlockerCase.locator("summary").click();
+   await bitlockerCase.getByRole("button",{name:"Seguir esta hipótese"}).click();
    await page.waitForFunction(()=>document.querySelector(".ticket-solution-head")?.textContent.includes("BitLocker"));
    assert((await page.textContent("#ticket-diagnostic-results")).includes("Senha de BIOS/UEFI"));
    assert((await page.textContent(".ticket-solution")).includes("chave legítima"));
@@ -347,9 +351,9 @@ try{
    await page.locator('[data-ticket-preflight="scope"]').check();
    assert((await page.textContent("#ticket-preflight-progress")).includes("1 de 4"));
    await visit(page,101);
-   assert(!(await page.inputValue("#ticket-diagnostic-symptoms")).includes("SSD falhou"));
+   assert(!(await page.inputValue("#ticket-diagnostic-symptoms")).includes("BitLocker ativado"));
    await visit(page,102);
-   assert((await page.inputValue("#ticket-diagnostic-symptoms")).includes("SSD falhou"));
+   assert((await page.inputValue("#ticket-diagnostic-symptoms")).includes("BitLocker ativado"));
    await page.click("#ticket-diagnostic-clear");
    assert.equal(await page.inputValue("#ticket-diagnostic-symptoms"),"");
    assert.equal(await page.isDisabled("#ticket-diagnostic-to-note"),true);
