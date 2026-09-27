@@ -37,7 +37,7 @@ assert(html.includes('data-theme="light"'),"Tema claro inicial ausente");
 assert(get("assets/appearance.js").includes('proxiti-theme-v3'),"Preferência de tema incompatível com o site");
 assert(get("assets/layout.js").includes('sidebar.addEventListener("pointerenter"'),"Hover lateral ausente");
 assert(get("assets/layout.js").includes('sidebar.addEventListener("pointerleave"'),"Recolhimento lateral ausente");
-assert(get("assets/alerts.js").includes("get enabled(){return true;}")&&
+assert(get("assets/alerts.js").includes("get enabled(){return enabled();},setEnabled")&&
  !html.includes('id="toggle-alerts"'),"Som habilitado sem botão na topbar");
 const interfaceCss=get("assets/interface.css");
 assert(interfaceCss.includes('html[data-theme="light"]')&&interfaceCss.includes('html[data-theme="dark"]'),"Temas incompletos");
@@ -262,7 +262,7 @@ for(const id of ["training-sync-state","training-status-filter","training-review
  "training-editor-feedback","training-load-more","training-list"]){
  assert(html.includes('id="'+id+'"'),"UniProxiti sem estado ou controle #"+id);
 }
-assert(html.includes('src="./assets/academy.js?v=20260926-2"'),
+assert(html.includes('src="./assets/academy.js?v=20260927-1"'),
  "Módulo editorial da UniProxiti não está carregado");
 const academyCode=get("assets/academy.js"),academyDb=get("supabase/academy_integrity_v12.sql");
 for(const rule of ["training_material_versions","training_search_gin_idx",
@@ -360,3 +360,41 @@ assert(html.includes('class="overview-view-controls" hidden aria-hidden="true"')
 assert(get("assets/central-expansion.css").includes('.notification-trigger[hidden]{display:none!important}'),
  "Ocultação do sino sem permissão não é preservada");
 console.log("Expansão: seis páginas, banners, Biblioteca separada, busca superior e alertas validados.");
+
+/* Refinamento 2026-09: navegação, fotografia, pesquisa, menu e autonomia do usuário. */
+for(const piece of [
+ 'id="central-global-search"','id="central-global-search-input"',
+ 'id="central-global-search-results"','id="central-account-menu"',
+ 'id="account-menu-profile"','id="account-menu-sound"',
+ 'id="account-menu-logout"','<small>Técnico</small>',
+ 'id="overview-heading">Início','id="academy-learning-heading">UNI',
+ '>Ir para a PROXITI</span>','uniproxiti-stat-icon'
+])assert(html.includes(piece),"Refinamento incompleto: "+piece);
+assert(!html.includes('data-side-view="content"')&&!html.includes('data-ops-view="content"'),
+ "Conteúdo do Site permanece na navegação");
+assert(html.includes('src="./assets/operations.js?v=20260927-1"'),
+ "Navegação sem versão atualizada");
+assert(get("assets/operations.js").includes("content:false"),
+ "Área de conteúdo antiga não foi desativada na interface");
+for(const id of ["tickets","staff","agenda","tools","library","equipment","clients","reports","users","settings","profile"]){
+ const match=html.match(new RegExp('central-hero-'+id+'[\\s\\S]*?<img src="([^"]+)"'));
+ assert(match&&match[1].endsWith(".webp"),"Banner sem fotografia: "+id);
+}
+for(const path of ["assets/central-refinement.css","assets/central-refinement.js"]){
+ assert(existsSync(new URL("../"+path,import.meta.url)),"Asset novo ausente: "+path);
+}
+const refinementJs=get("assets/central-refinement.js");
+new Script(refinementJs,{filename:"assets/central-refinement.js"});
+assert(refinementJs.includes('window.PROXITI_OPEN_VIEW?.(item.view)')&&
+ refinementJs.includes('event.key==="ArrowDown"')&&
+ refinementJs.includes('id("logout")?.click()'),"Busca ou menu sem ações funcionais");
+assert(get("assets/alerts.js").includes("if(!enabled())return;")&&
+ get("assets/alerts.js").includes("proxiti-alert-sound-v2-"),
+ "Preferência sonora não é respeitada por conta");
+const refinementCss=get("assets/central-refinement.css");
+assert.equal((refinementCss.match(/{/g)||[]).length,(refinementCss.match(/}/g)||[]).length,
+ "CSS de refinamento com chaves desbalanceadas");
+assert(refinementCss.includes('min-height:244px')&&
+ refinementCss.includes('margin:0 -24px 20px'),
+ "Banners não compartilham escala e encaixe");
+console.log("Refinamento: navegação, busca, menu, fotografias e som validado estaticamente.");
