@@ -115,17 +115,13 @@ begin
  if finished<>2 then raise exception 'Conclua as duas aulas desta trilha antes da prova'; end if;
  if p_answers is null or jsonb_typeof(p_answers)<>'object'
  then raise exception 'Respostas inválidas'; end if;
- with questions as (
-   select code,prompt,correct_index,critical from public.academy_questions
+ select count(*) into total from (
+   select code from public.academy_questions
      where track_id=p_track and exam and curriculum_version='2026-09-v1'
    union all
-   select code,prompt,correct_index,critical from public.academy_track_exam_questions
+   select code from public.academy_track_exam_questions
      where track_id=p_track and curriculum_version='2026-09-v1'
- ) select count(*),
-   count(*) filter(where (p_answers->>q.code)::integer=q.correct_index),
-   coalesce(bool_and((p_answers->>q.code)::integer=q.correct_index)
-     filter(where q.critical),true)
- into total,correct,critical_ok from questions q;
+ ) questions;
  if total<>10 or (select count(*) from jsonb_object_keys(p_answers))<>total
   or exists(select 1 from jsonb_object_keys(p_answers) a(code)
     where not exists(
