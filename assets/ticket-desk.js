@@ -121,7 +121,7 @@ function renderAnalysis(out){
   const group=make("details","","ticket-diagnostic-case");group.open=index===0;
   const heading=make("summary");heading.append(make("span",item.title),make("small",index===0?"Primeira hipótese":"Hipótese adicional"));
   group.append(heading);
-  if(item.solution&&item.id!==guided?.caseId){
+  if(item.solution){
    const choose=makeGuideButton("Seguir esta hipótese",()=>activateGuide(item,guidePanel));
    choose.className+=" ticket-diagnostic-choose";group.append(choose);
   }
