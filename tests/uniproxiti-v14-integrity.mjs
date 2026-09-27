@@ -17,16 +17,26 @@ assert(classification.has("Essencial")&&classification.has("Recomendada"),
  "É necessário haver trilhas essenciais e recomendadas, sem obrigar o currículo inteiro");
 assert.equal(new Set(d.tracks.map(t=>t.image.split("?")[0])).size,8,
  "As oito capas precisam ser distintas");
+assert(d.tracks.every(t=>/^assets\/photos\/[a-z-]+\.(webp|jpg)$/.test(t.image)&&
+  t.photoAlt.length>30&&t.illustration.startsWith("assets/academy-visuals/")),
+ "Cada trilha precisa de fotografia local e ilustração original como alternativa temática");
+const photoDocs=read("assets/photos/README.md");
+for(const source of ["5951759","4973899","7689876","www.pexels.com/license/"])
+ assert(photoDocs.includes(source),"Atribuição e licença da fotografia faltando: "+source);
+
 assert.equal(new Set(d.courses.map(c=>c.image.split("?")[0])).size,16,
  "As dezesseis aulas precisam ter ilustrações próprias");
 for(const track of d.tracks){
  assert(existsSync(resolve(root,track.image.split("?")[0])),"Capa ausente: "+track.id);
+ assert(existsSync(resolve(root,track.illustration.split("?")[0])),
+   "Diagrama temático antigo ausente: "+track.id);
  const lessons=d.courses.filter(c=>c.track===track.id);
  assert.equal(lessons.length,2,"Duas aulas por trilha: "+track.id);
  assert.equal(lessons.reduce((sum,c)=>sum+c.minutes,0)+d.rules.trackExamMinutes,120,
    "Duração orientada diferente das duas horas: "+track.id);
 }
 for(const course of d.courses){
+ assert(course.photoFocus.length>60,"Aula sem orientação para interpretar a fotografia: "+course.id);
  assert(course.minutes===50&&course.studyGuide.readingMinutes===15&&
    course.studyGuide.activityMinutes===25&&course.studyGuide.questionnaireMinutes===10);
  assert(course.activity.minutes===25&&course.activity.steps.length>=5&&
@@ -61,6 +71,8 @@ assert(js.includes('from("academy_track_certificates")')&&
  js.includes("trackCatalogReady"),"Certificados devem depender de consulta ao servidor");
 assert(!html.includes(">Obrigatória<")&&html.includes("Não é necessário concluir as outras trilhas"),
  "A comunicação não pode exigir o currículo completo para certificado individual");
+assert(js.includes("academy-lesson-photo")&&js.includes("track.photoAlt"),
+ "Fotografias temáticas precisam aparecer na trilha e na aula com texto alternativo");
 assert(html.includes("uniproxiti-course-upgrade.css")&&
  css.includes(".uniproxiti-continue-card")&&css.includes(".academy-choice")&&
  css.includes("@media(max-width:767px)"),"Refinamento responsivo incompleto");
