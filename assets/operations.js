@@ -469,7 +469,7 @@
   function updateNav(){
     for(const node of document.querySelectorAll("#operations [data-admin-only]"))
       node.hidden=!isAdmin();
-    const allowed = {tickets:can("tickets_view"),agenda:can("tickets_view"),staff:isAdmin(),content:isAdmin(),
+    const allowed = {tickets:can("tickets_view"),agenda:can("tickets_view"),staff:isAdmin(),content:false,
       training:can("training"),library:can("training"),tools:can("resources"),
       equipment:can("resources"),clients:can("tickets_view"),reports:can("tickets_view"),
       users:isAdmin(),settings:state.profile?.status==="active"};
