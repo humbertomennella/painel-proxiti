@@ -488,7 +488,7 @@
       window.PROXITI_OVERVIEW_SNAPSHOT=null;window.PROXITI_OVERVIEW_STATUS=null;
       el("ticket-list").replaceChildren();el("ticket-detail").hidden=true;
       el("ticket-empty-state").hidden=false;
-      clearTicketPresentation();ticketSync("restricted");announceTicket();
+      clearTicketPresentation();ticketSync("restricted");announceTicket();renderClients();renderReports();
       for(const id of ["ticket-badge","notifications-count"]){
         const badge=el(id);badge.textContent="";badge.hidden=true;
       }
@@ -550,7 +550,9 @@
       for(const p of state.staff.filter(p=>p.role==="technician"&&p.status==="active")){
         const option=elem("option",p.display_name);option.value=p.id;el("tool-assignee").append(option);
       }
-    }catch(e){notice("Erro ao consultar técnicos: "+e.message,true);}
+      renderUsers();
+    }catch(e){notice("Erro ao consultar técnicos: "+e.message,true);
+      el("users-status").textContent="Não foi possível consultar as contas. Tente atualizar.";}
   }
   function clearTicketPresentation(){
     for(const id of ["ticket-code","ticket-subject","ticket-customer",
@@ -609,7 +611,7 @@
       }
       if(state.ticketError)notice("");
       state.ticketsReady=true;state.ticketError=false;state.ticketLastUpdated=Date.now();
-      ticketSync("ready");updateInbox();renderTickets();
+      ticketSync("ready");updateInbox();renderTickets();renderClients();renderReports();
       overviewStatus(overviewComplete()?"ready":"partial");
       if(state.restoreScroll!==null){
         const y=state.restoreScroll;state.restoreScroll=null;
@@ -852,7 +854,7 @@
     el("alert-toast").hidden=true;el("notifications-panel").hidden=true;
     el("notifications-toggle").setAttribute("aria-expanded","false");
     el("notifications-count").hidden=true;el("ticket-badge").hidden=true;
-    el("ticket-list").replaceChildren();clearTicketPresentation();
+    el("ticket-list").replaceChildren();clearTicketPresentation();renderClients();renderReports();renderUsers();
     el("notifications-list").replaceChildren();
     window.PROXITI_OVERVIEW_SNAPSHOT=null;window.PROXITI_OVERVIEW_STATUS=null;
     el("overview-open").textContent="Chamados: atualizando…";
@@ -962,6 +964,12 @@
   el("reload-staff").addEventListener("click",()=>void loadStaff());
   el("reload-content").addEventListener("click",()=>void loadContent());
   el("reload-tools").addEventListener("click",()=>void loadTools());
+  el("users-reload").addEventListener("click",()=>void loadStaff());
+  el("users-manage").addEventListener("click",()=>window.PROXITI_OPEN_VIEW?.("staff"));
+  el("reports-open-tickets").addEventListener("click",()=>window.PROXITI_OPEN_VIEW?.("tickets"));
+  el("settings-theme").addEventListener("click",()=>el("theme-toggle-panel").click());
+  el("settings-browser-notifications").addEventListener("click",()=>el("browser-notifications").click());
+  el("settings-profile").addEventListener("click",()=>window.PROXITI_OPEN_VIEW?.("profile"));
   el("tools-search").addEventListener("input",()=>filterOpsList("tools-search","tools-list","tools-search-status","ferramentas"));
   el("close-detail").addEventListener("click",()=>{state.active=null;announceTicket();remember("ticket","");el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;state.renderedTable="";renderTickets();});
   el("staff-reply").addEventListener("input",()=>{if(state.active)remember("draft-"+state.active.id,el("staff-reply").value)});
