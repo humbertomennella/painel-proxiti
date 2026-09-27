@@ -79,8 +79,17 @@ try{
    assert(geometry.x+geometry.width<=width+2,width+"px / "+view+": banner excede viewport");
    if(view!=="training"){
     const image=page.locator(selector+" img");
-    await image.evaluate(img=>img.decode());
-    assert(await image.evaluate(img=>img.naturalWidth>0),view+": fotografia não carregou");
+    const photo=await image.evaluate(async img=>{
+      img.loading="eager";
+      const response=await fetch(img.src);
+      if(!response.ok)return {ok:false,url:img.src,status:response.status};
+      try{await img.decode();}catch{
+       const preloaded=new Image();preloaded.src=img.src;
+       try{await preloaded.decode();}catch{return {ok:false,url:img.src,status:response.status};}
+      }
+      return {ok:img.naturalWidth>0,url:img.src,status:response.status};
+    });
+    assert(photo.ok,view+": fotografia não carregou: "+JSON.stringify(photo));
    }
    if(view==="library")assert.equal(await page.locator("#training-list").count(),1);
    if(view==="training")assert.equal(await page.locator(".uniproxiti-stat-icon").count(),3);
