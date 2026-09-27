@@ -411,7 +411,10 @@ try{
  console.log("CONTRAST",JSON.stringify(contrastReports.map(r=>({view:r.view,theme:r.theme,failures:r.violations.reduce((n,v)=>n+v.nodes.length,0)}))));
  const login=await browser.newPage();await login.route("https://cdn.jsdelivr.net/**",r=>r.abort());await login.goto(url);
  for(const width of [1920,1366,768,375,320])for(const theme of ["light","dark"]){
-  await login.setViewportSize({width,height:1000});await login.evaluate(t=>document.documentElement.dataset.theme=t,theme);
+  await login.setViewportSize({width,height:1000});
+  if(await login.evaluate(()=>document.documentElement.dataset.theme)!==theme)await login.click("#theme-toggle-public");
+  await login.evaluate(()=>Promise.all(document.getAnimations().map(a=>a.finished.catch(()=>{}))));
+  assert.equal(await login.getAttribute("#theme-toggle-public","aria-pressed"),String(theme==="dark"));
   assert(await login.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`login overflow ${width}`);
   if(width===1366){
    await login.addScriptTag({path:resolve(root,"node_modules/axe-core/axe.min.js")});
