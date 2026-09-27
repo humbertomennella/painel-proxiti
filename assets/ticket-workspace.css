@@ -73,3 +73,7 @@ html[data-theme] body.workspace-mode #ops-tickets #close-detail{width:44px;min-w
  html[data-theme] body.workspace-mode #ops-tickets .ticket-desk-shortcuts{flex-wrap:nowrap;align-items:start}
  html[data-theme] body.workspace-mode #ops-tickets [role=tablist]{width:auto;flex:1;min-width:0;border-top:0;border-left:1px solid var(--desk-border);padding:0 0 0 6px}
 }
+@media(min-width:768px){
+ html[data-theme] body.workspace-mode #ops-tickets #ticket-conversation{height:calc(100dvh - 300px);min-height:360px;max-height:650px}
+ html[data-theme] body.workspace-mode #ops-tickets .ticket-service-column{max-height:calc(100dvh - 300px);min-height:360px}
+}

@@ -518,6 +518,7 @@ try{
        assert(tool.y>=heading.y+heading.height-1,'Cabeçalho sobrepõe ferramenta '+key);
        assert(tool.y<780,'Título da ferramenta fora da área útil '+key);
        assert.equal(await page.isVisible('#ticket-extras-feedback'),false,'Aviso de outra aba persistiu');
+       if(width>=768){const send=await page.locator('#staff-reply-form button').boundingBox();assert(send.y+send.height<=900,'Enviar resposta fora da área útil');}
        await page.screenshot({path:resolve(artifacts,'workspace-'+width+'-'+theme+'-'+key+'.png')});
       }
      }
