@@ -8,12 +8,25 @@ const links=Object.freeze({
  boot:{label:"Microsoft Learn: problemas de inicialização",url:"https://learn.microsoft.com/pt-br/troubleshoot/windows-client/performance/windows-boot-issues-troubleshooting"},
  speed:{label:"Microsoft: desempenho do computador",url:"https://support.microsoft.com/pt-br/windows/experience/performance-optimization/tips-to-improve-pc-performance-in-windows"},
  backup:{label:"Microsoft: backup e restauração",url:"https://support.microsoft.com/pt-br/windows/experience/backup-recovery/backup-restore-and-recovery-in-windows"},
+ bitlocker:{label:"Microsoft: localizar chave de recuperação do BitLocker",url:"https://support.microsoft.com/pt-br/windows/security/encryption/find-your-bitlocker-recovery-key"},
  phishing:{label:"FTC: identificar mensagens fraudulentas",url:"https://consumer.ftc.gov/articles/how-recognize-avoid-phishing-scams"},
  scams:{label:"FTC: golpes de suporte técnico",url:"https://consumer.ftc.gov/articles/how-spot-avoid-and-report-tech-support-scams"}
 });
 const S=(level,title,detail,warning="")=>({level,title,detail,warning});
 const K=(id,title,terms,question,steps,refs,alert="")=>Object.freeze({id,title,terms,question,steps,refs,alert});
 const rules=Object.freeze([
+ K("bitlocker","Recuperação do BitLocker",["bitlocker","chave de recuperacao","unidade criptografada","recovery key"],[
+  "A tela solicita chave de recuperação de 48 dígitos ou a senha aparece antes, no BIOS/UEFI?",
+  "O computador é pessoal ou gerenciado pela empresa? Há backup verificado?" ],[
+  S("Inicial","Identificar a tela e preservar dados","Identifique a proteção e a etapa do bloqueio sem pedir ou registrar a chave.","Não limpe o TPM, altere a inicialização ou formate."),
+  S("Intermediário","Titular localiza a chave legítima","O titular consulta sua conta Microsoft, cópia segura ou administrador de TI da organização sem compartilhar a chave no chat."),
+  S("Avançado","Seguir o processo oficial","Somente com a chave correta, siga a recuperação do BitLocker com o titular. Caso não exista chave, documente e encaminhe.","Sem chave, não há acesso garantido aos dados.")],["bitlocker"],"Senha de BIOS/UEFI é um bloqueio separado. Não tente contornar criptografia."),
+ K("firmware","Senha de BIOS/UEFI",["bios","uefi","senha do firmware","senha de supervisor","bios bloqueada","bios travada"],[
+  "A senha é solicitada antes do Windows? Qual fabricante e modelo?",
+  "O titular possui documentação de propriedade ou acesso ao TI responsável?" ],[
+  S("Inicial","Distinguir o bloqueio","Confirme se a tela é BIOS/UEFI, BitLocker ou Windows.","Não tente senhas universais, limpeza de TPM nem remoção de bateria."),
+  S("Intermediário","Acionar o canal do fabricante","Consulte o suporte oficial para o modelo com o titular e comprovação de propriedade."),
+  S("Avançado","Encaminhar assistência autorizada","Execute apenas procedimento informado oficialmente pelo fabricante ou encaminhe assistência.","Não há garantia de redefinição da senha.")],[],"Não sugerir contorno de senha ou remoção de bateria."),
  K("storage","Armazenamento e integridade dos dados",["ssd","hd","disco","smart","ruido no disco","clique no hd","arquivos sumiram","arquivos corrompidos","nao reconhece unidade","erro de leitura","bad block","setor defeituoso","dados perdidos"],[
   "O dispositivo ainda reconhece a unidade? Houve ruído, quedas ou desligamentos inesperados?",
   "Quais dados são prioritários e existe cópia de segurança verificada?"],[
@@ -88,7 +101,7 @@ const rules=Object.freeze([
   S("Avançado","Definir intervenção ou encaminhamento","Se o diagnóstico exigir acesso, mudança de configuração ou peça, apresente escopo, risco e orçamento antes da execução.","Não prometa resultado sem evidência.")],[])
 ]);
 const normalize=value=>String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^\p{L}\p{N}.]+/gu," ").replace(/\s+/g," ").trim();
-const windowsDocs=new Set(["wifi","cable","boot","speed","backup"]);
+const windowsDocs=new Set(["wifi","cable","boot","speed","backup","bitlocker"]);
 function referenceApplies(key,platform){
  if(platform==="windows")return key!=="linux";
  if(platform==="linux")return !windowsDocs.has(key);
@@ -104,16 +117,16 @@ function analyze(text,options={}){
  const ranked=rules.filter(rule=>rule.id!=="general").map(rule=>({
   rule,matched:rule.terms.filter(term=>matchesTerm(cleaned,term))
  })).filter(item=>item.matched.length).sort((a,b)=>{
-  const weight=x=>x.matched.reduce((n,term)=>n+Math.min(normalize(term).length/8,3),0)+(x.rule.alert?0.15:0);
+  const weight=x=>x.matched.reduce((n,term)=>n+Math.min(normalize(term).length/8,3),0)+(x.rule.alert?0.15:0)+(["bitlocker","firmware"].includes(x.rule.id)?3:0);
   return weight(b)-weight(a);
  });
  const cases=(ranked.length?ranked.slice(0,3):[{rule:rules.find(rule=>rule.id==="general"),matched:[]}]).map(item=>({
   id:item.rule.id,title:item.rule.title,matched:item.matched,questions:[...item.rule.question],
-  steps:item.rule.steps.map(step=>({...step})),sources:item.rule.refs.filter(key=>referenceApplies(key,platform)).map(key=>({...links[key]})),
+  steps:item.rule.steps.map(step=>({...step})),solution:window.PROXITI_SOLUTIONS?.[item.rule.id]||null,sources:item.rule.refs.filter(key=>referenceApplies(key,platform)).map(key=>({...links[key]})),
   alert:item.rule.alert
  }));
- const dataRisk=/(arquivo|dados|backup|format|apag|restaur|disco|ssd|hd|ransomware)/.test(cleaned)||
-   cases.some(c=>["storage","backup","security"].includes(c.id));
+ const dataRisk=/(arquivo|dados|backup|format|apag|restaur|disco|ssd|hd|ransomware|bitlocker|criptograf)/.test(cleaned)||
+   cases.some(c=>["storage","backup","security","bitlocker"].includes(c.id));
  const priority=impact==="security"?"Segurança ou dados em risco: avaliar contenção":
   impact==="business"?"Operação essencial afetada: priorizar triagem":
   impact==="multiple"?"Vários dispositivos afetados: verificar causa comum":
@@ -124,6 +137,7 @@ function analyze(text,options={}){
   "Áreas sugeridas: "+cases.map(c=>c.title).join("; ")+".",
   "Perguntas: "+questions.join(" "),
   "Verificações iniciais: "+cases.map(c=>c.steps[0].title+" — "+c.steps[0].detail).join(" | "),
+  "Plano de solução (a confirmar): "+cases.map(c=>c.solution?.title||"Definir após testes").join("; ")+".",
   warning].join("\n");
  return {empty:false,cases,questions,warning,priority,platform,impact,summary};
 }
@@ -133,5 +147,5 @@ function replyDraft(result){
  result.questions.slice(0,3).map((question,i)=>(i+1)+". "+question).join("\n")+
  "\nCom essas informações, verificarei as alternativas mais seguras antes de propor qualquer intervenção. Não envie senhas ou códigos de autenticação.";
 }
-window.PROXITI_DIAGNOSTICS=Object.freeze({analyze,replyDraft,version:"1.0-local",sourceLabels:Object.freeze(Object.values(links).map(link=>link.label))});
+window.PROXITI_DIAGNOSTICS=Object.freeze({analyze,replyDraft,version:"1.2-local",sourceLabels:Object.freeze(Object.values(links).map(link=>link.label))});
 })();

@@ -10,7 +10,8 @@ const symptoms=$("ticket-diagnostic-symptoms"),results=$("ticket-diagnostic-resu
  replyButton=$("ticket-diagnostic-to-reply"),stepsButton=$("ticket-diagnostic-to-steps"),
  checklist=$("ticket-preflight"),progress=$("ticket-preflight-progress");
 const memory=new Map();const checks=new Map();
-let selected=null,answer=null,account=null,debounce=null;
+let selected=null,answer=null,account=null,debounce=null,guided=null;
+const guideMemory=new Map();
 const make=(tag,txt,className)=>{
  const node=document.createElement(tag);if(txt!==undefined&&txt!==null)node.textContent=txt;
  if(className)node.className=className;return node;
@@ -35,6 +36,63 @@ function updateActions(){
  $("ticket-diagnostic-run").disabled=!selected;
  $("ticket-go-chat").hidden=!selected||$("ticket-conversation").hidden;
 }
+function guideFingerprint(){return [symptoms.value,platform.value,impact.value].join("|");}
+function saveGuide(){if(selected&&guided)guideMemory.set(selected.id,{...guided,outcomes:[...guided.outcomes]});}
+function makeGuideButton(label,callback,disabled=false,primary=false){
+ const button=make("button",label,primary?"primary":"secondary");
+ button.type="button";button.disabled=disabled;button.addEventListener("click",callback);return button;
+}
+function renderGuide(panel,item){
+ panel.replaceChildren();
+ if(!item?.solution){panel.hidden=true;return;}
+ panel.hidden=false;
+ const plan=item.solution;
+ const intro=make("div","","ticket-solution-head");
+ intro.append(make("span","SOLUÇÃO PROPOSTA · "+item.title+" · EXIGE CONFIRMAÇÃO","ticket-solution-kicker"),make("h5",plan.title));
+ panel.append(intro,make("p",plan.condition,"ticket-solution-condition"));
+ if(plan.stop)panel.append(make("p",plan.stop,"ticket-solution-stop"));
+ const position=Math.min(guided?.step||0,plan.steps.length-1),stage=plan.steps[position];
+ const card=make("div","","ticket-solution-current");
+ card.append(make("span","Etapa "+(position+1)+" de "+plan.steps.length,"ticket-solution-counter"),make("h6",stage.title),make("p",stage.action));
+ const expected=make("p","Resultado esperado: "+stage.expected,"ticket-solution-expected");card.append(expected);
+ const outcome=guided?.outcomes[position]||null;
+ if(outcome==="resolved"){
+  card.append(make("p","Resultado informado como positivo. Confirme o critério final antes de encerrar o chamado: "+plan.verification,"ticket-solution-feedback"));
+ }else if(outcome==="failed"){
+  card.append(make("p","Ainda não resolvido: "+stage.ifFailed,"ticket-solution-feedback"));
+ }
+ const actions=make("div","","ticket-solution-choices");
+ actions.setAttribute("role","group");actions.setAttribute("aria-label","Resultado da verificação atual");
+ for(const [value,label] of [["resolved","Funcionou"],["failed","Ainda não resolveu"]]){
+  const button=makeGuideButton(label,()=>{
+   if(!guided||!selected)return;
+   guided.outcomes[position]=value;saveGuide();renderGuide(panel,item);
+  },false,value==="resolved");
+  button.setAttribute("aria-pressed",String(outcome===value));
+  actions.append(button);
+ }
+ card.append(actions);panel.append(card);
+ const nav=make("div","","ticket-solution-nav");
+ if(position>0)nav.append(makeGuideButton("Anterior",()=>{
+  guided.step=position-1;saveGuide();renderGuide(panel,item);
+ }));
+ if(position<plan.steps.length-1&&outcome!=="resolved")nav.append(makeGuideButton("Próxima etapa",()=>{
+  guided.step=position+1;saveGuide();renderGuide(panel,item);
+ },outcome!=="failed",true));
+ nav.append(makeGuideButton("Recomeçar guia",()=>{
+  guided.step=0;guided.outcomes=[];saveGuide();renderGuide(panel,item);
+ }));
+ panel.append(nav);
+ if(position===plan.steps.length-1&&outcome==="failed")
+  panel.append(make("p","As etapas propostas não resolveram. Registre o resultado e encaminhe ao suporte responsável. Não marque o chamado como resolvido automaticamente.","ticket-solution-escalate"));
+ panel.append(make("p","O guia só registra a sua navegação nesta sessão. Não executa comandos, não altera chamados e não comprova autorização do cliente.","ticket-diagnostic-disclaimer"));
+}
+function activateGuide(item,panel){
+ if(!selected||!item?.solution)return;
+ guided={ticketId:selected.id,caseId:item.id,fingerprint:guideFingerprint(),step:0,outcomes:[]};
+ saveGuide();renderGuide(panel,item);
+ panel.scrollIntoView({block:"nearest",behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"});
+}
 function renderAnalysis(out){
  answer=out?.empty?null:out;
  results.replaceChildren();
@@ -46,6 +104,15 @@ function renderAnalysis(out){
  triage.append(make("strong","Impacto informado"),make("span",out.priority));
  const alert=make("p",out.warning,"ticket-diagnostic-warning");
  results.append(triage,alert);
+ const guidePanel=make("section","","ticket-solution");guidePanel.id="ticket-solution-guide";
+ guidePanel.setAttribute("aria-label","Guia assistido de solução");
+ results.append(guidePanel);
+ const previous=selected?guideMemory.get(selected.id):null;
+ const chosen=out.cases.find(item=>item.id===previous?.caseId&&item.solution)||out.cases[0];
+ if(previous&&previous.fingerprint===guideFingerprint()&&previous.ticketId===selected?.id&&chosen?.id===previous.caseId)
+  guided={...previous,outcomes:[...previous.outcomes]};
+ else guided={ticketId:selected?.id,caseId:chosen?.id,fingerprint:guideFingerprint(),step:0,outcomes:[]};
+ saveGuide();renderGuide(guidePanel,chosen);
  const questionGroup=make("section","","ticket-diagnostic-questions");
  questionGroup.append(make("h5","Perguntas para confirmar com o cliente"));
  const questions=make("ol");for(const q of out.questions)questions.append(make("li",q));
@@ -54,6 +121,10 @@ function renderAnalysis(out){
   const group=make("details","","ticket-diagnostic-case");group.open=index===0;
   const heading=make("summary");heading.append(make("span",item.title),make("small",index===0?"Primeira hipótese":"Hipótese adicional"));
   group.append(heading);
+  if(item.solution){
+   const choose=makeGuideButton("Seguir esta hipótese",()=>activateGuide(item,guidePanel));
+   choose.className+=" ticket-diagnostic-choose";group.append(choose);
+  }
   if(item.matched.length)group.append(make("p","Termos associados: "+item.matched.join(", "),"ticket-diagnostic-signals"));
   if(item.alert)group.append(make("p",item.alert,"ticket-diagnostic-warning"));
   const steps=make("ol","","ticket-diagnostic-steps");
@@ -178,7 +249,7 @@ const templates={wifi:"network",performance:"computer",boot:"computer",storage:"
  security:"security",backup:"backup",accounts:"security",printing:"general",audio:"general",general:"general"};
 stepsButton.addEventListener("click",()=>{
  if(!answer||!canRoteiro()){updateActions();setStatus("Roteiro indisponível para esta conta ou chamado.",true);return;}
- const kind=templates[answer.cases[0]?.id]||"general";
+ const kind=templates[guided?.caseId||answer.cases[0]?.id]||"general";
  $("ticket-task-template").value=kind;jump("tasks");
  setStatus("Modelo de roteiro selecionado. Clique em Criar roteiro para este chamado para confirmar.");
  $("ticket-task-template").focus();
@@ -210,10 +281,10 @@ function choose(ticket){
 document.addEventListener("proxiti-ticket-selected",event=>choose(event.detail?.ticket||null));
 document.addEventListener("proxiti-session-ready",event=>{
  const uid=event.detail?.user?.id||null;
- if(uid!==account){memory.clear();checks.clear();account=uid;choose(null);}
+ if(uid!==account){memory.clear();checks.clear();guideMemory.clear();guided=null;account=uid;choose(null);}
 });
 document.addEventListener("proxiti-session-ended",()=>{
- memory.clear();checks.clear();account=null;selected=null;answer=null;choose(null);
+ memory.clear();checks.clear();guideMemory.clear();guided=null;account=null;selected=null;answer=null;choose(null);
 });
 const observer=new MutationObserver(()=>updateActions());
 observer.observe($("staff-messages"),{childList:true,subtree:true});

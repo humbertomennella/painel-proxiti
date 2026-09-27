@@ -2,12 +2,15 @@ import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {runInNewContext,Script} from "node:vm";
 const code=readFileSync(new URL("../assets/ticket-diagnostics-core.js",import.meta.url),"utf8");
+const plansCode=readFileSync(new URL("../assets/ticket-solutions.js",import.meta.url),"utf8");
+new Script(plansCode,{filename:"ticket-solutions.js"});
 new Script(code,{filename:"ticket-diagnostics-core.js"});
 let exported;
 const window={};
+runInNewContext(plansCode,{window});
 runInNewContext(code,{window});
 exported=window.PROXITI_DIAGNOSTICS;
-assert(exported&&exported.version==="1.0-local");
+assert(exported&&exported.version==="1.2-local");
 const checks=[
  ["O Wi-Fi caiu e outros aparelhos estão sem internet","wifi","Primeira triagem: rede"],
  ["O Windows está muito lento e o disco está 100%","performance","Lentidão e recursos"],
@@ -28,6 +31,7 @@ for(const [input,id,label]of checks){
  assert(r.questions.length>=1&&r.cases.every(item=>item.steps.length>=3),"Etapas ausentes: "+label);
  assert(r.cases.every(item=>item.steps[0].level==="Inicial"),"Diagnóstico inicial ausente: "+label);
  assert(!r.summary.includes(input),"Texto do cliente não pode ser incluído automaticamente no resumo");
+ assert(r.cases.every(item=>item.solution&&item.solution.steps.length===3),"Plano ausente: "+label);
 }
 for(const raw of ["","  ","  /  "]){
  const res=exported.analyze(raw);
@@ -43,6 +47,15 @@ assert(backup.warning.includes("Não formate"),"Condição destrutiva sem aviso"
 for(const tier of backup.cases.flatMap(item=>item.steps)){
  assert(!/execute|inicie um comando automaticamente/i.test(tier.title),"Execução automática proibida");
 }
+const blocked=exported.analyze("Windows com BitLocker ativado não inicia e BIOS travada com senha",{platform:"windows"});
+assert(blocked.cases.some(x=>x.id==="bitlocker"),"BitLocker não identificado");
+assert(blocked.cases.some(x=>x.id==="firmware"),"Senha de firmware não identificada");
+const bitlocker=blocked.cases.find(x=>x.id==="bitlocker");
+assert(bitlocker.sources.some(s=>s.url.includes("support.microsoft.com")),"Fonte oficial BitLocker ausente");
+assert(bitlocker.solution.steps[1].action.includes("aka.ms/myrecoverykey"),"Canal de recuperação legítima ausente");
+assert(bitlocker.solution.stop.includes("Sem chave"),"Limite da recuperação não indicado");
+assert(blocked.cases.find(x=>x.id==="firmware").solution.stop.includes("contornar"),"Firmware sem restrição de bypass");
+assert(Object.keys(window.PROXITI_SOLUTIONS).length===14,"Catálogo incompleto");
 const accountOnly=exported.analyze("As credenciais expiraram e o login está bloqueado");
 assert(accountOnly.cases.some(x=>x.id==="accounts"),"Falha de login ignorada");
 assert(!accountOnly.cases.some(x=>x.id==="wifi"),"Substring de credenciais gerou falso positivo de rede");
@@ -56,4 +69,4 @@ assert(!windows.cases.some(x=>x.sources.some(y=>y.url.includes("help.ubuntu.com"
 const router=exported.analyze("WiFi não conecta",{platform:"network"});
 assert(router.cases.every(x=>x.sources.every(y=>!/(microsoft.com|help.ubuntu.com)/.test(y.url))),"Rede/roteador exibe guia específico de sistema operacional");
 assert(!/\b(fetch|XMLHttpRequest|sendBeacon|\.rpc)\s*\(/.test(code),"Motor local contém transporte de dados");
-console.log("PASS: 12 famílias, níveis, termos inteiros, fontes por ambiente, risco de dados e isolamento local.");
+console.log("PASS: 14 famílias, planos de solução, BitLocker/UEFI, níveis, fontes por ambiente e isolamento local.");
