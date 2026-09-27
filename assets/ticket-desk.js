@@ -48,7 +48,7 @@ function renderGuide(panel,item){
  panel.hidden=false;
  const plan=item.solution;
  const intro=make("div","","ticket-solution-head");
- intro.append(make("span","SOLUÇÃO PROPOSTA · EXIGE CONFIRMAÇÃO","ticket-solution-kicker"),make("h5",plan.title));
+ intro.append(make("span","SOLUÇÃO PROPOSTA · "+item.title+" · EXIGE CONFIRMAÇÃO","ticket-solution-kicker"),make("h5",plan.title));
  panel.append(intro,make("p",plan.condition,"ticket-solution-condition"));
  if(plan.stop)panel.append(make("p",plan.stop,"ticket-solution-stop"));
  const position=Math.min(guided?.step||0,plan.steps.length-1),stage=plan.steps[position];
