@@ -538,6 +538,7 @@ try{
     if(view!=="overview")assert(r.image.endsWith(".webp"),view+" sem fotografia local");
    }
    await page.evaluate(()=>window.PROXITI_OPEN_VIEW("library"));
+   await page.mouse.move(700,60); // Na inicialização, o ponteiro do Chromium pode estar sobre a sidebar.
    await page.waitForFunction(()=>document.getElementById("panel").classList.contains("sidebar-collapsed"));
    const initial=await page.locator("#app-sidebar").evaluate(n=>n.getBoundingClientRect().width);
    await page.hover('#sidebar-nav [data-side-view="library"]');
