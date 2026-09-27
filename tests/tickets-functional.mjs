@@ -512,7 +512,12 @@ try{
       assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2));
       assert.equal(await page.isVisible('#ticket-conversation'),width>=768);
       if([375,1366].includes(width)){
-       await page.locator('#ticket-desk-shortcuts').scrollIntoViewIfNeeded();
+       await page.locator('#ticket-detail').evaluate(node=>node.scrollIntoView({block:'start'}));
+       const heading=await page.locator('#ticket-detail > .ops-section-head').boundingBox();
+       const tool=await page.locator('[role=tabpanel]:visible').boundingBox();
+       assert(tool.y>=heading.y+heading.height-1,'Cabeçalho sobrepõe ferramenta '+key);
+       assert(tool.y<780,'Título da ferramenta fora da área útil '+key);
+       assert.equal(await page.isVisible('#ticket-extras-feedback'),false,'Aviso de outra aba persistiu');
        await page.screenshot({path:resolve(artifacts,'workspace-'+width+'-'+theme+'-'+key+'.png')});
       }
      }

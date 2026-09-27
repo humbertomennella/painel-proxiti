@@ -32,6 +32,7 @@ function open(key,focus=false){
   $('ticket-conversation').scrollIntoView({block:'nearest'});return;
  }
  if(!panels[key])return;
+ if(active!==key)for(const id of ['ticket-extras-feedback','ticket-workflow-feedback']){const message=$(id);message.hidden=true;message.textContent='';}
  active=key;root.dataset.mobilePane='tool';
  nav.querySelector('[data-ticket-jump="chat"]').removeAttribute('aria-current');
  for(const [name,panel] of Object.entries(panels)){
