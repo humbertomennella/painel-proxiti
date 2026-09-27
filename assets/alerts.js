@@ -2,6 +2,11 @@
 (() => {
 "use strict";
 let audio=null;
+const preferenceKey=()=> "proxiti-alert-sound-v2-"+(window.PROXITI_ACTIVE_SESSION?.user?.id||"guest");
+function enabled(){try{return localStorage.getItem(preferenceKey())!=="off";}catch{return true;}}
+function setEnabled(value){try{localStorage.setItem(preferenceKey(),value?"on":"off");}catch{}
+ if(value)void unlock();document.dispatchEvent(new CustomEvent("proxiti-sound-preference",{detail:{enabled:enabled()}}));
+ return enabled();}
 async function unlock(){
  try{
   const Context=window.AudioContext||window.webkitAudioContext;
@@ -25,11 +30,12 @@ function tone(frequencies,volume=.042){
  return true;
 }
 function play(type){
+ if(!enabled())return;
  const notes=type==="ticket"?[740,1030]:[930,720];
  if(tone(notes,.043))return;
  void unlock().then(ready=>{if(ready)tone(notes,.043);});
 }
 document.addEventListener("pointerdown",()=>{if(audio?.state!=="running")void unlock();},{capture:true});
 document.addEventListener("keydown",()=>{if(audio?.state!=="running")void unlock();},{capture:true});
-window.PROXITI_ALERTS=Object.freeze({play,get enabled(){return true;}});
+window.PROXITI_ALERTS=Object.freeze({play,get enabled(){return enabled();},setEnabled});
 })();
