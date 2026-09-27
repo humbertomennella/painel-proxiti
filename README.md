@@ -31,8 +31,8 @@ Repositório público da interface privada da PROXITI. A autenticação, as regr
 
 1. Entre no painel e abra **Gestão PROXITI → Chamados** para atender, designar e responder. O contato direto por telefone/e-mail continua no site.
 2. Em **Técnicos e permissões**, convide uma pessoa; o perfil fica pendente até a aprovação. Permita somente os módulos necessários. Suspensão bloqueia o acesso a novos dados.
-3. Em **Conteúdo do site**, edite blocos por identificador. A exclusão da personalização restaura o texto estático original. O editor utiliza `textContent`, nunca HTML arbitrário.
-4. Em **UniProxiti**, publique arquivos no bucket **privado** `proxiti-training`. Em **Ferramentas**, registre e atribua equipamentos.
+3. Em **Biblioteca Técnica**, consulte, revise e publique os procedimentos e arquivos privados autorizados. O histórico de versões permanece preservado.
+4. Em **UNIPROXITI**, acompanhe trilhas e avaliações. Em **Equipamentos**, registre e atribua recursos; **Ferramentas** reúne utilitários locais.
 
 ## Limite importante: controle do site
 
@@ -69,7 +69,7 @@ A migração aditiva `supabase/ticket_workflow_v7.sql` foi aplicada ao projeto C
 
 ## Central V8 · Módulos preparados e materiais entregues
 
-- **Visão geral:** indicadores de pendências acionáveis, tema claro/escuro, acessibilidade móvel e atalhos para chamados, Agenda, UniProxiti, Ferramentas e perfil.
+- **Início:** indicadores de pendências acionáveis, tema claro/escuro, acessibilidade móvel e atalhos para chamados, Agenda, UNIPROXITI, Ferramentas e perfil.
 - **Chamados:** notas internas, checklists, anexos privados, equipamento por atendimento, agendamentos vinculados, relatórios versionados e histórico de auditoria.
 - **Agenda:** compromissos reais com estados planejado, confirmado, concluído ou cancelado. O sistema não confirma horário nem envia convite sem ação humana.
 - **UniProxiti:** dez procedimentos originais publicados em seis áreas, com pesquisa, filtro, revisão editorial e opção de impressão/salvamento em PDF pelo navegador.
@@ -94,6 +94,14 @@ A **UniProxiti V13** separa os dez procedimentos de consulta da capacitação: [
 
 ## UniProxiti · Dashboard (Iteração 2)
 
-A UniProxiti foi reorganizada como painel de estudos, com quatro indicadores calculados a partir das tabelas existentes do Supabase, trilhas com a classificação `required` do catálogo, retomada de aula, atividade recente baseada em tentativas registradas e certificado somente após emissão real pelo servidor. A seção de biblioteca técnica, questionários, prova final e PDF mantém os fluxos anteriores. Subtítulo da área: **Programa interno de capacitação PROXITI**.
+A UniProxiti foi reorganizada como painel de estudos, com quatro indicadores calculados a partir das tabelas existentes do Supabase, trilhas com a classificação `required` do catálogo, retomada de aula, atividade recente baseada em tentativas registradas e certificado somente após emissão real pelo servidor. A Biblioteca Técnica é uma página independente. Questionários, prova final e PDF continuam na UNIPROXITI, com os fluxos anteriores. Subtítulo da área: **Programa interno de capacitação PROXITI**.
 
 O banco registra aulas aprovadas, tentativas e notas, mas **não registra percentual de leitura da aula**. A retomada apresenta o percentual real da trilha, sem inventar conclusão de leitura. Veja [fontes, limites e QA da UniProxiti](docs/uniproxiti-dashboard.md). Branch de revisão: `uniproxiti-dashboard`; nenhuma publicação ou merge sem aprovação.
+
+## Refinamento da Central Técnica (PR #13)
+
+A navegação apresenta **Início** e **UNIPROXITI**; a página **Conteúdo do Site** foi retirada da interface e desabilitada como área navegável, sem apagar os dados, políticas ou o código CMS preexistente. Todas as seções têm banner fotográfico local, com encaixe sem margens laterais no padrão da UNIPROXITI. A Biblioteca Técnica apresenta cartões mais compactos, com imagens por especialidade.
+
+A busca global no cabeçalho encontra áreas autorizadas, aulas do currículo e materiais carregados. Também aceita números de chamados e clientes presentes nos dados já autorizados; quando necessário, abre a pesquisa da Biblioteca Técnica. Não se trata de índice público do banco: as permissões existentes continuam válidas. O menu da conta permite abrir o perfil, ativar/desativar o som de chamados e mensagens e encerrar a sessão pelo fluxo existente. O som fica ativado por padrão, sujeito às regras de desbloqueio de áudio do navegador.
+
+Os testes estáticos e de interface estão em `tests/central-integrity.mjs` e `tests/refinement-functional.mjs`, incluindo 320, 375, 768, 1366 e 1920 px. A homologação com contas reais e seus respectivos níveis de acesso ainda é necessária antes do merge.
