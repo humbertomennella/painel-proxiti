@@ -6,6 +6,7 @@ on:
       - "index.html"
       - "assets/**"
       - "tests/browser-smoke.mjs"
+      - "tests/refinement-functional.mjs"
       - "tests/overview-functional.mjs"
       - "tests/tickets-functional.mjs"
       - "tests/agenda-functional.mjs"
@@ -20,6 +21,7 @@ on:
       - "index.html"
       - "assets/**"
       - "tests/browser-smoke.mjs"
+      - "tests/refinement-functional.mjs"
       - "tests/overview-functional.mjs"
       - "tests/tickets-functional.mjs"
       - "tests/agenda-functional.mjs"
@@ -48,6 +50,8 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Inspecionar experiência móvel e desktop
         run: node tests/browser-smoke.mjs
+      - name: Validar refino de banners, busca, menu e sidebar com capturas
+        run: node tests/refinement-functional.mjs
       - name: Verificar fluxos da Visão Geral com sessões simuladas
         run: node tests/overview-functional.mjs
       - name: Verificar fluxos completos de chamados e falhas com dados simulados
