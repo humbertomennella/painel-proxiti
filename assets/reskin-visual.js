@@ -48,10 +48,10 @@
  }
  function syncSidebar(){
    if(!panel||!document.body.classList.contains("workspace-mode"))return;
-   if(desktop()&&!desktopManuallyCollapsed){
-     panel.classList.remove("sidebar-collapsed");
-     toggle?.setAttribute("aria-expanded","true");
-     toggle?.setAttribute("aria-label","Recolher menu");
+   if(desktop()&&!sidebar.matches(":hover")&&!sidebar.contains(document.activeElement)){
+     panel.classList.add("sidebar-collapsed");
+     toggle?.setAttribute("aria-expanded","false");
+     toggle?.setAttribute("aria-label","Expandir menu");
    }else if(!desktop()&&!mobile()){
      panel.classList.add("sidebar-collapsed");
      toggle?.setAttribute("aria-expanded","false");

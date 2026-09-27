@@ -246,6 +246,15 @@ function history(item,card){
 function card(item,g,s){
  const entry=make("article",null,"ops-list-item academy-entry");
  entry.dataset.category=item.category||"Geral";entry.dataset.materialId=item.id;
+ const category=String(item.category||"Geral");
+ const key=category.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+ const picture=key.includes("computador")?"computer":key.includes("rede")?"networks":
+   key.includes("seguranca")||key.includes("backup")||key.includes("privacidade")?"security":
+   key.includes("infraestrutura")?"technical-hero":"support";
+ const image=make("img",null,"academy-entry-image");
+ image.src="./assets/photos/"+picture+".webp";image.alt="Fotografia ilustrativa do tema "+category+".";
+ image.width=560;image.height=280;image.loading="lazy";image.decoding="async";
+ entry.append(image);
  const head=make("div",null,"academy-entry-head");
  head.append(make("strong",item.title),make("span",item.category||"Geral","ops-badge"));
  const pub=make("span",item.published?"Publicado":"Rascunho","ops-badge");
