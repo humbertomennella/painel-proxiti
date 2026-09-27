@@ -44,6 +44,13 @@ try{
    "Busca global não encontra a Biblioteca");
   await search.press("Escape");
   assert(await page.isHidden("#central-global-search-results"),"Busca não fecha com Escape");
+  await search.fill("chamado #123");
+  await page.waitForFunction(()=>!document.getElementById("central-global-search-results").hidden);
+  assert((await page.locator("#central-global-search-results").innerText()).includes("Chamado #123"),
+   "Busca não reconhece número de chamado");
+  await search.press("Enter");
+  await page.waitForFunction(()=>document.getElementById("ticket-search").value==="123");
+  assert.equal(await page.isHidden("#ops-tickets"),false,"Busca por chamado não abriu a fila");
   await page.click("#open-profile");
   assert(await page.isVisible("#central-account-menu"),"Menu de conta não abre");
   await page.click("#account-menu-sound");
