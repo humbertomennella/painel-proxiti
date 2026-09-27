@@ -33,6 +33,7 @@ function updateActions(){
   !$("staff-messages").querySelector(".ops-bubble:not(.own)");
  $("ticket-diagnostic-import").disabled=!selected;
  $("ticket-diagnostic-run").disabled=!selected;
+ $("ticket-go-chat").hidden=!selected||$("ticket-conversation").hidden;
 }
 function renderAnalysis(out){
  answer=out?.empty?null:out;
@@ -136,6 +137,7 @@ function jump(key){
 document.querySelectorAll("[data-ticket-jump]").forEach(button=>{
  button.addEventListener("click",()=>jump(button.dataset.ticketJump));
 });
+$("ticket-go-chat").addEventListener("click",()=>jump("chat"));
 $("ticket-diagnostic-run").addEventListener("click",analyzeNow);
 symptoms.addEventListener("input",schedule);
 for(const el of [platform,impact])el.addEventListener("change",analyzeNow);
