@@ -47,17 +47,11 @@
    if(!mobile())scrim.hidden=true;
  }
  function syncSidebar(){
-   if(!panel||!document.body.classList.contains("workspace-mode"))return;
-   if(desktop()&&!desktopManuallyCollapsed){
-     panel.classList.remove("sidebar-collapsed");
-     toggle?.setAttribute("aria-expanded","true");
-     toggle?.setAttribute("aria-label","Recolher menu");
-   }else if(!desktop()&&!mobile()){
-     panel.classList.add("sidebar-collapsed");
-     toggle?.setAttribute("aria-expanded","false");
-     toggle?.setAttribute("aria-label","Expandir menu");
-   }
-   navVisual();
+  if(!panel||!document.body.classList.contains("workspace-mode"))return;
+  // Hover e foco são controlados pelo layout.js. Não forçar a barra aberta.
+  if(desktop()&&!sidebar?.matches(":hover")&&!sidebar?.contains(document.activeElement))
+    panel.classList.add("sidebar-collapsed");
+  navVisual();
  }
  byId("reskin-help")?.addEventListener("click",()=>{
    window.PROXITI_OPEN_VIEW?.("overview");
@@ -73,9 +67,7 @@
  toggle?.addEventListener("click",()=>{
    if(desktop())desktopManuallyCollapsed=panel.classList.contains("sidebar-collapsed");
  });
- sidebar?.addEventListener("pointerleave",()=>{
-   if(desktop()&&!desktopManuallyCollapsed)syncSidebar();
- });
+ sidebar?.addEventListener("pointerleave",syncSidebar);
  window.addEventListener("resize",syncSidebar);
  window.addEventListener("focus",greeting);
  avatar?.addEventListener("error",()=>{
