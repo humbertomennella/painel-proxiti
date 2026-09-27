@@ -147,3 +147,6 @@ html[data-theme] body.workspace-mode .academy-lesson-intro img{display:block;wid
  html[data-theme] body.workspace-mode .central-page-hero *,
  html[data-theme] body.workspace-mode .central-module-card *{transition:none!important;animation:none!important}
 }
+
+/* Uma notificação sem permissão não reaparece por causa de regras de ícone. */
+html[data-theme] body.workspace-mode .panel-head .notification-trigger[hidden]{display:none!important}
