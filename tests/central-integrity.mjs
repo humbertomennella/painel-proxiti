@@ -7,7 +7,7 @@ const html=get("index.html");
 const scriptPaths=[
   "assets/app.js","assets/alerts.js","assets/operations.js","assets/academy.js","assets/academy-curriculum.js","assets/academy-learning.js","assets/layout.js",
   "assets/profile.js","assets/appearance.js","assets/overview-model.js","assets/overview.js","assets/ticket-workflow.js",
-  "assets/ticket-extras.js","assets/agenda.js","assets/technical-tools-core.js","assets/technical-tools.js"
+  "assets/ticket-extras.js","assets/ticket-diagnostics-core.js","assets/ticket-desk.js","assets/agenda.js","assets/technical-tools-core.js","assets/technical-tools.js"
 ];
 for (const path of scriptPaths) new Script(get(path),{filename:path});
 const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);
@@ -398,3 +398,31 @@ assert(refinementCss.includes('min-height:244px')&&
  refinementCss.includes('margin:0 -24px 20px'),
  "Banners não compartilham escala e encaixe");
 console.log("Refinamento: navegação, busca, menu, fotografias e som validado estaticamente.");
+
+/* V10 · Contratos do novo workspace de Chamados */
+for(const id of [
+ "ticket-chat-column","ticket-desk-shortcuts","ticket-list-pane","ticket-queue-toggle","ticket-go-chat",
+ "ticket-diagnostic","ticket-diagnostic-symptoms","ticket-diagnostic-platform",
+ "ticket-diagnostic-impact","ticket-diagnostic-run","ticket-diagnostic-results",
+ "ticket-diagnostic-message","ticket-diagnostic-to-note","ticket-diagnostic-to-reply",
+ "ticket-diagnostic-to-steps","ticket-preflight","ticket-preflight-progress"
+])assert(ids.includes(id),"Chamados: ID novo ausente: "+id);
+assert(html.includes('src="./assets/ticket-desk.js?v=20260927-1"')&&
+ html.includes('src="./assets/ticket-diagnostics-core.js?v=20260927-1"')&&
+ html.includes('href="./assets/ticket-desk.css?v=20260927-1"'),
+ "Assets da mesa técnica não estão carregados");
+const desk=get("assets/ticket-desk.js"),diagnostics=get("assets/ticket-diagnostics-core.js");
+assert(desk.includes('proxiti-ticket-selected')&&desk.includes('proxiti-session-ended')&&
+ desk.includes('canNote()')&&desk.includes('canReply()'),
+ "Diagnóstico não acompanha seleção, logout ou permissões");
+assert(!/(?:fetch|XMLHttpRequest|sendBeacon)\s*\(/.test(diagnostics),
+ "Base de diagnóstico não pode enviar sintomas externamente");
+assert(!desk.includes('ticket-note-form").submit(')&&
+ !desk.includes('staff-reply-form").submit('),
+ "Diagnóstico não pode enviar mensagens ou notas automaticamente");
+const deskCss=get("assets/ticket-desk.css");
+assert.equal((deskCss.match(/{/g)||[]).length,(deskCss.match(/}/g)||[]).length,
+ "CSS da mesa técnica está desbalanceado");
+assert(deskCss.includes("ticket-service-layout")&&deskCss.includes("max-width:420px"),
+ "Layout do chat não possui adaptação para mobile");
+console.log("PASS: mesa técnica, direitos, segurança e IDs preservados.");

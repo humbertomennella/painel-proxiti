@@ -27,3 +27,5 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verificar integridade estática
         run: node tests/central-integrity.mjs
+      - name: Validar motor de diagnóstico local e segurança
+        run: node tests/ticket-diagnostics-core.mjs

@@ -172,6 +172,8 @@ async function openScenario({tickets=baseline,chat=true,failTickets=false,failMe
 function test(name,fn){return fn().then(()=>console.log("PASS: "+name));}
 async function visit(page,ref){
  await page.evaluate(()=>window.PROXITI_OPEN_VIEW("tickets"));
+ if(await page.isVisible("#ticket-queue-toggle")&&await page.locator("#ticket-list-pane").getAttribute("data-mobile-collapsed")==="true")
+  await page.click("#ticket-queue-toggle");
  await page.locator(".ticket-inbox-card").filter({hasText:"#"+ref+" ·"}).click();
  await page.waitForFunction(ref=>document.getElementById("ticket-code").textContent.includes("#"+ref),ref);
 }
@@ -311,6 +313,52 @@ try{
    assert.equal(await page.evaluate(()=>window.__fixture.calls.includes("storage.remove")),false);
   }finally{await page.close();}
  });
+ await test("Diagnóstico orientado preserva a conversa e exige revisão antes de salvar ou responder",async()=>{
+  const page=await openScenario();
+  try{
+   await visit(page,102);
+   await page.waitForFunction(()=>document.getElementById("ticket-diagnostic-results").textContent.includes("Conectividade"));
+   assert.equal(await page.isHidden("#ticket-conversation"),false);
+   assert.equal(await page.isHidden("#ticket-go-chat"),false);
+   await page.click("#ticket-go-chat");
+   assert.equal(await page.getAttribute('[data-ticket-jump="chat"]',"aria-current"),"location");
+   assert.equal(await page.getAttribute("#ticket-list-pane","data-mobile-collapsed"),"true");
+   assert.equal(await page.isVisible("#ticket-queue-toggle"),true);
+   await page.click("#ticket-diagnostic-to-note");
+   assert((await page.inputValue("#ticket-note-body")).includes("Triagem assistida local"));
+   assert.equal(await page.evaluate(()=>window.__fixture.notes.length),0,"Nota não pode ser salva automaticamente");
+   await page.click("#ticket-diagnostic-to-reply");
+   assert((await page.inputValue("#staff-reply")).includes("Para entender melhor"));
+   assert.equal(await page.evaluate(()=>window.__fixture.messages.length),3,"Resposta não pode ser enviada automaticamente");
+   await page.fill("#ticket-diagnostic-symptoms","Disco SSD falhou e arquivos sumiram; preciso recuperar arquivos.");
+   await page.waitForFunction(()=>document.getElementById("ticket-diagnostic-results").textContent.includes("Armazenamento"));
+   assert((await page.textContent("#ticket-diagnostic-results")).includes("Não formate"));
+   await page.locator("#ticket-preflight summary").click();
+   await page.locator('[data-ticket-preflight="scope"]').check();
+   assert((await page.textContent("#ticket-preflight-progress")).includes("1 de 4"));
+   await visit(page,101);
+   assert(!(await page.inputValue("#ticket-diagnostic-symptoms")).includes("SSD falhou"));
+   await visit(page,102);
+   assert((await page.inputValue("#ticket-diagnostic-symptoms")).includes("SSD falhou"));
+   await page.click("#ticket-diagnostic-clear");
+   assert.equal(await page.inputValue("#ticket-diagnostic-symptoms"),"");
+   assert.equal(await page.isDisabled("#ticket-diagnostic-to-note"),true);
+  }finally{await page.close();}
+ });
+ await test("Assistente respeita chat proibido e histórico encerrado",async()=>{
+  const page=await openScenario({chat:false});
+  try{
+   await visit(page,102);
+   assert.equal(await page.isHidden("#ticket-conversation"),true);
+   assert.equal(await page.isHidden("#ticket-go-chat"),true);
+   assert.equal(await page.isDisabled("#ticket-diagnostic-message"),true);
+   assert.equal(await page.isDisabled("#ticket-diagnostic-to-reply"),true);
+   assert.equal(await page.isHidden("#ticket-workflow"),false);
+   await visit(page,103);
+   assert.equal(await page.isDisabled("#ticket-diagnostic-to-note"),true);
+   assert.equal(await page.isDisabled("#ticket-diagnostic-to-reply"),true);
+  }finally{await page.close();}
+ });
  await test("Chamado aberto mantém legibilidade nos dois temas e cinco larguras",async()=>{
   const page=await openScenario();
   try{
@@ -324,10 +372,13 @@ try{
        const detail=document.getElementById("ticket-detail").getBoundingClientRect();
        const search=document.getElementById("ticket-search").getBoundingClientRect();
        const reply=document.getElementById("staff-reply").getBoundingClientRect();
+       const chat=document.getElementById("ticket-conversation").getBoundingClientRect();
+       const assistant=document.getElementById("ticket-diagnostic").getBoundingClientRect();
        return {width:window.innerWidth,scroll:document.documentElement.scrollWidth,
          detail:{left:detail.left,right:detail.right,width:detail.width},
          search:{left:search.left,right:search.right},
-         reply:{left:reply.left,right:reply.right}};
+         reply:{left:reply.left,right:reply.right},
+         chat:{left:chat.left,right:chat.right},assistant:{left:assistant.left,right:assistant.right}};
      });
      assert(value.scroll<=width+2,width+"px/"+theme+": rolagem horizontal na área de Chamados");
      for(const [name,rect]of Object.entries(value)){

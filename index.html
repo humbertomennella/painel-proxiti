@@ -17,6 +17,7 @@
 <link rel="stylesheet" href="./assets/uniproxiti-dashboard.css?v=20260926-2">
 <link rel="stylesheet" href="./assets/central-expansion.css?v=20260926-1">
 <link rel="stylesheet" href="./assets/central-refinement.css?v=20260927-1">
+<link rel="stylesheet" href="./assets/ticket-desk.css?v=20260927-1">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js" defer></script>
 <script src="./assets/config.js" defer></script>
 <script src="./assets/app.js" defer></script>
@@ -32,6 +33,8 @@
 <script src="./assets/overview.js?v=20260925-3" defer></script>
 <script src="./assets/ticket-workflow.js?v=20260926-1" defer></script>
 <script src="./assets/ticket-extras.js?v=20260926-2" defer></script>
+<script src="./assets/ticket-diagnostics-core.js?v=20260927-1" defer></script>
+<script src="./assets/ticket-desk.js?v=20260927-1" defer></script>
 <script src="./assets/agenda.js?v=20260926-1" defer></script>
 <script src="./assets/technical-tools-core.js?v=1" defer></script>
 <script src="./assets/technical-tools.js?v=1" defer></script>
@@ -108,7 +111,7 @@
   <div id="ops-tickets" class="ops-view px-panel">
 <section class="central-page-hero central-hero-tickets" aria-label="Apresentação de Chamados"><div class="central-page-hero-copy"><p class="kicker">PROXITI · CENTRAL TÉCNICA</p><h2>Chamados</h2><p>Atendimentos, conversas e histórico em um único lugar.</p></div><figure class="central-page-hero-media"><img src="./assets/photos/support.webp" alt="Headset e notebook utilizados no atendimento de chamados técnicos." width="960" height="640" loading="lazy" decoding="async"></figure></section>
 <div class="central-ticket-search" role="search"><span class="central-ticket-search-title">Pesquisar chamados</span><label class="ticket-search-label" for="ticket-search"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input id="ticket-search" type="search" placeholder="Buscar nº, assunto ou cliente" autocomplete="off" maxlength="120"></label></div>
-    <div class="ops-section-head"><h3>Fila de atendimentos</h3><button type="button" id="reload-tickets" class="secondary">Atualizar ↻</button></div>
+    <div class="ops-section-head"><h3>Fila de atendimentos</h3><div class="ticket-head-actions"><button type="button" id="ticket-go-chat" class="secondary" hidden>Ir para conversa ↗</button><button type="button" id="reload-tickets" class="secondary">Atualizar ↻</button></div></div>
     <p class="ops-muted">Acompanhe cada etapa. Solicitações sem responsável ficam disponíveis aos técnicos autorizados.</p>
     <p id="ticket-sync-status" class="ticket-sync-status" role="status" aria-live="polite">Consultando a fila autorizada…</p>
     <div class="ticket-metrics" role="group" aria-label="Filtrar chamados por situação">
@@ -120,7 +123,7 @@
     </div>
     <div class="ticket-toolbar"><div class="ticket-quick-filters" role="group" aria-label="Visualização de chamados"><button type="button" class="ticket-filter active" data-ticket-filter="all" aria-pressed="true">Todos <span id="ticket-filter-all-count">0</span></button><button type="button" class="ticket-filter" data-ticket-filter="unread" aria-pressed="false">Não lidos <span id="ticket-filter-unread-count">0</span></button></div></div>
     <div class="ticket-workspace">
-      <div class="ticket-list-pane"><div class="ticket-list-head"><strong>Caixa de entrada</strong><span id="ticket-table-result" class="ticket-table-result" role="status" aria-live="polite"></span></div><div id="ticket-list" class="ticket-list" role="list" aria-label="Chamados disponíveis"><p class="ticket-list-empty">Carregando chamados…</p></div></div>
+      <div class="ticket-list-pane" id="ticket-list-pane"><div class="ticket-list-head"><strong>Caixa de entrada</strong><span id="ticket-table-result" class="ticket-table-result" role="status" aria-live="polite"></span><button type="button" id="ticket-queue-toggle" class="secondary" aria-controls="ticket-list" aria-expanded="true" hidden>Recolher fila</button></div><div id="ticket-list" class="ticket-list" role="list" aria-label="Chamados disponíveis"><p class="ticket-list-empty">Carregando chamados…</p></div></div>
       <div class="ticket-detail-pane"><div id="ticket-empty-state" class="ticket-empty-state"><span class="ticket-empty-mark" aria-hidden="true">↗</span><h3>Selecione um atendimento</h3><p>O histórico, as mensagens e as ações do chamado aparecerão aqui, sem sair da caixa de entrada.</p></div>
     <article id="ticket-detail" class="ops-detail" hidden>
       <div class="ops-section-head"><div><span id="ticket-code" class="kicker">CHAMADO</span><div class="ticket-detail-title"><h3 id="ticket-subject"></h3><span id="ticket-current-status" aria-live="polite"></span></div><p id="ticket-customer" class="ops-muted"></p></div><button type="button" class="secondary" id="close-detail">Fechar detalhes</button></div>
@@ -131,8 +134,24 @@
       <label id="assign-group" data-admin-only>Designar técnico <select id="ticket-assignee"></select></label>
       <button type="button" id="save-assignee" class="secondary" data-admin-only>Designar</button></div>
 
+      <nav class="ticket-desk-shortcuts" id="ticket-desk-shortcuts" aria-label="Acesso rápido ao atendimento"><button type="button" data-ticket-jump="queue" class="ticket-jump-queue">Fila</button><button type="button" data-ticket-jump="chat" class="ticket-jump-chat">Conversa</button><button type="button" data-ticket-jump="diagnostic" class="ticket-jump-diagnostic">Diagnóstico</button><button type="button" data-ticket-jump="notes" class="ticket-jump-notes">Notas</button><button type="button" data-ticket-jump="tasks" class="ticket-jump-tasks">Roteiro</button><button type="button" data-ticket-jump="device" class="ticket-jump-device">Equipamento</button><button type="button" data-ticket-jump="appointments" class="ticket-jump-appointments">Agenda</button><button type="button" data-ticket-jump="attachments" class="ticket-jump-attachments">Anexos</button><button type="button" data-ticket-jump="report" class="ticket-jump-report">Relatório</button><button type="button" data-ticket-jump="history" class="ticket-jump-history">Histórico</button></nav>
+      <div class="ticket-service-layout"><div class="ticket-chat-column" id="ticket-chat-column">
       <div class="ops-conversation" id="ticket-conversation"><div class="ticket-conversation-head"><h4>Conversa do atendimento</h4><button type="button" id="ticket-thread-retry" class="secondary">Atualizar conversa</button></div><p id="ticket-thread-status" class="ticket-sync-status" role="status" aria-live="polite">A conversa será carregada ao abrir o chamado.</p><div id="staff-messages" class="ops-messages" aria-live="off"></div><button type="button" id="ticket-thread-older" class="secondary ticket-thread-older" hidden>Carregar mensagens anteriores</button>
       <form id="staff-reply-form"><label for="staff-reply">Responder ao cliente</label><textarea id="staff-reply" maxlength="2000" rows="3" required placeholder="Escreva sua mensagem para o cliente. Não solicite senhas."></textarea><button type="submit" class="primary">Enviar resposta ↗</button></form></div>
+</div><aside class="ticket-service-column" aria-label="Ferramentas técnicas do atendimento">
+<section id="ticket-diagnostic" class="ticket-diagnostic" aria-labelledby="ticket-diagnostic-title">
+<div class="ticket-diagnostic-heading"><div><span class="ticket-diagnostic-eyebrow">APOIO AO TÉCNICO · PROCESSAMENTO LOCAL</span><h4 id="ticket-diagnostic-title">Diagnóstico orientado</h4><p>Descreva o sintoma e obtenha hipóteses, perguntas e verificações por complexidade. O resultado não substitui seu diagnóstico.</p></div><span class="ticket-diagnostic-badge">Sem envio externo</span></div>
+<div class="ticket-diagnostic-form">
+<label for="ticket-diagnostic-symptoms">Sintomas relatados e observações técnicas</label>
+<textarea id="ticket-diagnostic-symptoms" rows="4" maxlength="2200" placeholder="Ex.: notebook liga, mas não inicia o Windows; cliente relata ruído no disco. Não inclua nomes, senhas nem dados pessoais."></textarea>
+<div class="ticket-diagnostic-input-actions"><button type="button" id="ticket-diagnostic-import" class="secondary">Usar descrição do chamado</button><button type="button" id="ticket-diagnostic-message" class="secondary">Usar última mensagem</button><button type="button" id="ticket-diagnostic-clear" class="secondary">Limpar</button></div>
+<div class="ticket-diagnostic-context"><label for="ticket-diagnostic-platform">Ambiente<select id="ticket-diagnostic-platform"><option value="unspecified">Não informado</option><option value="windows">Windows</option><option value="linux">Linux</option><option value="network">Rede / roteador</option><option value="other">Outro</option></select></label><label for="ticket-diagnostic-impact">Impacto<select id="ticket-diagnostic-impact"><option value="unspecified">A confirmar</option><option value="single">Um dispositivo</option><option value="multiple">Vários dispositivos</option><option value="business">Operação essencial interrompida</option><option value="security">Suspeita de segurança ou dados em risco</option></select></label></div>
+<button type="button" id="ticket-diagnostic-run" class="primary">Analisar sintomas</button></div>
+<div id="ticket-diagnostic-status" class="ticket-diagnostic-status" role="status" aria-live="polite">Ao abrir um chamado, você pode usar sua descrição para começar a triagem.</div>
+<div id="ticket-diagnostic-results" class="ticket-diagnostic-results" aria-label="Sugestões de diagnóstico"></div>
+<details id="ticket-preflight" class="ticket-preflight"><summary>Conferência antes da intervenção <span id="ticket-preflight-progress">0 de 4</span></summary><div class="ticket-preflight-grid"><label><input type="checkbox" data-ticket-preflight="scope"> Escopo e orçamento aprovados</label><label><input type="checkbox" data-ticket-preflight="backup"> Backup verificado ou risco documentado</label><label><input type="checkbox" data-ticket-preflight="permission"> Acesso e intervenção autorizados</label><label><input type="checkbox" data-ticket-preflight="privacy"> Sem senhas ou dados excessivos no registro</label></div><p class="ticket-diagnostic-disclaimer">Conferência local de apoio. Marcar itens não cria autorização contratual nem substitui o aceite registrado.</p></details>
+<div class="ticket-diagnostic-footer"><button type="button" id="ticket-diagnostic-to-steps" class="secondary" disabled>Abrir roteiro sugerido</button><button type="button" id="ticket-diagnostic-to-note" class="secondary" disabled>Copiar resumo para nota interna</button><button type="button" id="ticket-diagnostic-to-reply" class="secondary" disabled>Preparar resposta para revisão</button></div>
+<p class="ticket-diagnostic-disclaimer">As sugestões são hipóteses baseadas em procedimentos locais. Nenhuma ação é executada e nada é enviado ao cliente automaticamente. Confirme escopo, backup e autorização antes de intervenções.</p></section>
 <section id="ticket-workflow" class="ticket-workflow" aria-labelledby="ticket-workflow-title" hidden>
                 <p id="ticket-extras-feedback" class="ticket-workflow-feedback" role="status" aria-live="polite" hidden></p>
         <div class="ticket-workflow-head">
@@ -217,7 +236,7 @@
       </section>
       
       <details class="ticket-audit-panel"><summary>Histórico das movimentações</summary><ol id="ticket-audit-list" class="ticket-audit-list"><li>Carregando histórico…</li></ol></details>
-    </article></div></div>
+    </aside></div></article></div></div>
   </div>
   <div id="ops-staff" class="ops-view px-panel" hidden data-admin-only>
 <section class="central-page-hero central-hero-staff" aria-label="Apresentação de Técnicos"><div class="central-page-hero-copy"><p class="kicker">PROXITI · CENTRAL TÉCNICA</p><h2>Técnicos</h2><p>Convites e permissões da equipe técnica autorizada.</p></div><figure class="central-page-hero-media"><img src="./assets/photos/support.webp" alt="Estação com headset para atendimento da equipe técnica." width="960" height="640" loading="lazy" decoding="async"></figure></section>
