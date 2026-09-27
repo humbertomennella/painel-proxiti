@@ -37,7 +37,8 @@ assert(html.includes('data-theme="light"'),"Tema claro inicial ausente");
 assert(get("assets/appearance.js").includes('proxiti-theme-v3'),"Preferência de tema incompatível com o site");
 assert(get("assets/layout.js").includes('sidebar.addEventListener("pointerenter"'),"Hover lateral ausente");
 assert(get("assets/layout.js").includes('sidebar.addEventListener("pointerleave"'),"Recolhimento lateral ausente");
-assert(get("assets/alerts.js").includes("tone([650,480]"),"Som de desativação ausente");
+assert(get("assets/alerts.js").includes("get enabled(){return true;}")&&
+ !html.includes('id="toggle-alerts"'),"Som habilitado sem botão na topbar");
 const interfaceCss=get("assets/interface.css");
 assert(interfaceCss.includes('html[data-theme="light"]')&&interfaceCss.includes('html[data-theme="dark"]'),"Temas incompletos");
 assert.equal((interfaceCss.match(/{/g)||[]).length,(interfaceCss.match(/}/g)||[]).length,"Chaves CSS desbalanceadas");
@@ -261,7 +262,7 @@ for(const id of ["training-sync-state","training-status-filter","training-review
  "training-editor-feedback","training-load-more","training-list"]){
  assert(html.includes('id="'+id+'"'),"UniProxiti sem estado ou controle #"+id);
 }
-assert(html.includes('src="./assets/academy.js?v=20260926-1"'),
+assert(html.includes('src="./assets/academy.js?v=20260926-2"'),
  "Módulo editorial da UniProxiti não está carregado");
 const academyCode=get("assets/academy.js"),academyDb=get("supabase/academy_integrity_v12.sql");
 for(const rule of ["training_material_versions","training_search_gin_idx",
@@ -302,6 +303,7 @@ for(const course of curriculum.courses){
   course.checklist.length>=4&&course.practice.context.length>30&&
   course.practice.response.length>30,"Aula incompleta: "+course.id);
  assert(curriculum.tracks.some(track=>track.id===course.track),"Trilha desconhecida: "+course.id);
+ assert(course.image&&existsSync(new URL("../"+course.image,import.meta.url)), "Imagem específica ausente: "+course.id);
 }
 for(const track of curriculum.tracks)
  assert(existsSync(new URL("../"+track.image,import.meta.url)),
