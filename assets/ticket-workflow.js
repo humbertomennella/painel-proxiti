@@ -78,7 +78,7 @@
         const explanation=make("input");explanation.type="text";explanation.maxLength=400;
         explanation.value=task.note||"";explanation.placeholder="Observação ou motivo de não aplicabilidade";
         explanation.setAttribute("aria-label","Observação da etapa "+task.position);
-        const save=make("button","Salvar etapa","secondary");save.type="button";
+        const save=make("button","Salvar","secondary");save.type="button";
         save.addEventListener("click",async()=>{
           if(selected?.id!==task.ticket_id||!canEdit())return;
           save.disabled=true;note("");
