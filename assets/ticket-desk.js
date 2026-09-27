@@ -87,6 +87,33 @@ function schedule(){
  if(!selected)return;
  debounce=setTimeout(()=>{debounce=null;analyzeNow();},350);
 }
+function setQueue(collapsed){
+ const pane=$("ticket-list-pane"),toggle=$("ticket-queue-toggle");
+ const small=window.matchMedia("(max-width: 767px)").matches;
+ const closed=!!selected&&small&&!!collapsed;
+ pane.dataset.mobileCollapsed=String(closed);
+ toggle.hidden=!small||!selected;
+ toggle.textContent=closed?"Abrir fila":"Recolher fila";
+ toggle.setAttribute("aria-expanded",String(!closed));
+}
+$("ticket-queue-toggle").addEventListener("click",()=>{
+ const pane=$("ticket-list-pane");
+ setQueue(pane.dataset.mobileCollapsed!=="true");
+ if(pane.dataset.mobileCollapsed!=="true")pane.scrollIntoView({block:"start",behavior:"smooth"});
+});
+window.addEventListener("resize",()=>setQueue($("ticket-list-pane").dataset.mobileCollapsed==="true"));
+const listObserver=new MutationObserver(()=>{
+ const list=$("ticket-list"),empty=list.querySelector(".ticket-list-empty");
+ if(!empty||!empty.textContent.includes("corresponde aos filtros")||list.querySelector(".ticket-list-clear"))return;
+ const reset=make("button","Mostrar todos os chamados","secondary ticket-list-clear");
+ reset.type="button";reset.addEventListener("click",()=>{
+  const field=$("ticket-search");field.value="";field.dispatchEvent(new Event("input",{bubbles:true}));
+  document.querySelector('[data-ticket-filter="all"]')?.click();
+  setQueue(false);
+ });
+ list.append(reset);
+});
+listObserver.observe($("ticket-list"),{childList:true});
 function jump(key){
  const targets={
   queue:$("ticket-list-pane")||document.querySelector(".ticket-list-pane"),
@@ -176,6 +203,7 @@ function choose(ticket){
  updateActions();
  const nav=$("ticket-desk-shortcuts");nav.hidden=!selected;
  if(selected)document.querySelector('[data-ticket-jump="chat"]')?.classList.add("active");
+ setQueue(!!selected);
 }
 document.addEventListener("proxiti-ticket-selected",event=>choose(event.detail?.ticket||null));
 document.addEventListener("proxiti-session-ready",event=>{
