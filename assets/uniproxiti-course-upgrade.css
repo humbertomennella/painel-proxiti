@@ -162,3 +162,25 @@ html[data-theme] body.workspace-mode #ops-training .academy-certificate-list art
   html[data-theme] body.workspace-mode #ops-training .uniproxiti-track-tile,
   html[data-theme] body.workspace-mode #ops-training .uniproxiti-continue-card{transition:none}
 }
+
+/* Imagem real de referência complementa o diagrama original de cada aula. */
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-photo{
+  display:grid;gap:10px;max-width:80ch;margin:20px auto 28px;
+  overflow:hidden;border:1px solid var(--px-line);border-radius:13px;
+  background:var(--px-surface-soft);color:var(--px-text);
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-photo img{
+  display:block;width:100%;height:auto;aspect-ratio:16/9;
+  object-fit:cover;object-position:center;max-height:400px;
+}
+html[data-theme] body.workspace-mode #ops-training .academy-lesson-photo figcaption{
+  font-size:clamp(13px,2.3vw,15px);line-height:1.55;padding:0 16px 15px;
+}
+@media(max-width:767px){
+  html[data-theme] body.workspace-mode #ops-training .academy-lesson-photo{
+    margin:16px auto 23px;
+  }
+  html[data-theme] body.workspace-mode #ops-training .academy-lesson-photo figcaption{
+    padding:0 13px 13px;
+  }
+}
