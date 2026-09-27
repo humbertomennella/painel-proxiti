@@ -237,8 +237,9 @@ function renderTracks(){
    const group=make("details",null,"academy-track-card");
    const title=make("summary",null,"academy-track-summary");
    const illustration=make("img");
-   illustration.src=track.image;illustration.alt="Infográfico original da trilha "+track.title;
-   illustration.width=960;illustration.height=440;illustration.loading="lazy";
+   illustration.src=track.image;illustration.alt=track.photoAlt||"Imagem temática da trilha "+track.title;
+   illustration.width=880;illustration.height=495;illustration.loading="lazy";
+   illustration.decoding="async";
    const copy=make("div",null,"academy-track-copy");
    copy.append(make("span",badge,"uniproxiti-track-category"),
      make("small","TRILHA "+String(index+1).padStart(2,"0")),
@@ -311,6 +312,14 @@ function renderLesson(course){
  objectives.append(make("h6","Ao final desta aula, você será capaz de"));
  const list=make("ul");for(const goal of course.objectives)list.append(make("li",goal));
  objectives.append(list);host.append(objectives);
+ if(track?.image&&course.photoFocus){
+   const figure=make("figure",null,"academy-lesson-photo");
+   const photo=make("img");photo.src=track.image;
+   photo.alt=track.photoAlt||"Fotografia ilustrativa do assunto da trilha";
+   photo.width=880;photo.height=495;photo.loading="lazy";photo.decoding="async";
+   figure.append(photo,make("figcaption","Fotografia temática ilustrativa · "+course.photoFocus));
+   host.append(figure);
+ }
  for(const [title,...paras] of course.sections){
    const section=make("section",null,"academy-lesson-block");
    section.append(make("h6",title));
