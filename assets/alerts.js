@@ -1,45 +1,35 @@
+/* Alertas habilitados por padrão. Navegadores podem exigir interação para liberar áudio. */
 (() => {
 "use strict";
-const button=document.getElementById("toggle-alerts"),key="proxiti-alerts-enabled-v2";
-let audio=null,enabled=true;
-try{enabled=localStorage.getItem(key)!=="false"}catch{}
-function label(){
- if(!button)return;
- button.textContent=enabled?"♫ Som ligado":"♪ Som desligado";
- button.setAttribute("aria-pressed",String(enabled));
- button.setAttribute("aria-label",enabled?"Desativar som dos alertas":"Ativar som dos alertas");
- button.title=enabled?"Desativar som dos alertas":"Ativar som dos alertas";
-}
+let audio=null;
 async function unlock(){
  try{
   const Context=window.AudioContext||window.webkitAudioContext;
-  if(!Context)return;
+  if(!Context)return false;
   audio=audio||new Context();
   if(audio.state!=="running")await audio.resume();
- }catch{/* O navegador pode exigir interação antes de reproduzir som. */}
+  return audio.state==="running";
+ }catch{return false;}
 }
 function tone(frequencies,volume=.042){
- if(!audio||audio.state!=="running")return;
+ if(!audio||audio.state!=="running")return false;
  const now=audio.currentTime;
  frequencies.forEach((frequency,index)=>{
-  const osc=audio.createOscillator(),gain=audio.createGain(),at=now+index*.14;
-  osc.type="sine";osc.frequency.setValueAtTime(frequency,at);
+  const oscillator=audio.createOscillator(),gain=audio.createGain(),at=now+index*.14;
+  oscillator.type="sine";oscillator.frequency.setValueAtTime(frequency,at);
   gain.gain.setValueAtTime(.0001,at);
   gain.gain.exponentialRampToValueAtTime(volume,at+.016);
   gain.gain.exponentialRampToValueAtTime(.0001,at+.12);
-  osc.connect(gain);gain.connect(audio.destination);osc.start(at);osc.stop(at+.13);
+  oscillator.connect(gain);gain.connect(audio.destination);oscillator.start(at);oscillator.stop(at+.13);
  });
+ return true;
 }
-function play(type){if(enabled)tone(type==="ticket"?[740,1030]:[930,720],.043)}
-button?.addEventListener("click",async()=>{
- await unlock();
- if(enabled){tone([650,480],.037);enabled=false;}
- else{enabled=true;tone([550,810],.037);}
- try{localStorage.setItem(key,String(enabled))}catch{}
- label();
-});
-document.addEventListener("pointerdown",()=>{if(enabled&&audio?.state!=="running")void unlock()},{capture:true});
-document.addEventListener("keydown",()=>{if(enabled&&audio?.state!=="running")void unlock()},{capture:true});
-label();
-window.PROXITI_ALERTS=Object.freeze({play,get enabled(){return enabled;}});
+function play(type){
+ const notes=type==="ticket"?[740,1030]:[930,720];
+ if(tone(notes,.043))return;
+ void unlock().then(ready=>{if(ready)tone(notes,.043);});
+}
+document.addEventListener("pointerdown",()=>{if(audio?.state!=="running")void unlock();},{capture:true});
+document.addEventListener("keydown",()=>{if(audio?.state!=="running")void unlock();},{capture:true});
+window.PROXITI_ALERTS=Object.freeze({play,get enabled(){return true;}});
 })();

@@ -86,6 +86,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
     {
       "id": "at-01",
       "track": "atendimento",
+      "image": "assets/academy-course-visuals/at-01.svg",
       "title": "Primeiro contato e autorização",
       "minutes": 15,
       "level": "Fundamentos",
@@ -126,6 +127,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
     {
       "id": "at-02",
       "track": "atendimento",
+      "image": "assets/academy-course-visuals/at-02.svg",
       "title": "Comunicação, prazos e orientação final",
       "minutes": 15,
       "level": "Fundamentos",
@@ -167,6 +169,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
     {
       "id": "pc-01",
       "track": "computadores",
+      "image": "assets/academy-course-visuals/pc-01.svg",
       "title": "Diagnóstico de lentidão e travamentos",
       "minutes": 15,
       "level": "Fundamentos",
@@ -210,6 +213,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
     {
       "id": "pc-02",
       "track": "computadores",
+      "image": "assets/academy-course-visuals/pc-02.svg",
       "title": "Manutenção preventiva e atualizações",
       "minutes": 15,
       "level": "Fundamentos",
@@ -253,6 +257,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
     {
       "id": "re-01",
       "track": "redes",
+      "image": "assets/academy-course-visuals/re-01.svg",
       "title": "Diagnóstico de internet e Wi-Fi",
       "minutes": 15,
       "level": "Fundamentos",
@@ -296,6 +301,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
     {
       "id": "re-02",
       "track": "redes",
+      "image": "assets/academy-course-visuals/re-02.svg",
       "title": "Roteadores e rede de pequenos negócios",
       "minutes": 15,
       "level": "Intermediário",
@@ -339,6 +345,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
     {
       "id": "se-01",
       "track": "seguranca",
+      "image": "assets/academy-course-visuals/se-01.svg",
       "title": "Phishing, senhas e MFA",
       "minutes": 15,
       "level": "Fundamentos",
@@ -381,6 +388,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
     {
       "id": "se-02",
       "track": "seguranca",
+      "image": "assets/academy-course-visuals/se-02.svg",
       "title": "Proteção de dispositivos e resposta inicial",
       "minutes": 15,
       "level": "Intermediário",
@@ -423,6 +431,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
     {
       "id": "bk-01",
       "track": "backup",
+      "image": "assets/academy-course-visuals/bk-01.svg",
       "title": "Cópias de segurança que realmente recuperam",
       "minutes": 15,
       "level": "Fundamentos",
@@ -465,6 +474,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
     {
       "id": "bk-02",
       "track": "backup",
+      "image": "assets/academy-course-visuals/bk-02.svg",
       "title": "Teste de restauração e continuidade",
       "minutes": 15,
       "level": "Intermediário",
@@ -507,6 +517,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
     {
       "id": "in-01",
       "track": "infraestrutura",
+      "image": "assets/academy-course-visuals/in-01.svg",
       "title": "Instalações, cabos e segurança física",
       "minutes": 15,
       "level": "Fundamentos",
@@ -547,6 +558,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
     {
       "id": "in-02",
       "track": "infraestrutura",
+      "image": "assets/academy-course-visuals/in-02.svg",
       "title": "Inventário e continuidade de pequeno escritório",
       "minutes": 15,
       "level": "Intermediário",
@@ -587,6 +599,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
     {
       "id": "pr-01",
       "track": "privacidade",
+      "image": "assets/academy-course-visuals/pr-01.svg",
       "title": "LGPD, minimização e autorização prática",
       "minutes": 15,
       "level": "Fundamentos",
@@ -630,6 +643,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
     {
       "id": "pr-02",
       "track": "privacidade",
+      "image": "assets/academy-course-visuals/pr-02.svg",
       "title": "Suporte remoto seguro e incidentes de dados",
       "minutes": 15,
       "level": "Intermediário",
@@ -672,6 +686,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
     {
       "id": "op-01",
       "track": "operacao",
+      "image": "assets/academy-course-visuals/op-01.svg",
       "title": "Chamados, agenda e relatórios PROXITI",
       "minutes": 15,
       "level": "Fundamentos",
@@ -712,6 +727,7 @@ window.PROXITI_ACADEMY_CURRICULUM=Object.freeze({
     {
       "id": "op-02",
       "track": "operacao",
+      "image": "assets/academy-course-visuals/op-02.svg",
       "title": "Residências, microempresas e pós-atendimento",
       "minutes": 15,
       "level": "Intermediário",

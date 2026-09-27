@@ -37,7 +37,8 @@ assert(html.includes('data-theme="light"'),"Tema claro inicial ausente");
 assert(get("assets/appearance.js").includes('proxiti-theme-v3'),"Preferência de tema incompatível com o site");
 assert(get("assets/layout.js").includes('sidebar.addEventListener("pointerenter"'),"Hover lateral ausente");
 assert(get("assets/layout.js").includes('sidebar.addEventListener("pointerleave"'),"Recolhimento lateral ausente");
-assert(get("assets/alerts.js").includes("tone([650,480]"),"Som de desativação ausente");
+assert(get("assets/alerts.js").includes("get enabled(){return true;}")&&
+ !html.includes('id="toggle-alerts"'),"Som habilitado sem botão na topbar");
 const interfaceCss=get("assets/interface.css");
 assert(interfaceCss.includes('html[data-theme="light"]')&&interfaceCss.includes('html[data-theme="dark"]'),"Temas incompletos");
 assert.equal((interfaceCss.match(/{/g)||[]).length,(interfaceCss.match(/}/g)||[]).length,"Chaves CSS desbalanceadas");
@@ -261,7 +262,7 @@ for(const id of ["training-sync-state","training-status-filter","training-review
  "training-editor-feedback","training-load-more","training-list"]){
  assert(html.includes('id="'+id+'"'),"UniProxiti sem estado ou controle #"+id);
 }
-assert(html.includes('src="./assets/academy.js?v=20260926-1"'),
+assert(html.includes('src="./assets/academy.js?v=20260926-2"'),
  "Módulo editorial da UniProxiti não está carregado");
 const academyCode=get("assets/academy.js"),academyDb=get("supabase/academy_integrity_v12.sql");
 for(const rule of ["training_material_versions","training_search_gin_idx",
@@ -302,6 +303,7 @@ for(const course of curriculum.courses){
   course.checklist.length>=4&&course.practice.context.length>30&&
   course.practice.response.length>30,"Aula incompleta: "+course.id);
  assert(curriculum.tracks.some(track=>track.id===course.track),"Trilha desconhecida: "+course.id);
+ assert(course.image&&existsSync(new URL("../"+course.image,import.meta.url)), "Imagem específica ausente: "+course.id);
 }
 for(const track of curriculum.tracks)
  assert(existsSync(new URL("../"+track.image,import.meta.url)),
@@ -328,3 +330,33 @@ assert(get("assets/academy-learning.js").includes('proxiti_academy_submit_exam')
 assert(existsSync(new URL("../tests/academy-learning-functional.mjs",import.meta.url)),
  "UniProxiti sem testes do curso, avaliação e certificado");
 console.log("UniProxiti V13: 16 aulas, 8 imagens, progresso privado e certificado verificados.");
+
+/* EXPANSÃO DA CENTRAL: contratos de navegação, acervo e banners contextuais. */
+for(const view of ["library","equipment","clients","reports","users","settings"]){
+ assert(html.includes('data-side-view="'+view+'"'),"Seção ausente na sidebar: "+view);
+ assert(html.includes('data-ops-view="'+view+'"'),"Roteamento ausente: "+view);
+ assert(html.includes('id="ops-'+view+'"'),"Página real ausente: "+view);
+}
+for(const id of ["tickets","staff","content","agenda","tools","library","equipment","clients","reports","users","settings","profile"]){
+ const match=html.match(new RegExp('central-hero-'+id+'[\\s\\S]*?<img src="([^"]+)"'));
+ assert(match,"Banner contextual ausente: "+id);
+ const src=match[1].startsWith("./")?match[1].slice(2).split("?")[0]:match[1].split("?")[0];
+ assert(existsSync(new URL("../"+src,import.meta.url)),"Imagem do banner não encontrada: "+id);
+}
+const libraryBegin=html.indexOf('id="ops-library"'),libraryEnd=html.indexOf('id="ops-tools"',libraryBegin);
+assert(libraryBegin>html.indexOf('id="ops-training"')&&
+ html.indexOf('id="training-list"')>libraryBegin&&html.indexOf('id="training-list"')<libraryEnd,
+ "A Biblioteca Técnica ainda aparece dentro da UniProxiti");
+const equipmentBegin=html.indexOf('id="ops-equipment"'),equipmentEnd=html.indexOf('id="ops-clients"',equipmentBegin);
+assert(equipmentBegin>libraryEnd&&html.indexOf('id="tools-list"')>equipmentBegin&&
+ html.indexOf('id="tools-list"')<equipmentEnd,"Inventário não foi separado de Ferramentas");
+assert(html.indexOf('id="ticket-search"')<html.indexOf('id="ticket-metric-open"'),
+ "Pesquisa de Chamados não está no topo");
+assert(!html.includes('id="toggle-alerts"')&&
+ get("assets/alerts.js").includes("get enabled(){return true;}"),
+ "Som de chamado deve ficar ligado sem botão");
+assert(html.includes('class="overview-view-controls" hidden aria-hidden="true"'),
+ "Controles Focar/Leitura/Ajuda continuam na Visão Geral");
+assert(get("assets/central-expansion.css").includes('.notification-trigger[hidden]{display:none!important}'),
+ "Ocultação do sino sem permissão não é preservada");
+console.log("Expansão: seis páginas, banners, Biblioteca separada, busca superior e alertas validados.");

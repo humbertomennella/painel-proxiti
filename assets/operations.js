@@ -381,6 +381,59 @@
     state.messageCheckPromise=work;
     return work;
   }
+
+  function renderClients(){
+    const list=el("clients-list"),status=el("clients-status");list.replaceChildren();
+    if(!can("tickets_view")){status.textContent="Acesso restrito.";return;}
+    if(!state.ticketsReady){status.textContent=state.ticketError?"Consulta indisponível. Use Atualizar em Chamados.":"Consultando chamados autorizados…";return;}
+    const people=new Map();
+    for(const ticket of state.tickets){
+      const email=String(ticket.customer_email||"").trim(),name=String(ticket.customer_name||"").trim();
+      const key=(email||name+"|"+String(ticket.customer_phone||"")).toLocaleLowerCase("pt-BR");
+      if(!key)continue;
+      if(!people.has(key))people.set(key,{name:name||"Cliente sem nome informado",email,phone:ticket.customer_phone||"",count:0});
+      people.get(key).count++;
+    }
+    status.textContent=people.size+" "+(people.size===1?"contato":"contatos")+" nos até 100 chamados recentes acessíveis à sua conta.";
+    if(!people.size){list.append(elem("p","Nenhum contato disponível entre os chamados autorizados.","ops-muted"));return;}
+    for(const person of people.values()){
+      const card=elem("article","","central-module-card");card.append(elem("h3",person.name));
+      if(person.email)card.append(elem("p",person.email));
+      if(person.phone)card.append(elem("p",person.phone));
+      card.append(elem("small",person.count+(person.count===1?" chamado acessível":" chamados acessíveis")));
+      card.append(button("Ver chamados",()=>{
+        el("ticket-search").value=person.email||person.name;
+        el("ticket-search").dispatchEvent(new Event("input",{bubbles:true}));
+        window.PROXITI_OPEN_VIEW?.("tickets");
+      },"secondary"));
+      list.append(card);
+    }
+  }
+  function renderReports(){
+    const status=el("reports-status");
+    if(!can("tickets_view")||!state.ticketsReady){
+      for(const key of ["total","open","progress","waiting","resolved","closed"])el("reports-"+key).textContent="—";
+      status.textContent=can("tickets_view")?"Consultando chamados autorizados…":"Acesso restrito.";return;
+    }
+    const count=key=>state.tickets.filter(t=>key==="open"?["new","triage"].includes(t.status):t.status===key).length;
+    const metrics={total:state.tickets.length,open:count("open"),progress:count("in_progress"),waiting:count("waiting_customer"),resolved:count("resolved"),closed:count("closed")};
+    for(const [key,value] of Object.entries(metrics))el("reports-"+key).textContent=String(value);
+    status.textContent=state.ticketError?"Última consulta disponível; atualização temporariamente indisponível.":
+      "Indicadores dos chamados acessíveis, consultados às "+new Date(state.ticketLastUpdated).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})+".";
+  }
+  function renderUsers(){
+    const list=el("users-list"),status=el("users-status");list.replaceChildren();
+    if(!isAdmin()){status.textContent="Área restrita à administração.";return;}
+    status.textContent=state.staff.length+(state.staff.length===1?" conta cadastrada.":" contas cadastradas.");
+    if(!state.staff.length){list.append(elem("p","Nenhuma conta retornada pela consulta autorizada.","ops-muted"));return;}
+    const labels={administrator:"Administrador",technician:"Técnico",pending:"Pendente",active:"Ativo",suspended:"Suspenso"};
+    for(const person of state.staff){
+      const card=elem("article","","central-module-card");
+      card.append(elem("h3",person.display_name||"Conta sem nome informado"),
+        elem("p",(labels[person.role]||"Conta")+" · "+(labels[person.status]||person.status)));
+      list.append(card);
+    }
+  }
   function showView(view){
     state.currentView=view;
     const names={tickets:["Chamados","Prioridades, responsáveis e histórico dos atendimentos."],
@@ -388,27 +441,38 @@
       content:["Conteúdo do site","Textos publicados e personalizações autorizadas."],
       training:["UniProxiti","Programa interno de capacitação PROXITI"],
       agenda:["Agenda","Retornos, visitas e horários planejados por chamado."],
-      tools:["Ferramentas","Inventário e equipamentos atribuídos."]};
+      tools:["Ferramentas","Ferramentas digitais locais."],
+      library:["Biblioteca Técnica","Procedimentos e arquivos internos autorizados."],
+      equipment:["Equipamentos","Inventário de ferramentas e equipamentos atribuídos."],
+      clients:["Clientes","Contatos de chamados autorizados."],
+      reports:["Relatórios","Indicadores de chamados autorizados."],
+      users:["Usuários","Contas e situação de acesso."],
+      settings:["Configurações","Aparência, avisos e segurança da conta."]};
     el("ops-heading").textContent=names[view]?.[0]||"Operação";
     el("ops-description").textContent=names[view]?.[1]||"";
     if(state.user)remember("view",view);
     for(const tab of el("ops-tabs").querySelectorAll("[data-ops-view]"))
       tab.classList.toggle("active",tab.dataset.opsView===view);
-    for(const v of ["tickets","staff","content","agenda","training","tools"])el("ops-"+v).hidden=v!==view;
+    for(const v of ["tickets","staff","content","agenda","training","library","equipment","clients","reports","users","settings","tools"])el("ops-"+v).hidden=v!==view;
     notice("");
     if(view==="tickets")void loadTickets();
     if(view==="staff"&&isAdmin())void loadStaff();
     if(view==="content"&&isAdmin())void loadContent();
-    if(view==="training"&&can("training"))void loadTraining();
     if(view==="agenda"&&can("tickets_view"))document.dispatchEvent(new Event("proxiti-agenda-refresh"));
-    if(view==="tools"&&can("resources"))void loadTools();
+    if(view==="equipment"&&can("resources"))void loadTools();
+    if(view==="library"&&can("training"))void loadTraining();
+    if(view==="clients"&&can("tickets_view"))renderClients();
+    if(view==="reports"&&can("tickets_view"))renderReports();
+    if(view==="users"&&isAdmin())void loadStaff();
     document.dispatchEvent(new CustomEvent("proxiti-view-changed",{detail:{view}}));
   }
   function updateNav(){
     for(const node of document.querySelectorAll("#operations [data-admin-only]"))
       node.hidden=!isAdmin();
     const allowed = {tickets:can("tickets_view"),agenda:can("tickets_view"),staff:isAdmin(),content:isAdmin(),
-      training:can("training"),tools:can("resources")};
+      training:can("training"),library:can("training"),tools:can("resources"),
+      equipment:can("resources"),clients:can("tickets_view"),reports:can("tickets_view"),
+      users:isAdmin(),settings:state.profile?.status==="active"};
     for(const tab of el("ops-tabs").querySelectorAll("[data-ops-view]"))
       tab.hidden=!allowed[tab.dataset.opsView];
     el("notifications-toggle").hidden=!can("tickets_view");
@@ -423,7 +487,7 @@
       window.PROXITI_OVERVIEW_SNAPSHOT=null;window.PROXITI_OVERVIEW_STATUS=null;
       el("ticket-list").replaceChildren();el("ticket-detail").hidden=true;
       el("ticket-empty-state").hidden=false;
-      clearTicketPresentation();ticketSync("restricted");announceTicket();
+      clearTicketPresentation();ticketSync("restricted");announceTicket();renderClients();renderReports();
       for(const id of ["ticket-badge","notifications-count"]){
         const badge=el(id);badge.textContent="";badge.hidden=true;
       }
@@ -485,7 +549,9 @@
       for(const p of state.staff.filter(p=>p.role==="technician"&&p.status==="active")){
         const option=elem("option",p.display_name);option.value=p.id;el("tool-assignee").append(option);
       }
-    }catch(e){notice("Erro ao consultar técnicos: "+e.message,true);}
+      renderUsers();
+    }catch(e){notice("Erro ao consultar técnicos: "+e.message,true);
+      el("users-status").textContent="Não foi possível consultar as contas. Tente atualizar.";}
   }
   function clearTicketPresentation(){
     for(const id of ["ticket-code","ticket-subject","ticket-customer",
@@ -544,7 +610,7 @@
       }
       if(state.ticketError)notice("");
       state.ticketsReady=true;state.ticketError=false;state.ticketLastUpdated=Date.now();
-      ticketSync("ready");updateInbox();renderTickets();
+      ticketSync("ready");updateInbox();renderTickets();renderClients();renderReports();
       overviewStatus(overviewComplete()?"ready":"partial");
       if(state.restoreScroll!==null){
         const y=state.restoreScroll;state.restoreScroll=null;
@@ -787,7 +853,7 @@
     el("alert-toast").hidden=true;el("notifications-panel").hidden=true;
     el("notifications-toggle").setAttribute("aria-expanded","false");
     el("notifications-count").hidden=true;el("ticket-badge").hidden=true;
-    el("ticket-list").replaceChildren();clearTicketPresentation();
+    el("ticket-list").replaceChildren();clearTicketPresentation();renderClients();renderReports();renderUsers();
     el("notifications-list").replaceChildren();
     window.PROXITI_OVERVIEW_SNAPSHOT=null;window.PROXITI_OVERVIEW_STATUS=null;
     el("overview-open").textContent="Chamados: atualizando…";
@@ -897,6 +963,12 @@
   el("reload-staff").addEventListener("click",()=>void loadStaff());
   el("reload-content").addEventListener("click",()=>void loadContent());
   el("reload-tools").addEventListener("click",()=>void loadTools());
+  el("users-reload").addEventListener("click",()=>void loadStaff());
+  el("users-manage").addEventListener("click",()=>window.PROXITI_OPEN_VIEW?.("staff"));
+  el("reports-open-tickets").addEventListener("click",()=>window.PROXITI_OPEN_VIEW?.("tickets"));
+  el("settings-theme").addEventListener("click",()=>el("theme-toggle-panel").click());
+  el("settings-browser-notifications").addEventListener("click",()=>el("browser-notifications").click());
+  el("settings-profile").addEventListener("click",()=>window.PROXITI_OPEN_VIEW?.("profile"));
   el("tools-search").addEventListener("input",()=>filterOpsList("tools-search","tools-list","tools-search-status","ferramentas"));
   el("close-detail").addEventListener("click",()=>{state.active=null;announceTicket();remember("ticket","");el("ticket-detail").hidden=true;el("ticket-empty-state").hidden=false;state.renderedTable="";renderTickets();});
   el("staff-reply").addEventListener("input",()=>{if(state.active)remember("draft-"+state.active.id,el("staff-reply").value)});
