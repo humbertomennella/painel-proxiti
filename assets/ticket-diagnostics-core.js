@@ -88,18 +88,28 @@ const rules=Object.freeze([
   S("Avançado","Definir intervenção ou encaminhamento","Se o diagnóstico exigir acesso, mudança de configuração ou peça, apresente escopo, risco e orçamento antes da execução.","Não prometa resultado sem evidência.")],[])
 ]);
 const normalize=value=>String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^\p{L}\p{N}.]+/gu," ").replace(/\s+/g," ").trim();
+const windowsDocs=new Set(["wifi","cable","boot","speed","backup"]);
+function referenceApplies(key,platform){
+ if(platform==="windows")return key!=="linux";
+ if(platform==="linux")return !windowsDocs.has(key);
+ if(platform==="network"||platform==="other")return !windowsDocs.has(key)&&key!=="linux";
+ return true;
+}
+function matchesTerm(cleaned,term){
+ return (" "+cleaned+" ").includes(" "+normalize(term)+" ");
+}
 function analyze(text,options={}){
  const cleaned=normalize(text),platform=String(options.platform||"unspecified"),impact=String(options.impact||"unspecified");
  if(!cleaned)return {empty:true,cases:[],warning:"Descreva um sintoma sem dados pessoais para iniciar a triagem.",questions:[],priority:"A confirmar",summary:""};
  const ranked=rules.filter(rule=>rule.id!=="general").map(rule=>({
-  rule,matched:rule.terms.filter(term=>cleaned.includes(normalize(term)))
+  rule,matched:rule.terms.filter(term=>matchesTerm(cleaned,term))
  })).filter(item=>item.matched.length).sort((a,b)=>{
   const weight=x=>x.matched.reduce((n,term)=>n+Math.min(normalize(term).length/8,3),0)+(x.rule.alert?0.15:0);
   return weight(b)-weight(a);
  });
  const cases=(ranked.length?ranked.slice(0,3):[{rule:rules.find(rule=>rule.id==="general"),matched:[]}]).map(item=>({
   id:item.rule.id,title:item.rule.title,matched:item.matched,questions:[...item.rule.question],
-  steps:item.rule.steps.map(step=>({...step})),sources:item.rule.refs.map(key=>({...links[key]})),
+  steps:item.rule.steps.map(step=>({...step})),sources:item.rule.refs.filter(key=>referenceApplies(key,platform)).map(key=>({...links[key]})),
   alert:item.rule.alert
  }));
  const dataRisk=/(arquivo|dados|backup|format|apag|restaur|disco|ssd|hd|ransomware)/.test(cleaned)||
