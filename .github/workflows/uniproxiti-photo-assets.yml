@@ -20,7 +20,7 @@ jobs:
           set -euo pipefail
           mkdir -p assets/photos
           curl --fail --location --retry 2 --max-time 50 --silent --show-error 'https://images.pexels.com/photos/5951759/pexels-photo-5951759.jpeg?auto=compress&cs=tinysrgb&w=880&h=495&fit=crop' -o assets/photos/backup-pexels.jpg
-          curl --fail --location --retry 2 --max-time 50 --silent --show-error 'https://images.pexels.com/photos/5474301/pexels-photo-5474301.jpeg?auto=compress&cs=tinysrgb&w=880&h=495&fit=crop' -o assets/photos/privacidade-pexels.jpg
+          curl --fail --location --retry 2 --max-time 50 --silent --show-error 'https://images.pexels.com/photos/4973899/pexels-photo-4973899.jpeg?auto=compress&cs=tinysrgb&w=880&h=495&fit=crop' -o assets/photos/privacidade-pexels.jpg
           curl --fail --location --retry 2 --max-time 50 --silent --show-error 'https://images.pexels.com/photos/7689876/pexels-photo-7689876.jpeg?auto=compress&cs=tinysrgb&w=880&h=495&fit=crop' -o assets/photos/operacao-pexels.jpg
           for photo in assets/photos/{backup,privacidade,operacao}-pexels.jpg; do
             test "$(file --mime-type --brief "$photo")" = image/jpeg
