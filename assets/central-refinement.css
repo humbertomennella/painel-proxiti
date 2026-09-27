@@ -182,3 +182,7 @@ html[data-theme] body.workspace-mode #ops-library .academy-entry .academy-body{m
  html[data-theme] body.workspace-mode .app-sidebar{transition:none}
  html[data-theme] body.workspace-mode .panel:not(.sidebar-collapsed) .app-sidebar .side-label{animation:none}
 }
+
+/* O seletor legado #ops-tickets aplicava padding extra: removê-lo libera o banner até a borda da sidebar. */
+html[data-theme] body.workspace-mode .ops-view,
+html[data-theme] body.workspace-mode #ops-tickets{padding:0!important}
