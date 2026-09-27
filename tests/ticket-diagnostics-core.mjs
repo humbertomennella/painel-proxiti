@@ -43,8 +43,17 @@ assert(backup.warning.includes("Não formate"),"Condição destrutiva sem aviso"
 for(const tier of backup.cases.flatMap(item=>item.steps)){
  assert(!/execute|inicie um comando automaticamente/i.test(tier.title),"Execução automática proibida");
 }
-const network=exported.analyze("WiFi não conecta",{impact:"multiple",platform:"linux"});
-assert(network.priority.includes("Vários dispositivos"),"Impacto ignorado");
-assert(network.cases.some(x=>x.sources.some(y=>y.url.includes("support.microsoft.com"))),"Sem fonte oficial");
+const accountOnly=exported.analyze("As credenciais expiraram e o login está bloqueado");
+assert(accountOnly.cases.some(x=>x.id==="accounts"),"Falha de login ignorada");
+assert(!accountOnly.cases.some(x=>x.id==="wifi"),"Substring de credenciais gerou falso positivo de rede");
+const linux=exported.analyze("WiFi não conecta",{impact:"multiple",platform:"linux"});
+assert(linux.priority.includes("Vários dispositivos"),"Impacto ignorado");
+assert(linux.cases.some(x=>x.sources.some(y=>y.url.includes("help.ubuntu.com"))),"Linux sem documentação adequada");
+assert(!linux.cases.some(x=>x.sources.some(y=>y.url.includes("microsoft.com"))),"Documentação de Windows sugerida para Linux");
+const windows=exported.analyze("WiFi não conecta",{platform:"windows"});
+assert(windows.cases.some(x=>x.sources.some(y=>y.url.includes("support.microsoft.com"))),"Windows sem documentação adequada");
+assert(!windows.cases.some(x=>x.sources.some(y=>y.url.includes("help.ubuntu.com"))),"Documentação de Ubuntu sugerida para Windows");
+const router=exported.analyze("WiFi não conecta",{platform:"network"});
+assert(router.cases.every(x=>x.sources.every(y=>!/(microsoft.com|help.ubuntu.com)/.test(y.url))),"Rede/roteador exibe guia específico de sistema operacional");
 assert(!/\b(fetch|XMLHttpRequest|sendBeacon|\.rpc)\s*\(/.test(code),"Motor local contém transporte de dados");
-console.log("PASS: 12 famílias, níveis de complexidade, risco de dados, fontes e isolamento local.");
+console.log("PASS: 12 famílias, níveis, termos inteiros, fontes por ambiente, risco de dados e isolamento local.");
