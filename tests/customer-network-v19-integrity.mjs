@@ -68,4 +68,12 @@ for(const sql of [customer,partner]){
  assert(!/grant (?:insert|update|delete|all) on public\.(?:customer_accounts|customer_ticket_links|partner_opportunities) to authenticated/i.test(sql),
   "Alterações sensíveis precisam de RPC e não devem ficar graváveis pelo navegador");
 }
+const hardened=read("supabase/customer_workspace_hardening_v19_1.sql");
+for(const table of ["customer_devices","customer_ticket_links","customer_schedule_requests",
+ "customer_partner_preferences","customer_service_ratings"])
+ assert(hardened.includes("public."+table)&&hardened.includes("public.proxiti_customer_verified()"),
+  "Isolamento de conta suspensa ausente: "+table);
+assert(hardened.includes("partner_offer_own_or_admin")&&
+ hardened.includes("public.proxiti_can('tickets_view')"),
+ "Parceiro suspenso não deve consultar ofertas antigas por acesso direto");
 console.log("PASS: Minha PROXITI V19, Auth separado, RLS por cliente, chave e e-mail do chamado, encaminhamento de parceiros e carteira restrita.");
