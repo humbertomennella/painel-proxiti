@@ -74,7 +74,7 @@ try{
   document.dispatchEvent(new CustomEvent("proxiti-session-ready",{detail:window.PROXITI_ACTIVE_SESSION}));
   document.dispatchEvent(new CustomEvent("proxiti-view-changed",{detail:{view:"clients"}}));
  },ids);
- await page.evaluate(async()=>{document.getElementById("ops-clients").hidden=false;await window.PROXITI_CLIENTS_V16.load();});
+ await page.evaluate(async()=>{document.getElementById("ops-clients").hidden=false;document.querySelectorAll("#operations [data-admin-only]").forEach(n=>n.hidden=false);await window.PROXITI_CLIENTS_V16.load();});
  await page.waitForFunction(()=>document.getElementById("clients-status").textContent.includes("Cadastro atualizado"));
  assert.equal(await page.locator("#clients-v16-admin").isVisible(),true);
  assert.equal(await page.locator("#clients-list").isVisible(),false);
