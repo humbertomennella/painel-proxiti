@@ -33,7 +33,7 @@ const html=read("index.html"),ui=read("assets/commercial-v15.js"),
 css=read("assets/commercial-v15.css");
 for(const id of ["commercial-pricing-form","commercial-pricing-suggested",
  "commercial-pricing-internal","commercial-pricing-payout","commercial-pricing-apply",
- "commercial-pricing-feedback"]){
+ "commercial-pricing-feedback","commercial-actions-queue","commercial-actions-count"]){
  assert.equal((html.match(new RegExp('id="'+id+'"',"g"))||[]).length,1,id);
  assert(ui.includes(id),"Campo desconectado: "+id);
 }
@@ -42,5 +42,7 @@ assert(ui.includes("if(!ok()||!pricingPreview)return"));
 assert(ui.includes('pricingPreview=null;el("commercial-pricing-result").hidden=true;'));
 assert(!/localStorage|sessionStorage|fetch\(/.test(code),
  "A simulação de preços não deve armazenar ou transmitir valores.");
-assert(css.includes(".commercial-price-lab")&&css.includes("@media(max-width:720px)"));
+assert(css.includes(".commercial-price-lab")&&css.includes(".commercial-action-board")&&css.includes("@media(max-width:720px)"));
+assert(ui.includes("function renderActionQueue()")&&ui.includes("renderActionQueue();")&&ui.includes("state.hasMore"));
+assert(ui.includes('el("commercial-actions-queue").replaceChildren()'),"A fila precisa ser limpa ao encerrar sessão");
 console.log("PASS: precificação em centavos, margem, validação, UI local e restrição administrativa V17.");
