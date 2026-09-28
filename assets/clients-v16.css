@@ -1,0 +1,64 @@
+/* PROXITI V16 | Histórico de contatos. Layout integrado, sem fotos nem dados duplicados. */
+html[data-theme] body.workspace-mode #ops-clients .clients-directory-v16{--cl-line:var(--px-line,#dbe3ee);
+ --cl-ink:var(--px-ink,#18304b);--cl-text:var(--px-text,#4e6075);
+ --cl-card:var(--px-surface,#fff);--cl-soft:var(--px-surface-soft,#f2f7fc);
+ min-width:0;display:grid;gap:15px;margin-top:15px}
+html[data-theme="dark"] body.workspace-mode #ops-clients .clients-directory-v16{
+ --cl-line:#375066;--cl-ink:#eef6ff;--cl-text:#becee0;
+ --cl-card:#172a3e;--cl-soft:#20364c}
+html[data-theme] body.workspace-mode #ops-clients [hidden]{display:none!important}
+#ops-clients .clients-directory-intro,#ops-clients .clients-contact-heading{
+ display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px}
+#ops-clients .clients-directory-intro h3,#ops-clients .clients-contact-heading h3{
+ margin:0;font-size:clamp(21px,2.5vw,28px);color:var(--cl-ink)}
+#ops-clients .clients-directory-intro p{max-width:74ch;color:var(--cl-text);
+ font-size:13px;line-height:1.6;margin:8px 0 0}
+#ops-clients .clients-directory-intro button,#ops-clients .clients-contact-heading button{
+ min-height:41px;font-size:13px}
+#ops-clients .clients-directory-form{display:grid;gap:8px;min-width:0}
+#ops-clients .clients-directory-form label{font-size:13px;font-weight:720;color:var(--cl-ink)}
+#ops-clients .clients-directory-form>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px}
+#ops-clients .clients-directory-form input{min-width:0;width:100%;box-sizing:border-box;
+ min-height:44px;border:1px solid var(--cl-line);border-radius:9px;
+ background:var(--cl-card);color:var(--cl-ink);padding:10px 13px;font:inherit;font-size:14px}
+#ops-clients .clients-directory-form button{min-width:97px;font-size:14px}
+#ops-clients .clients-directory-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:12px;align-items:stretch;min-width:0}
+#ops-clients .clients-directory-card{display:flex;flex-direction:column;gap:10px;
+ min-width:0;padding:16px;border:1px solid var(--cl-line);background:var(--cl-card);
+ border-radius:12px;box-shadow:0 2px 8px #00000007}
+#ops-clients .clients-directory-card h4{margin:0;font-size:clamp(15px,1.8vw,19px);
+ overflow-wrap:anywhere;color:var(--cl-ink);line-height:1.35}
+#ops-clients .clients-directory-card p,#ops-clients .clients-directory-card small{
+ color:var(--cl-text);margin:0;font-size:12px;line-height:1.55;overflow-wrap:anywhere}
+#ops-clients .clients-directory-card button{margin-top:auto;align-self:stretch;min-height:42px}
+#ops-clients #clients-directory-more,#ops-clients #clients-contact-more{justify-self:center;min-height:42px}
+#ops-clients .clients-contact-history{display:grid;gap:15px;padding:18px;margin-top:2px;
+ background:var(--cl-soft);border:1px solid var(--cl-line);border-radius:13px;min-width:0}
+#ops-clients .clients-contact-heading{align-items:start}
+#ops-clients .clients-contact-heading p{margin:6px 0 0;font-size:12px;line-height:1.5;
+ color:var(--cl-text);overflow-wrap:anywhere}
+#ops-clients .clients-contact-tickets{display:grid;gap:11px;min-width:0}
+#ops-clients .clients-ticket-card{padding:15px;border-radius:10px;border:1px solid var(--cl-line);
+ background:var(--cl-card);min-width:0;display:grid;gap:8px}
+#ops-clients .clients-ticket-card>div:first-child{display:flex;justify-content:space-between;
+ flex-wrap:wrap;gap:8px;align-items:start}
+#ops-clients .clients-ticket-card strong{font-size:14px;color:var(--cl-ink);overflow-wrap:anywhere}
+#ops-clients .clients-ticket-card small,#ops-clients .clients-ticket-card p{margin:0;color:var(--cl-text);
+ line-height:1.55;font-size:12px;overflow-wrap:anywhere}
+#ops-clients .clients-ticket-card .client-device{padding:10px 12px;
+ background:var(--cl-soft);border-radius:8px}
+#ops-clients .clients-empty{padding:15px;border:1px dashed var(--cl-line);border-radius:9px;
+ color:var(--cl-text);line-height:1.6;font-size:13px}
+#ops-clients #clients-directory-status,#ops-clients #clients-contact-status{
+ font-size:13px;line-height:1.6;min-height:23px}
+#ops-clients .clients-directory-v16 button:focus-visible,
+#ops-clients .clients-directory-v16 input:focus-visible{outline:3px solid #4489e3;outline-offset:2px}
+@media(max-width:1100px){#ops-clients .clients-directory-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){
+ #ops-clients .clients-directory-list{grid-template-columns:minmax(0,1fr)}
+ #ops-clients .clients-directory-intro,#ops-clients .clients-contact-heading{align-items:stretch}
+ #ops-clients .clients-directory-form>div{grid-template-columns:minmax(0,1fr)}
+ #ops-clients .clients-contact-history{padding:13px}
+}
+@media(prefers-reduced-motion:reduce){#ops-clients .clients-directory-v16 *{scroll-behavior:auto!important}}
