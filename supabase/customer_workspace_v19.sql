@@ -298,6 +298,14 @@ begin
     'modality',r.modality,'note',r.note,'status',r.status,'created_at',r.created_at)
      order by r.created_at desc),'[]'::jsonb)
     from public.customer_schedule_requests r where r.user_id=(select auth.uid())),
+  'appointments',(select coalesce(jsonb_agg(jsonb_build_object(
+    'id',a.id,'ticket_id',a.ticket_id,'title',a.title,'starts_at',a.starts_at,
+    'duration_minutes',a.duration_minutes,'modality',a.modality,
+    'status',a.status,'confirmed_at',a.confirmed_at)
+    order by a.starts_at desc),'[]'::jsonb)
+    from public.ticket_appointments a join public.customer_ticket_links l on l.ticket_id=a.ticket_id
+    where l.user_id=(select auth.uid())
+      and a.confirmed_at is not null and a.status in ('confirmed','done','cancelled')),
   'preferences',(select coalesce(jsonb_agg(jsonb_build_object(
     'ticket_id',p.ticket_id,'partner_id',p.partner_id),'[]'::jsonb)
     from public.customer_partner_preferences p where p.user_id=(select auth.uid())),
@@ -379,3 +387,28 @@ returns jsonb language sql stable security definer set search_path='' as $$
 $$;
 revoke all on function public.proxiti_customer_admin_directory() from public,anon;
 grant execute on function public.proxiti_customer_admin_directory() to authenticated;
+
+
+create or replace function public.proxiti_customer_cancel_schedule(p_id uuid)
+returns void language plpgsql security definer set search_path='' as $$
+begin
+ if not public.proxiti_customer_verified() then raise exception 'Conta não autorizada';end if;
+ update public.customer_schedule_requests
+ set status='cancelled',updated_at=now()
+ where id=p_id and user_id=(select auth.uid()) and status='pending';
+ if not found then raise exception 'Solicitação não encontrada ou já analisada';end if;
+end; $$;
+revoke all on function public.proxiti_customer_cancel_schedule(uuid) from public,anon;
+grant execute on function public.proxiti_customer_cancel_schedule(uuid) to authenticated;
+
+create or replace function public.proxiti_customer_admin_review_schedule(p_id uuid,p_status text)
+returns void language plpgsql security definer set search_path='' as $$
+begin
+ if not public.proxiti_commercial_admin() then raise exception 'Administrador com MFA necessário';end if;
+ if p_status not in ('reviewed','declined') then raise exception 'Situação inválida';end if;
+ update public.customer_schedule_requests set status=p_status,updated_at=now()
+ where id=p_id and status='pending';
+ if not found then raise exception 'Solicitação não está pendente';end if;
+end; $$;
+revoke all on function public.proxiti_customer_admin_review_schedule(uuid,text) from public,anon;
+grant execute on function public.proxiti_customer_admin_review_schedule(uuid,text) to authenticated;
