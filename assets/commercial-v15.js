@@ -4,6 +4,7 @@
 const el=id=>document.getElementById(id),root=el("ops-commercial");
 const core=window.PROXITI_COMMERCIAL_CORE;
 if(!root||!core)return;
+let pricingPreview=null;
 const state={client:null,uid:null,epoch:0,loading:false,services:[],tickets:[],quotes:[],
  staff:[],detail:null,selected:null,offset:0,hasMore:false,prefill:null};
 const name={draft:"Rascunho",issued:"Enviado / aguardando",accepted:"Aceito",
@@ -42,10 +43,16 @@ function resetService(){
  el("commercial-service-active").checked=true;
  f.querySelector('button[type="submit"]').textContent="Salvar serviço";
 }
+function clearPricing(){
+ pricingPreview=null;
+ el("commercial-pricing-result").hidden=true;
+ el("commercial-pricing-feedback").textContent="Preencha os custos reais para calcular uma referência.";
+}
 function clear(){
  state.epoch++;state.client=null;state.uid=null;state.loading=false;state.services=[];
  state.tickets=[];state.quotes=[];state.staff=[];state.detail=null;state.selected=null;
  state.offset=0;state.hasMore=false;state.prefill=null;
+ el("commercial-pricing-form").reset();clearPricing();
  resetService();el("commercial-create-form").reset();
  el("commercial-validity").value=defaultDate();
  el("commercial-add-item-form").reset();
@@ -425,6 +432,59 @@ async function reportSummary(){
 }
 el("reports-open-commercial").addEventListener("click",()=>{
  if(admin())window.PROXITI_OPEN_VIEW?.("commercial");
+});
+/* Preços simulados são locais e só entram no catálogo por ação explícita. */
+const priceForm=el("commercial-pricing-form");
+priceForm.addEventListener("input",()=>{
+ if(pricingPreview){
+   pricingPreview=null;el("commercial-pricing-result").hidden=true;
+   el("commercial-pricing-feedback").textContent=
+     "Os dados mudaram. Calcule novamente antes de usar a referência.";
+ }
+});
+priceForm.addEventListener("reset",()=>clearPricing());
+priceForm.addEventListener("submit",event=>{
+ event.preventDefault();if(!ok()||!priceForm.reportValidity())return;
+ try{
+   const cents=id=>core.parseMoney(el(id).value);
+   const output=core.pricingEstimate({
+     minutes:Number(el("commercial-pricing-minutes").value),
+     hourlyCents:cents("commercial-pricing-hourly"),
+     travelCents:cents("commercial-pricing-travel"),
+     materialsCents:cents("commercial-pricing-materials"),
+     otherCents:cents("commercial-pricing-other"),
+     partnerCents:cents("commercial-pricing-partner"),
+     feeBasis:core.parsePercent(el("commercial-pricing-fee").value),
+     marginBasis:core.parsePercent(el("commercial-pricing-margin").value)
+   });
+   pricingPreview=output;
+   for(const [id,value] of [
+     ["commercial-pricing-suggested",output.priceCents],
+     ["commercial-pricing-labor",output.laborCents],
+     ["commercial-pricing-internal",output.internalCents],
+     ["commercial-pricing-payout",output.partnerCents],
+     ["commercial-pricing-fee-value",output.feeCents],
+     ["commercial-pricing-contribution",output.contributionCents]
+   ])el(id).textContent=money(value);
+   el("commercial-pricing-result").hidden=false;
+   el("commercial-pricing-feedback").textContent=
+     "Prévia calculada. Nenhum dado foi salvo; o preço só será cadastrado após sua confirmação.";
+ }catch(error){
+   pricingPreview=null;el("commercial-pricing-result").hidden=true;
+   el("commercial-pricing-feedback").textContent="Revise a simulação: "+error.message;
+ }
+});
+el("commercial-pricing-apply").addEventListener("click",()=>{
+ if(!ok()||!pricingPreview)return;
+ const value=cents=>Math.floor(cents/100)+","+String(cents%100).padStart(2,"0");
+ el("commercial-service-price").value=value(pricingPreview.priceCents);
+ el("commercial-service-internal").value=value(pricingPreview.internalCents);
+ el("commercial-service-partner").value=value(pricingPreview.partnerCents);
+ el("commercial-service-minutes").value=el("commercial-pricing-minutes").value;
+ el("commercial-pricing-feedback").textContent=
+   "Valores preenchidos no catálogo. Revise o escopo e confirme Salvar serviço para registrar.";
+ el("commercial-service-form").scrollIntoView({behavior:"smooth",block:"start"});
+ el("commercial-service-title").focus();
 });
 el("commercial-refresh").addEventListener("click",()=>void refresh());
 el("commercial-service-reset").addEventListener("click",resetService);
