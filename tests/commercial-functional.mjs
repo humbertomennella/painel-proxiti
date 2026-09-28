@@ -204,8 +204,19 @@ try{
  await page.fill("#commercial-client-notes","O diagnóstico não inclui troca de peças nem backup.");
  await page.fill("#commercial-internal-notes","Custo interno confidencial para teste.");
  await page.click("#commercial-create-form button[type=submit]");
- await page.waitForFunction(()=>window.__commercialFixture.quotes.length===1&&
-   !!document.querySelector("#commercial-detail:not([hidden])"));
+ await page.waitForFunction(()=>window.__commercialFixture.quotes.length===1);
+ await page.waitForFunction(()=>!!document.querySelector("#commercial-detail:not([hidden])"),
+   {timeout:5000}).catch(async error=>{
+     console.log("DIAGNÓSTICO COMERCIAL:",JSON.stringify(await page.evaluate(()=>({
+       feedback:document.getElementById("commercial-feedback").textContent,
+       quoteStatus:document.getElementById("commercial-quote-status").textContent,
+       selected:document.getElementById("commercial-quotes").value,
+       options:[...document.getElementById("commercial-quotes").options].map(o=>o.value),
+       calls:window.__commercialFixture.calls.slice(-20),
+       quoteCount:window.__commercialFixture.quotes.length,
+       detailHidden:document.getElementById("commercial-detail").hidden
+     }))));throw error;
+   });
  assert.equal(await page.locator("#commercial-add-item-form").isVisible(),true);
  await page.selectOption("#commercial-item-service","service-1");
  await page.fill("#commercial-item-quantity","2");
