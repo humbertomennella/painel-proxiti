@@ -189,6 +189,31 @@ try{
  assert.equal(await page.locator("#commercial-ticket option").count(),2);
  assert.equal(await page.locator("#commercial-quotes option").count(),1);
 
+ await page.fill("#commercial-pricing-hourly","40,00");
+ await page.fill("#commercial-pricing-minutes","90");
+ await page.fill("#commercial-pricing-travel","12,00");
+ await page.fill("#commercial-pricing-materials","8,00");
+ await page.fill("#commercial-pricing-other","0,00");
+ await page.fill("#commercial-pricing-partner","60,00");
+ await page.fill("#commercial-pricing-fee","3,50");
+ await page.fill("#commercial-pricing-margin","20,00");
+ await page.click("#commercial-pricing-form button[type=submit]");
+ assert.equal(await page.locator("#commercial-pricing-result").isVisible(),true);
+ assert((await page.textContent("#commercial-pricing-suggested")).includes("183,02"));
+ assert.equal(await page.evaluate(()=>window.__commercialFixture.services.length),0,
+   "A simulação não deve salvar um serviço");
+ await page.fill("#commercial-pricing-other","2,00");
+ assert.equal(await page.locator("#commercial-pricing-result").isVisible(),false,
+   "Mudar um custo deve invalidar a referência anterior");
+ await page.click("#commercial-pricing-form button[type=submit]");
+ await page.click("#commercial-pricing-apply");
+ assert.equal(await page.locator("#commercial-service-internal").inputValue(),"82,00");
+ assert.equal(await page.locator("#commercial-service-partner").inputValue(),"60,00");
+ assert.equal(await page.locator("#commercial-service-minutes").inputValue(),"90");
+ assert.equal(await page.evaluate(()=>window.__commercialFixture.services.length),0,
+   "Preencher o catálogo não deve cadastrar sem confirmação");
+ await page.click("#commercial-pricing-form button[type=reset]");
+ assert.equal(await page.locator("#commercial-pricing-result").isVisible(),false);
  await page.fill("#commercial-service-code","SUPORTE_NOTEBOOK");
  await page.fill("#commercial-service-title","Diagnóstico de notebook");
  await page.fill("#commercial-service-description","Avaliação de inicialização, sem substituição de peças.");
@@ -278,6 +303,8 @@ try{
  assert.equal(await page.locator("#commercial-items").innerText(),"");
  assert.equal(await page.locator("#commercial-payments-list").innerText(),"");
  assert.equal(await page.locator("#commercial-kpi-approved").innerText(),"—");
+ assert.equal(await page.locator("#commercial-pricing-hourly").inputValue(),"");
+ assert.equal(await page.locator("#commercial-pricing-result").isVisible(),false);
  assert.deepEqual(errors,[]);
  console.log("PASS: catálogo sem valores inventados, proposta imutável, impressão sem custos, recebimento, repasse e limpeza da sessão.");
 }finally{await page?.close();await browser.close();await new Promise(done=>server.close(done));}
