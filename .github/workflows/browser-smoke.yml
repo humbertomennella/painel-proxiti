@@ -16,6 +16,9 @@ on:
       - "tests/reskin-visual.mjs"
       - "tests/uniproxiti-integrity.mjs"
       - "tests/uniproxiti-v14-integrity.mjs"
+      - "tests/commercial-v15-integrity.mjs"
+      - "tests/commercial-functional.mjs"
+      - "supabase/commercial_operations_v15.sql"
       - "supabase/academy_track_certification_v14.sql"
       - ".github/workflows/browser-smoke.yml"
   push:
@@ -34,6 +37,9 @@ on:
       - "tests/reskin-visual.mjs"
       - "tests/uniproxiti-integrity.mjs"
       - "tests/uniproxiti-v14-integrity.mjs"
+      - "tests/commercial-v15-integrity.mjs"
+      - "tests/commercial-functional.mjs"
+      - "supabase/commercial_operations_v15.sql"
       - "supabase/academy_track_certification_v14.sql"
       - ".github/workflows/browser-smoke.yml"
   workflow_dispatch:
@@ -62,6 +68,8 @@ jobs:
         run: node tests/overview-functional.mjs
       - name: Verificar fluxos completos de chamados e falhas com dados simulados
         run: node tests/tickets-functional.mjs
+      - name: Verificar valores, proposta e repasse com dados simulados
+        run: node tests/commercial-functional.mjs
       - name: Verificar agenda com confirmação, paginação, reagendamento e permissões
         run: node tests/agenda-functional.mjs
       - name: Verificar UniProxiti com busca, publicação, revisão e privacidade
