@@ -446,6 +446,7 @@
       library:["Biblioteca Técnica","Procedimentos e arquivos internos autorizados."],
       equipment:["Equipamentos","Inventário de ferramentas e equipamentos atribuídos."],
       clients:["Clientes","Contatos de chamados autorizados."],
+      commercial:["Comercial","Serviços, propostas, registros de recebimento e repasses."],
       reports:["Relatórios","Indicadores de chamados autorizados."],
       users:["Usuários","Contas e situação de acesso."],
       settings:["Configurações","Aparência, avisos e segurança da conta."]};
@@ -454,7 +455,7 @@
     if(state.user)remember("view",view);
     for(const tab of el("ops-tabs").querySelectorAll("[data-ops-view]"))
       tab.classList.toggle("active",tab.dataset.opsView===view);
-    for(const v of ["tickets","staff","content","agenda","training","library","equipment","clients","reports","users","settings","tools"])el("ops-"+v).hidden=v!==view;
+    for(const v of ["tickets","staff","content","agenda","training","library","equipment","clients","commercial","reports","users","settings","tools"])el("ops-"+v).hidden=v!==view;
     notice("");
     if(view==="tickets")void loadTickets();
     if(view==="staff"&&isAdmin())void loadStaff();
@@ -472,7 +473,7 @@
       node.hidden=!isAdmin();
     const allowed = {tickets:can("tickets_view"),agenda:can("tickets_view"),staff:isAdmin(),content:false,
       training:can("training"),library:can("training"),tools:can("resources"),
-      equipment:can("resources"),clients:can("tickets_view"),reports:can("tickets_view"),
+      equipment:can("resources"),clients:can("tickets_view"),commercial:isAdmin(),reports:can("tickets_view"),
       users:isAdmin(),settings:state.profile?.status==="active"};
     for(const tab of el("ops-tabs").querySelectorAll("[data-ops-view]"))
       tab.hidden=!allowed[tab.dataset.opsView];
