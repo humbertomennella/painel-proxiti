@@ -41,7 +41,7 @@ function paymentNet(rows){
 /* Simulação local: não substitui preço contratado, tributos ou cálculo contábil. */
 function parsePercent(input){
  const value=String(input??"").trim();
- if(!/^(?:0|[1-9]\\d?)(?:,\\d{1,2})?$/.test(value))
+ if(!/^(?:0|[1-9]\d?)(?:,\d{1,2})?$/.test(value))
    throw new Error("Informe uma porcentagem de 0 a 99,99. Ex.: 12,50.");
  const [whole,fraction=""]=value.split(",");
  const basis=Number(whole)*100+Number(fraction.padEnd(2,"0"));
