@@ -46,7 +46,9 @@ function clear(){
  state.epoch++;state.client=null;state.uid=null;state.loading=false;state.services=[];
  state.tickets=[];state.quotes=[];state.staff=[];state.detail=null;state.selected=null;
  state.offset=0;state.hasMore=false;state.prefill=null;
- resetService();el("commercial-create-form").reset();el("commercial-add-item-form").reset();
+ resetService();el("commercial-create-form").reset();
+ el("commercial-validity").value=defaultDate();
+ el("commercial-add-item-form").reset();
  el("commercial-transition-form").reset();el("commercial-payment-form").reset();
  el("commercial-payout-form").reset();
  el("commercial-services-list").replaceChildren();el("commercial-items").replaceChildren();
