@@ -39,3 +39,7 @@ jobs:
           node --check assets/academy-learning.js
           node --check assets/academy-curriculum.js
           node tests/uniproxiti-v14-integrity.mjs
+      - name: Validar cadastro consolidado de clientes
+        run: |
+          node --check assets/clients-v16.js
+          node tests/clients-v16-integrity.mjs
