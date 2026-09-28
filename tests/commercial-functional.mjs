@@ -260,6 +260,8 @@ try{
  await page.fill("#commercial-confirmation-proof","Enviado por e-mail em teste às 10h");
  await page.getByRole("button",{name:"Registrar envio"}).click();
  await page.waitForFunction(()=>window.__commercialFixture.quotes[0].status==="issued");
+ assert((await page.textContent("#commercial-actions-queue")).includes("Aguardando resposta do cliente"));
+ assert.equal(await page.locator("#commercial-action-board").count(),0);
  assert.equal(await page.locator("#commercial-add-item-form").isVisible(),false);
  await page.getByRole("button",{name:"Editar serviço"}).click();
  await page.fill("#commercial-service-price","200,00");
@@ -272,6 +274,8 @@ try{
  await page.fill("#commercial-confirmation-proof","Cliente confirmou valor e escopo em teste");
  await page.getByRole("button",{name:"Registrar aceite do cliente"}).click();
  await page.waitForFunction(()=>window.__commercialFixture.quotes[0].status==="accepted");
+ assert((await page.textContent("#commercial-actions-queue")).includes("conferir registros financeiros"));
+
  assert.equal(await page.locator("#commercial-add-item-form").isVisible(),false);
  assert.equal(await page.locator("#commercial-finance").isVisible(),true);
  await page.fill("#commercial-payment-amount","100,00");
@@ -305,6 +309,7 @@ try{
  assert.equal(await page.locator("#commercial-kpi-approved").innerText(),"—");
  assert.equal(await page.locator("#commercial-pricing-hourly").inputValue(),"");
  assert.equal(await page.locator("#commercial-pricing-result").isVisible(),false);
+ assert.equal(await page.locator("#commercial-actions-queue").innerText(),"");
  assert.deepEqual(errors,[]);
  console.log("PASS: catálogo sem valores inventados, proposta imutável, impressão sem custos, recebimento, repasse e limpeza da sessão.");
 }finally{await page?.close();await browser.close();await new Promise(done=>server.close(done));}
