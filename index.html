@@ -49,6 +49,8 @@
 <link rel="stylesheet" href="./assets/ticket-workspace.css?v=20260927-3">
 <link rel="stylesheet" href="./assets/commercial-v15.css?v=20260927-1">
 <link rel="stylesheet" href="./assets/clients-v16.css?v=20260928-1">
+<link rel="stylesheet" href="./assets/customer-network-v19.css?v=20260928-1">
+<script src="./assets/customer-network-v19.js?v=20260928-1" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Ir para o conteúdo</a>
@@ -121,6 +123,19 @@
   <p id="ops-message" class="message" role="status" aria-live="polite" hidden></p>
   <div id="ops-tickets" class="ops-view px-panel">
 <section class="central-page-hero central-hero-tickets" aria-label="Apresentação de Chamados"><div class="central-page-hero-copy"><p class="kicker">PROXITI · CENTRAL TÉCNICA</p><h2>Chamados</h2><p>Atendimentos, conversas e histórico em um único lugar.</p></div><figure class="central-page-hero-media"><img src="./assets/photos/support.webp" alt="Headset e notebook utilizados no atendimento de chamados técnicos." width="960" height="640" loading="lazy" decoding="async"></figure></section>
+<details id="partner-portfolio" class="customer-network-section" hidden><summary>Minha carteira e oportunidades <span id="partner-portfolio-count">Consultar</span></summary>
+<p>Veja ofertas de serviços e os clientes que você já atende. Aceitar uma oportunidade exige conhecer escopo, modalidade, remuneração e condições antes do início. Recusar não afeta sua formação.</p>
+<p id="partner-portfolio-status" class="ticket-sync-status" role="status" aria-live="polite"></p>
+<div class="customer-network-grid">
+<section><h4>Oportunidades oferecidas</h4><div id="partner-offer-list" class="customer-network-list"></div></section>
+<section><h4>Atendimentos da minha carteira</h4><div id="partner-client-list" class="customer-network-list"></div></section>
+</div><form id="partner-client-feedback-form" class="customer-network-form" hidden><h4>Registro operacional do atendimento concluído</h4><p>Registre apenas fatos necessários à continuidade. Não é uma classificação pública do cliente.</p>
+<label>Chamado concluído<select id="partner-feedback-ticket" required></select></label>
+<label>Disponibilidade combinada<select id="partner-feedback-readiness"><option value="ready">Presente no horário combinado</option><option value="rescheduled">Horário reagendado</option><option value="not_ready">Não estava disponível no horário</option></select></label>
+<label>Comunicação<select id="partner-feedback-communication"><option value="clear">Informações suficientes</option><option value="followup_needed">Necessitou esclarecimentos adicionais</option></select></label>
+<label>Observação objetiva (opcional)<textarea id="partner-feedback-note" maxlength="400" rows="2"></textarea></label>
+<button type="submit" class="secondary">Salvar registro operacional</button></form>
+<button id="partner-portfolio-refresh" type="button" class="secondary">Atualizar carteira ↻</button></details>
 <div class="central-ticket-search" role="search"><span class="central-ticket-search-title">Pesquisar chamados</span><label class="ticket-search-label" for="ticket-search"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input id="ticket-search" type="search" placeholder="Buscar nº, assunto ou cliente" autocomplete="off" maxlength="120"></label></div>
     <div class="ops-section-head"><h3>Fila de atendimentos</h3><div class="ticket-head-actions"><button type="button" id="ticket-go-chat" class="secondary" hidden>Ir para conversa ↗</button><button type="button" id="reload-tickets" class="secondary">Atualizar ↻</button></div></div>
     <p class="ops-muted">Acompanhe cada etapa. Solicitações sem responsável ficam disponíveis aos técnicos autorizados.</p>
@@ -411,6 +426,14 @@
 <section class="central-page-hero central-hero-clients" aria-label="Apresentação de Clientes"><div class="central-page-hero-copy"><p class="kicker">PROXITI · CENTRAL TÉCNICA</p><h2>Clientes</h2><p>Relacionamento, histórico de chamados e contexto operacional no mesmo lugar.</p></div><figure class="central-page-hero-media"><img src="./assets/photos/support.webp" alt="Headset e notebook utilizados na comunicação com clientes." width="960" height="640" loading="lazy" decoding="async"></figure></section>
 <div class="clients-v16-intro"><div><h3>Histórico sem pedir a mesma informação duas vezes</h3><p>Técnicos continuam vendo apenas os contatos presentes nos chamados autorizados. A administração pode manter um cadastro consolidado e vincular chamados explicitamente, sem tentar adivinhar identidades por e-mail ou telefone.</p></div><button id="clients-v16-refresh" type="button" class="secondary" data-admin-only>Atualizar cadastro ↻</button></div>
 <p id="clients-status" class="ticket-sync-status" role="status" aria-live="polite">Consultando chamados autorizados…</p>
+<section id="customer-network-accounts" class="customer-network-section" data-admin-only hidden aria-labelledby="customer-network-accounts-title">
+<div class="customer-network-heading"><div><span class="kicker">MINHA PROXITI · CONTAS GRATUITAS</span><h3 id="customer-network-accounts-title">Clientes que criaram conta</h3><p>Contas do portal e cadastros internos são separados. Vincule-os apenas depois de conferir o e-mail confirmado e o cliente correto.</p></div><button id="customer-network-accounts-refresh" type="button" class="secondary">Atualizar contas</button></div>
+<p id="customer-network-accounts-status" class="ticket-sync-status" role="status" aria-live="polite"></p>
+<div id="customer-network-accounts-list" class="customer-network-list"></div>
+<form id="customer-network-link-crm" class="customer-network-form"><h4>Relacionar uma conta ao cadastro interno</h4>
+<label>Conta confirmada<select id="customer-network-account" required></select></label>
+<label>Cliente já cadastrado na Central<select id="customer-network-crm" required></select></label>
+<button class="secondary" type="submit">Vincular após conferir identidade</button></form></section>
 <div id="clients-v16-admin" data-admin-only hidden>
   <div class="clients-v16-grid">
     <section class="clients-v16-card">
@@ -453,6 +476,22 @@
 </div>
 <div id="ops-commercial" class="ops-view px-panel" hidden data-admin-only>
 <section class="central-page-hero central-hero-commercial" aria-label="Apresentação da operação comercial"><div class="central-page-hero-copy"><p class="kicker">PROXITI · ADMINISTRAÇÃO</p><h2>Comercial</h2><p>Serviços, orçamentos, custos, recebimentos e repasses vinculados aos chamados.</p></div><figure class="central-page-hero-media"><img src="./assets/photos/operacao-pexels.jpg" alt="Estação de trabalho de atendimento técnico." width="880" height="495" loading="lazy" decoding="async"></figure></section>
+<section id="customer-network-admin" class="customer-network-section" data-admin-only hidden aria-labelledby="customer-network-admin-title">
+<div class="customer-network-heading"><div><span class="kicker">REDE PROXITI · GESTÃO DE OPORTUNIDADES</span><h3 id="customer-network-admin-title">Do orçamento aprovado à oferta do parceiro</h3><p>O cliente pode solicitar um profissional. A administração prepara a oportunidade com valores e condições; o parceiro decide se aceita. Nenhuma oferta libera intervenção sem autorização e pagamento quando aplicável.</p></div><button id="customer-network-refresh" type="button" class="secondary">Atualizar encaminhamentos</button></div>
+<p id="customer-network-admin-status" class="ticket-sync-status" role="status" aria-live="polite"></p>
+<div class="customer-network-grid"><section><h4>Pedidos de agendamento</h4><div id="customer-network-schedules" class="customer-network-list"></div></section>
+<section><h4>Profissionais de preferência e ofertas em aberto</h4><div id="customer-network-preferences" class="customer-network-list"></div><div id="customer-network-open-offers" class="customer-network-list"></div></section></div>
+<form id="customer-network-offer-form" class="customer-network-form"><h4>Oferecer serviço a um parceiro</h4>
+<p>Use somente orçamentos já aceitos pelo cliente e condições de remuneração previamente combinadas com o profissional.</p>
+<div class="customer-network-fields"><label>Orçamento aprovado<select id="customer-network-offer-quote" required></select></label>
+<label>Parceiro habilitado<select id="customer-network-offer-partner" required></select></label></div>
+<label>Escopo oferecido<textarea id="customer-network-offer-scope" maxlength="1200" minlength="15" rows="3" required placeholder="Descreva o que foi autorizado e os limites do atendimento."></textarea></label>
+<div class="customer-network-fields"><label>Modalidade<select id="customer-network-offer-modality"><option value="remote">Remoto</option><option value="on_site">Presencial</option></select></label>
+<label>Remuneração combinada (R$)<input id="customer-network-offer-value" type="text" inputmode="decimal" required placeholder="Ex.: 80,00"></label></div>
+<label>Referência do acordo com o parceiro<input id="customer-network-offer-agreement" maxlength="400" minlength="10" required placeholder="Ex.: condições combinadas por e-mail em 28/09/2026"></label>
+<label>Prazo para responder<input id="customer-network-offer-expiry" type="datetime-local" required></label>
+<button type="submit" class="primary">Enviar oportunidade para decisão do parceiro</button></form>
+</section>
 <div class="commercial-intro"><div><h3>Da proposta ao registro financeiro</h3><p>Valores em reais, armazenados em centavos no servidor. Preços e custos internos são restritos à administração.</p></div><button type="button" id="commercial-refresh" class="secondary">Atualizar dados ↻</button></div>
 <p id="commercial-feedback" class="message" role="status" aria-live="polite"></p>
 <div id="commercial-summary" class="commercial-summary" aria-label="Indicadores comerciais"><article><span>Orçamentos registrados</span><strong id="commercial-kpi-quotes">—</strong></article><article><span>Orçado e aceito</span><strong id="commercial-kpi-approved">—</strong></article><article><span>Recebimento líquido registrado</span><strong id="commercial-kpi-received">—</strong></article><article><span>Repasses planejados</span><strong id="commercial-kpi-planned">—</strong></article><article><span>Repasses registrados como pagos</span><strong id="commercial-kpi-paid">—</strong></article></div>
