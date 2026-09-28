@@ -109,3 +109,20 @@ html[data-theme="dark"] body.workspace-mode #ops-commercial{
 @media(max-width:359px){#ops-commercial .commercial-summary{grid-template-columns:minmax(0,1fr)}
  #ops-commercial .commercial-summary article:last-child{grid-column:auto}}
 @media(prefers-reduced-motion:reduce){#ops-commercial *{scroll-behavior:auto!important}}
+
+/* Visão gerencial sem expor números financeiros a técnicos parceiros. */
+html[data-theme] body.workspace-mode #ops-reports .commercial-report-summary{
+ margin-top:24px;padding:18px;border:1px solid var(--px-line,#dbe3ee);
+ border-radius:12px;background:var(--px-surface-soft,#f4f8fd);display:grid;gap:12px;
+}
+html[data-theme] body.workspace-mode #ops-reports .commercial-report-summary[hidden]{display:none!important}
+html[data-theme] body.workspace-mode #ops-reports .commercial-report-summary .ops-section-head{
+ display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+}
+html[data-theme] body.workspace-mode #ops-reports .commercial-report-summary .central-report-grid{
+ grid-template-columns:repeat(4,minmax(0,1fr));
+}
+@media(max-width:1000px){html[data-theme] body.workspace-mode #ops-reports .commercial-report-summary .central-report-grid{
+ grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:520px){html[data-theme] body.workspace-mode #ops-reports .commercial-report-summary .central-report-grid{
+ grid-template-columns:minmax(0,1fr);}}
