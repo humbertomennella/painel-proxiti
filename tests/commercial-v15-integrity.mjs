@@ -28,7 +28,9 @@ assert(core.asMoney(12509).includes("125,09"));
 for(const asset of ["assets/commercial-core.js","assets/commercial-v15.js",
  "assets/commercial-v15.css","assets/photos/operacao-pexels.jpg"])
  assert(existsSync(resolve(root,asset)),"Arquivo ausente: "+asset);
-for(const id of ["ops-commercial","commercial-service-form","commercial-create-form",
+for(const id of ["ops-commercial","reports-commercial","reports-commercial-approved",
+ "reports-commercial-received","reports-commercial-planned","reports-commercial-paid",
+ "reports-open-commercial","commercial-service-form","commercial-create-form",
  "commercial-add-item-form","commercial-transition-form","commercial-payment-form",
  "commercial-payout-form","commercial-totals","commercial-quote-summary",
  "commercial-events-list","commercial-print","commercial-ticket",
@@ -45,6 +47,8 @@ assert(operations.includes('commercial:isAdmin()')&&
  operations.includes('"commercial","reports"')&&
  operations.includes('commercial:["Comercial"'),
  "A área Comercial precisa integrar o roteador existente");
+assert(ui.includes("reports-commercial-status")&&ui.includes("proxiti_commercial_summary"),
+ "Painel de relatórios precisa consultar resumo global no servidor");
 assert(!/innerHTML\s*=|service_role|sb_secret_|payout.*localStorage/i.test(ui),
  "Não renderize dados comerciais como HTML nem armazene valores privados no navegador");
 for(const method of ["proxiti_commercial_save_service","proxiti_commercial_create_quote",
