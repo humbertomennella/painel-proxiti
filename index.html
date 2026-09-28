@@ -457,6 +457,30 @@
 <p id="commercial-feedback" class="message" role="status" aria-live="polite"></p>
 <div id="commercial-summary" class="commercial-summary" aria-label="Indicadores comerciais"><article><span>Orçamentos registrados</span><strong id="commercial-kpi-quotes">—</strong></article><article><span>Orçado e aceito</span><strong id="commercial-kpi-approved">—</strong></article><article><span>Recebimento líquido registrado</span><strong id="commercial-kpi-received">—</strong></article><article><span>Repasses planejados</span><strong id="commercial-kpi-planned">—</strong></article><article><span>Repasses registrados como pagos</span><strong id="commercial-kpi-paid">—</strong></article></div>
 <p class="commercial-caution">Os recebimentos e repasses são lançamentos manuais, não conciliação bancária, emissão de nota fiscal ou checkout. A aprovação de um orçamento exige confirmação do cliente registrada pelo administrador.</p>
+<section class="commercial-price-lab" aria-labelledby="commercial-pricing-title">
+<div class="commercial-price-lab-heading"><div><span class="commercial-tag">Planejamento interno</span><h3 id="commercial-pricing-title">Formação de preço</h3><p>Simule um valor a partir dos seus custos. A prévia é local: não cria orçamento, não registra preço e não envia dados a serviços externos.</p></div><span class="commercial-price-lab-note">Nenhum valor sugerido automaticamente</span></div>
+<form id="commercial-pricing-form" class="commercial-form">
+<div class="commercial-fields three">
+<label>Custo da hora técnica (R$) <input id="commercial-pricing-hourly" required type="text" inputmode="decimal" placeholder="Ex.: 40,00"></label>
+<label>Tempo previsto (minutos) <input id="commercial-pricing-minutes" required type="number" min="1" max="10080" step="1" placeholder="Ex.: 90"></label>
+<label>Deslocamento (R$) <input id="commercial-pricing-travel" required type="text" inputmode="decimal" placeholder="0,00"></label>
+<label>Materiais (R$) <input id="commercial-pricing-materials" required type="text" inputmode="decimal" placeholder="0,00"></label>
+<label>Outras despesas estimadas (R$) <input id="commercial-pricing-other" required type="text" inputmode="decimal" placeholder="0,00"></label>
+<label>Repasse combinado com o parceiro (R$) <input id="commercial-pricing-partner" required type="text" inputmode="decimal" placeholder="0,00"></label>
+<label>Taxa estimada do recebimento (%) <input id="commercial-pricing-fee" required type="text" inputmode="decimal" placeholder="0,00"></label>
+<label>Margem de contribuição desejada (%) <input id="commercial-pricing-margin" required type="text" inputmode="decimal" placeholder="Ex.: 20,00"></label>
+</div>
+<p class="commercial-price-help">A margem é calculada sobre o preço final, depois dos custos e da taxa informada. Não é lucro líquido: tributos, despesas não informadas e variações do serviço permanecem fora da simulação.</p>
+<div class="commercial-actions"><button type="submit" class="primary">Calcular preço de referência</button><button type="reset" class="secondary">Limpar simulação</button></div>
+</form>
+<div id="commercial-pricing-feedback" class="commercial-pricing-feedback" role="status" aria-live="polite">Preencha os custos reais para calcular uma referência.</div>
+<div id="commercial-pricing-result" class="commercial-price-result" hidden aria-live="polite">
+<div class="commercial-price-hero"><span>Preço de referência calculado</span><strong id="commercial-pricing-suggested">—</strong></div>
+<div class="commercial-price-lines"><div><span>Mão de obra estimada</span><strong id="commercial-pricing-labor">—</strong></div><div><span>Custos internos previstos</span><strong id="commercial-pricing-internal">—</strong></div><div><span>Repasse previsto</span><strong id="commercial-pricing-payout">—</strong></div><div><span>Taxa de recebimento estimada</span><strong id="commercial-pricing-fee-value">—</strong></div><div><span>Contribuição estimada antes das demais despesas e tributos</span><strong id="commercial-pricing-contribution">—</strong></div></div>
+<p>Revise a proposta e os custos efetivos antes de cadastrar o serviço. A referência não altera preços antigos nem obriga o uso do valor sugerido.</p>
+<button type="button" id="commercial-pricing-apply" class="secondary">Preencher formulário do catálogo com esta simulação</button>
+</div>
+</section>
 <div class="commercial-grid">
 <section class="commercial-card commercial-catalog" aria-labelledby="commercial-catalog-title"><div class="commercial-card-heading"><h3 id="commercial-catalog-title">Catálogo de serviços</h3><span class="commercial-tag">Administrativo</span></div>
 <p>Cadastre os serviços e suas referências comerciais. Nenhum preço foi preenchido automaticamente. Editar o catálogo não altera valores de orçamentos já criados.</p>
