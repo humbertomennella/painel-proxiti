@@ -71,8 +71,6 @@ try{
    }
   };
   window.PROXITI_ACTIVE_SESSION={client,user:{id:ids.admin},profile:{role:"administrator",status:"active",permissions:{tickets_view:true}}};
-  document.dispatchEvent(new CustomEvent("proxiti-session-ready",{detail:window.PROXITI_ACTIVE_SESSION}));
-  document.dispatchEvent(new CustomEvent("proxiti-view-changed",{detail:{view:"clients"}}));
  },ids);
  await page.evaluate(async()=>{document.getElementById("ops-clients").hidden=false;document.querySelectorAll("#operations [data-admin-only]").forEach(n=>n.hidden=false);await window.PROXITI_CLIENTS_V16.load();document.getElementById("clients-v16-admin").hidden=false;document.getElementById("clients-list").hidden=true;});
  await page.waitForFunction(()=>document.getElementById("clients-status").textContent.includes("Cadastro atualizado"));
@@ -91,9 +89,9 @@ try{
  assert((await page.textContent("#clients-v16-tickets")).includes("#91"));
  const size=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,screen:innerWidth}));
  assert(size.doc<=size.screen+4,"CRM não pode estourar largura no mobile");
- await page.evaluate(()=>{
+ await page.evaluate(async()=>{
   window.PROXITI_ACTIVE_SESSION={client:window.PROXITI_ACTIVE_SESSION.client,user:{id:"tech"},profile:{role:"technician",status:"active",permissions:{tickets_view:true}}};
-  document.dispatchEvent(new CustomEvent("proxiti-view-changed",{detail:{view:"clients"}}));
+  await window.PROXITI_CLIENTS_V16.load();
  });
  await page.waitForTimeout(30);
  assert.equal(await page.locator("#clients-v16-admin").isVisible(),false);
