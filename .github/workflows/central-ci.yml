@@ -35,6 +35,7 @@ jobs:
           node --check assets/commercial-v15.js
           node tests/commercial-v15-integrity.mjs
           node tests/commercial-v17-integrity.mjs
+          node tests/customer-quote-v18-integrity.mjs
       - name: Validar scripts e certificação UNIPROXITI V14
         run: |
           node --check assets/academy-learning.js
