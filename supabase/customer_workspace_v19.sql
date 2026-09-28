@@ -327,3 +327,36 @@ begin
 end; $$;
 revoke all on function public.proxiti_customer_admin_link_crm(uuid,uuid) from public,anon;
 grant execute on function public.proxiti_customer_admin_link_crm(uuid,uuid) to authenticated;
+
+
+-- Abertura atômica: ticket, primeira mensagem e vínculo à conta na mesma transação.
+-- Somente o servidor autenticado pode fornecer o hash de uma chave aleatória.
+create or replace function public.proxiti_customer_open_ticket_server(
+ p_user uuid,p_subject text,p_description text,p_modality text,p_access_hash text)
+returns jsonb language plpgsql security definer set search_path='' as $$
+declare c public.customer_accounts%rowtype;v_email text;v_id uuid;v_ref bigint;
+begin
+ if coalesce((select auth.role()),'')<>'service_role' then
+  raise exception 'Operação de servidor';end if;
+ select * into c from public.customer_accounts where user_id=p_user and status='active';
+ select lower(email) into v_email from auth.users where id=p_user and email_confirmed_at is not null;
+ if c.user_id is null or v_email is null then raise exception 'Cliente não confirmado';end if;
+ if p_subject is null or length(btrim(p_subject)) not between 4 and 160
+  or p_description is null or length(btrim(p_description)) not between 8 and 2000
+  or p_modality not in ('remote','on_site')
+  or p_access_hash is null or p_access_hash !~ '^[a-f0-9]{64}$'
+ then raise exception 'Revise os dados do atendimento';end if;
+ insert into public.support_tickets(customer_name,customer_email,customer_phone,
+  subject,description,service_type,source,access_hash,client_id)
+ values(c.display_name,v_email,nullif(c.phone,''),btrim(p_subject),btrim(p_description),
+  p_modality,'form',p_access_hash,c.crm_client_id)
+ returning id,reference into v_id,v_ref;
+ insert into public.support_messages(ticket_id,sender_kind,body)
+ values(v_id,'customer',btrim(p_description));
+ insert into public.customer_ticket_links(ticket_id,user_id) values(v_id,p_user);
+ return jsonb_build_object('id',v_id,'reference',v_ref,'status','new');
+end; $$;
+revoke all on function public.proxiti_customer_open_ticket_server(uuid,text,text,text,text)
+ from public,anon,authenticated;
+grant execute on function public.proxiti_customer_open_ticket_server(uuid,text,text,text,text)
+ to service_role;
