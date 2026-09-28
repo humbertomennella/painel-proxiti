@@ -73,7 +73,7 @@ try{
   window.PROXITI_ACTIVE_SESSION={client,user:{id:ids.admin},profile:{role:"administrator",status:"active",permissions:{tickets_view:true}}};
   document.dispatchEvent(new CustomEvent("proxiti-session-ready",{detail:window.PROXITI_ACTIVE_SESSION}));
   document.dispatchEvent(new CustomEvent("proxiti-view-changed",{detail:{view:"clients"}}));
- });
+ },ids);;
  await page.waitForFunction(()=>document.getElementById("clients-status").textContent.includes("Cadastro atualizado"));
  assert.equal(await page.locator("#clients-v16-admin").isVisible(),true);
  assert.equal(await page.locator("#clients-list").isVisible(),false);
