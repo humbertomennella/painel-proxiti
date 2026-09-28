@@ -45,8 +45,10 @@
 <script src="./assets/central-refinement.js?v=20260927-1" defer></script>
 <script src="./assets/commercial-core.js?v=20260927-1" defer></script>
 <script src="./assets/commercial-v15.js?v=20260927-1" defer></script>
+<script src="./assets/clients-v16.js?v=20260928-1" defer></script>
 <link rel="stylesheet" href="./assets/ticket-workspace.css?v=20260927-3">
 <link rel="stylesheet" href="./assets/commercial-v15.css?v=20260927-1">
+<link rel="stylesheet" href="./assets/clients-v16.css?v=20260928-1">
 </head>
 <body>
 <a class="skip" href="#main">Ir para o conteúdo</a>
@@ -405,7 +407,50 @@
 <div id="ops-equipment" class="ops-view px-panel" hidden><section class="central-page-hero central-hero-equipment" aria-label="Apresentação de Equipamentos"><div class="central-page-hero-copy"><p class="kicker">PROXITI · CENTRAL TÉCNICA</p><h2>Equipamentos</h2><p>Inventário autorizado de ferramentas e equipamentos atribuídos.</p></div><figure class="central-page-hero-media"><img src="./assets/photos/computer.webp" alt="Notebook aberto em bancada de manutenção de computadores." width="960" height="640" loading="lazy" decoding="async"></figure></section><div class="ops-section-head"><h3>Equipamentos e ferramentas cadastrados</h3><button type="button" id="reload-tools" class="secondary">Atualizar ↻</button></div><p class="ops-muted">Inventário da PROXITI. Equipamentos de clientes permanecem vinculados a seus chamados.</p>    <div class="ops-inline-search"><label for="tools-search">Localizar equipamento</label><input id="tools-search" type="search" placeholder="Buscar por nome, patrimônio ou responsável" autocomplete="off" maxlength="120"><p id="tools-search-status" role="status" aria-live="polite"></p></div>
     <form id="tool-form" class="ops-form" data-admin-only><label for="tool-name">Ferramenta ou equipamento</label><input id="tool-name" required maxlength="160"><label for="tool-serial">Identificação / patrimônio (opcional)</label><input id="tool-serial" maxlength="160"><label for="tool-assignee">Responsável</label><select id="tool-assignee"><option value="">Disponível / não atribuído</option></select><label for="tool-notes">Orientações de uso</label><textarea id="tool-notes" maxlength="2000" rows="2"></textarea><button type="submit" class="primary">Cadastrar ferramenta</button></form>
     <div id="tools-list" class="ops-list"></div></div>
-<div id="ops-clients" class="ops-view px-panel" hidden><section class="central-page-hero central-hero-clients" aria-label="Apresentação de Clientes"><div class="central-page-hero-copy"><p class="kicker">PROXITI · CENTRAL TÉCNICA</p><h2>Clientes</h2><p>Contatos dos chamados que sua conta está autorizada a consultar.</p></div><figure class="central-page-hero-media"><img src="./assets/photos/support.webp" alt="Headset e notebook utilizados na comunicação com clientes." width="960" height="640" loading="lazy" decoding="async"></figure></section><p id="clients-status" class="ticket-sync-status" role="status" aria-live="polite">Consultando chamados autorizados…</p><div id="clients-list" class="central-module-grid" aria-label="Clientes dos chamados autorizados"></div></div>
+<div id="ops-clients" class="ops-view px-panel" hidden>
+<section class="central-page-hero central-hero-clients" aria-label="Apresentação de Clientes"><div class="central-page-hero-copy"><p class="kicker">PROXITI · CENTRAL TÉCNICA</p><h2>Clientes</h2><p>Relacionamento, histórico de chamados e contexto operacional no mesmo lugar.</p></div><figure class="central-page-hero-media"><img src="./assets/photos/support.webp" alt="Headset e notebook utilizados na comunicação com clientes." width="960" height="640" loading="lazy" decoding="async"></figure></section>
+<div class="clients-v16-intro"><div><h3>Histórico sem pedir a mesma informação duas vezes</h3><p>Técnicos continuam vendo apenas os contatos presentes nos chamados autorizados. A administração pode manter um cadastro consolidado e vincular chamados explicitamente, sem tentar adivinhar identidades por e-mail ou telefone.</p></div><button id="clients-v16-refresh" type="button" class="secondary" data-admin-only>Atualizar cadastro ↻</button></div>
+<p id="clients-status" class="ticket-sync-status" role="status" aria-live="polite">Consultando chamados autorizados…</p>
+<div id="clients-v16-admin" data-admin-only hidden>
+  <div class="clients-v16-grid">
+    <section class="clients-v16-card">
+      <div class="clients-v16-heading"><h3 id="clients-v16-form-title">Cadastrar cliente</h3><span>Administrativo</span></div>
+      <p>Cadastre somente informações necessárias para relacionamento e atendimento. CPF, documentos e credenciais não são campos deste cadastro.</p>
+      <form id="clients-v16-form" class="clients-v16-form">
+        <input id="clients-v16-id" type="hidden">
+        <div class="clients-v16-fields two"><label>Nome / identificação <input id="clients-v16-name" maxlength="140" minlength="2" required autocomplete="off"></label><label>Tipo <select id="clients-v16-type"><option value="person">Pessoa</option><option value="business">Empresa / negócio</option></select></label></div>
+        <label>Empresa ou organização (opcional) <input id="clients-v16-organization" maxlength="160" autocomplete="organization"></label>
+        <div class="clients-v16-fields two"><label>E-mail <input id="clients-v16-email" type="email" maxlength="254" autocomplete="email"></label><label>Telefone <input id="clients-v16-phone" maxlength="40" autocomplete="tel"></label></div>
+        <div class="clients-v16-fields two"><label>Canal preferido <select id="clients-v16-channel"><option value="email">E-mail</option><option value="whatsapp">WhatsApp</option><option value="phone">Telefone</option><option value="other">Outro</option></select></label><label>Cidade / região (opcional) <input id="clients-v16-city" maxlength="120" autocomplete="address-level2"></label></div>
+        <label>Observações internas necessárias <textarea id="clients-v16-notes" maxlength="1800" rows="3" placeholder="Preferências operacionais e contexto útil. Não inclua senhas ou dados sem relação com o atendimento."></textarea></label>
+        <label class="clients-v16-check"><input id="clients-v16-active" type="checkbox" checked> Cadastro ativo</label>
+        <div class="clients-v16-actions"><button type="submit" class="primary">Salvar cliente</button><button id="clients-v16-reset" type="button" class="secondary">Limpar</button></div>
+      </form>
+    </section>
+    <section class="clients-v16-card">
+      <div class="clients-v16-heading"><h3>Vincular chamado</h3><span>Confirmação manual</span></div>
+      <p>O vínculo não é criado automaticamente. Compare o contato e confirme que o chamado realmente pertence ao cliente selecionado.</p>
+      <form id="clients-v16-link-form" class="clients-v16-form">
+        <label>Cliente <select id="clients-v16-link-client" required><option value="">Selecione um cliente ativo</option></select></label>
+        <label>Chamado sem vínculo <select id="clients-v16-link-ticket" required><option value="">Selecione um chamado</option></select></label>
+        <button type="submit" class="primary">Vincular chamado ao cliente</button>
+      </form>
+      <p class="ops-muted">Chamados já vinculados não aparecem nessa lista. Para corrigir um vínculo, abra o cliente e use Desvincular antes de escolher outro cadastro.</p>
+    </section>
+  </div>
+  <section class="clients-v16-card clients-v16-registry">
+    <div class="clients-v16-heading"><h3>Cadastro consolidado</h3><span id="clients-v16-count">0 clientes</span></div>
+    <div class="ops-inline-search"><label for="clients-v16-search">Pesquisar clientes</label><input id="clients-v16-search" type="search" maxlength="120" placeholder="Nome, empresa, e-mail, telefone ou cidade" autocomplete="off"><p id="clients-v16-search-status" role="status" aria-live="polite"></p></div>
+    <div id="clients-v16-list" class="clients-v16-list" aria-live="polite"></div>
+  </section>
+  <section id="clients-v16-detail" class="clients-v16-card" hidden aria-labelledby="clients-v16-detail-title">
+    <div class="clients-v16-heading"><h3 id="clients-v16-detail-title">Resumo do cliente</h3><button id="clients-v16-close-detail" type="button" class="secondary">Fechar</button></div>
+    <div id="clients-v16-summary" class="clients-v16-summary"></div>
+    <div class="clients-v16-detail-columns"><section><h4>Chamados vinculados</h4><div id="clients-v16-tickets" class="clients-v16-list"></div></section><section><h4>Histórico administrativo</h4><div id="clients-v16-audit" class="clients-v16-list"></div></section></div>
+  </section>
+</div>
+<div id="clients-list" class="central-module-grid" aria-label="Clientes dos chamados autorizados"></div>
+</div>
 <div id="ops-commercial" class="ops-view px-panel" hidden data-admin-only>
 <section class="central-page-hero central-hero-commercial" aria-label="Apresentação da operação comercial"><div class="central-page-hero-copy"><p class="kicker">PROXITI · ADMINISTRAÇÃO</p><h2>Comercial</h2><p>Serviços, orçamentos, custos, recebimentos e repasses vinculados aos chamados.</p></div><figure class="central-page-hero-media"><img src="./assets/photos/operacao-pexels.jpg" alt="Estação de trabalho de atendimento técnico." width="880" height="495" loading="lazy" decoding="async"></figure></section>
 <div class="commercial-intro"><div><h3>Da proposta ao registro financeiro</h3><p>Valores em reais, armazenados em centavos no servidor. Preços e custos internos são restritos à administração.</p></div><button type="button" id="commercial-refresh" class="secondary">Atualizar dados ↻</button></div>
