@@ -56,6 +56,9 @@ function clear(){
  el("commercial-services-count").textContent="";
  for(const id of ["commercial-kpi-quotes","commercial-kpi-approved","commercial-kpi-received",
    "commercial-kpi-planned","commercial-kpi-paid"])el(id).textContent="—";
+ for(const id of ["reports-commercial-approved","reports-commercial-received",
+   "reports-commercial-planned","reports-commercial-paid"])el(id).textContent="—";
+ el("reports-commercial-status").textContent="Acesso restrito ou consulta ainda não realizada.";
  for(const [id,placeholder] of [["commercial-ticket","Selecione um chamado autorizado"],
    ["commercial-parent","Orçamento principal"],["commercial-quotes","Nenhum orçamento selecionado"],
    ["commercial-item-service","Selecione um serviço ativo"],["commercial-payout-partner","Selecione o responsável"]])
@@ -142,6 +145,12 @@ function renderSummary(data){
  ["commercial-kpi-planned",money(data.payout_planned_cents)],
  ["commercial-kpi-paid",money(data.payout_recorded_cents)]];
  for(const [id,value] of pairs)el(id).textContent=value;
+ for(const [id,value] of [["reports-commercial-approved",money(data.accepted_cents)],
+   ["reports-commercial-received",money(data.received_cents)],
+   ["reports-commercial-planned",money(data.payout_planned_cents)],
+   ["reports-commercial-paid",money(data.payout_recorded_cents)]])el(id).textContent=value;
+ el("reports-commercial-status").textContent=
+   "Resumo financeiro consultado no servidor. Valores registrados manualmente.";
 }
 async function refresh({keepDetail=true}={}){
  if(!admin())return clear();
@@ -398,6 +407,23 @@ function printQuote(){
  print.addEventListener("click",()=>popup.print());doc.body.append(print);
  popup.focus();
 }
+async function reportSummary(){
+ if(!admin()){el("reports-commercial-status").textContent="Acesso restrito.";return;}
+ const current=active(),client=current.client,uid=current.user.id,epoch=state.epoch;
+ el("reports-commercial-status").textContent="Consultando indicadores comerciais…";
+ try{
+   const value=await read(client.rpc("proxiti_commercial_summary"));
+   if(!ok(client,uid,epoch))return;
+   renderSummary(value);
+ }catch(error){if(ok(client,uid,epoch)){
+   for(const id of ["reports-commercial-approved","reports-commercial-received",
+     "reports-commercial-planned","reports-commercial-paid"])el(id).textContent="—";
+   el("reports-commercial-status").textContent="Indicadores indisponíveis: "+error.message;
+ }}
+}
+el("reports-open-commercial").addEventListener("click",()=>{
+ if(admin())window.PROXITI_OPEN_VIEW?.("commercial");
+});
 el("commercial-refresh").addEventListener("click",()=>void refresh());
 el("commercial-service-reset").addEventListener("click",resetService);
 el("commercial-service-form").addEventListener("submit",event=>{
@@ -499,6 +525,7 @@ document.addEventListener("proxiti-view-changed",event=>{
    if(state.client&&state.uid===active()?.user?.id)void refresh();
    else begin(active());
  }
+ if(event.detail?.view==="reports"&&admin())void reportSummary();
 });
 document.addEventListener("proxiti-session-ready",event=>begin(event.detail));
 document.addEventListener("proxiti-session-ended",clear);
