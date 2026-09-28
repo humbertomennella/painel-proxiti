@@ -29,7 +29,7 @@ assert(!/innerHTML\s*=|localStorage|sessionStorage/.test(js),
 for(const rpc of ["proxiti_client_save","proxiti_client_link_ticket","proxiti_client_unlink_ticket","proxiti_client_summary"])
  assert(js.includes(rpc)&&sql.includes(rpc),"RPC ausente: "+rpc);
 assert(js.includes("Nenhum chamado foi vinculado automaticamente")&&
- js.includes("compare o contato")===false===false,"Confirmação manual precisa ficar explícita");
+ html.includes("Compare o contato e confirme"),"Confirmação manual precisa ficar explícita");
 assert(css.includes("@media(max-width:720px)")&&css.includes(".clients-v16-summary"),
  "Layout responsivo do CRM ausente");
 assert.equal((css.match(/{/g)||[]).length,(css.match(/}/g)||[]).length,"CSS desbalanceado");
