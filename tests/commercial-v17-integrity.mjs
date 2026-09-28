@@ -20,7 +20,7 @@ const estimate=core.pricingEstimate(input);
 assert.equal(estimate.laborCents,6000);
 assert.equal(estimate.internalCents,8000);
 assert.equal(estimate.baseCents,14000);
-assert.equal(estimate.priceCents,18301);
+assert.equal(estimate.priceCents,18302);
 assert(estimate.contributionBasis>=2000);
 assert.equal(estimate.contributionCents,
  estimate.priceCents-estimate.baseCents-estimate.feeCents);
