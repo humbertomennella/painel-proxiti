@@ -125,6 +125,100 @@ Deno.serve(async (req: Request) => {
       const staff = await onlineStaff();
       return json({ online: staff.length }, 200, origin);
     }
+    // Minha PROXITI: sessão Auth confirmada + vínculo próprio, sem token de outro cliente.
+    if (action.startsWith("account_")) {
+      const bearer=req.headers.get("authorization")||"";
+      if(!/^Bearer\s+[-\w.]+$/i.test(bearer))
+        return json({error:"Entre na sua conta para continuar."},401,origin);
+      const jwt=bearer.replace(/^Bearer\s+/i,"");
+      const {data:identity,error:authError}=await admin.auth.getUser(jwt);
+      const customer=identity?.user;
+      if(authError||!customer||!customer.email_confirmed_at||!customer.email)
+        return json({error:"Confirme seu e-mail e entre novamente."},401,origin);
+      const {data:account,error:accountError}=await admin.from("customer_accounts")
+        .select("user_id,display_name,phone,status").eq("user_id",customer.id)
+        .eq("status","active").maybeSingle();
+      if(accountError||!account)
+        return json({error:"Esta conta não tem acesso à área do cliente."},403,origin);
+      if(action==="account_open"){
+        const subject=clean(body.subject,160),description=clean(body.description,2000);
+        const modality=body.modality==="remote"?"remote":
+          body.modality==="on_site"?"on_site":"";
+        if(subject.length<4||subject.length>160||description.length<8||
+            description.length>2000||!modality||body.privacy_accepted!==true)
+          return json({error:"Confira a modalidade, a descrição e a confirmação de privacidade."},400,origin);
+        if(!await limit("account-open:"+customer.id,false,8))
+          return json({error:"Limite de solicitações atingido. Continue por um chamado existente."},429,origin);
+        const secret=token(),hash=await digest(secret);
+        const {data:ticket,error}=await admin.rpc("proxiti_customer_open_ticket_server",{
+          p_user:customer.id,p_subject:subject,p_description:description,
+          p_modality:modality,p_access_hash:hash});
+        if(error||!ticket?.id)throw error||new Error("ticket missing");
+        await notifyAdministrators(ticket.reference,"created",ticket.id);
+        return json({ok:true,id:ticket.id,reference:ticket.reference,
+          status:ticket.status,access_token:secret},201,origin);
+      }
+      const ticketId=clean(body.ticket_id,36);
+      if(!validUuid(ticketId))return json({error:"Chamado inválido."},400,origin);
+      const {data:link,error:linkError}=await admin.from("customer_ticket_links")
+        .select("ticket_id").eq("ticket_id",ticketId).eq("user_id",customer.id).maybeSingle();
+      if(linkError||!link)return json({error:"Este chamado não pertence à sua conta."},404,origin);
+      const {data:ticket,error:ticketError}=await admin.from("support_tickets")
+        .select("id,reference,subject,status,assigned_to,access_hash").eq("id",ticketId).single();
+      if(ticketError||!ticket)return json({error:"Chamado indisponível."},404,origin);
+      if(action==="account_conversation"){
+        const {data,error}=await admin.from("support_messages")
+          .select("id,sender_kind,body,created_at").eq("ticket_id",ticketId)
+          .order("created_at",{ascending:true}).limit(150);
+        if(error)throw error;
+        return json({ticket:{id:ticket.id,reference:ticket.reference,
+          subject:ticket.subject,status:ticket.status,online:!!ticket.assigned_to},
+          messages:data||[]},200,origin);
+      }
+      if(action==="account_reply"){
+        const content=clean(body.message,2000);
+        if(content.length<1||content.length>2000||ticket.status==="closed")
+          return json({error:"Não é possível enviar esta mensagem."},400,origin);
+        if(!await limit("account-reply:"+customer.id,true,30))
+          return json({error:"Muitas mensagens. Aguarde antes de continuar."},429,origin);
+        const {data:reply,error}=await admin.from("support_messages")
+          .insert({ticket_id:ticketId,sender_kind:"customer",body:content})
+          .select("id").single();
+        if(error||!reply)throw error||new Error("message missing");
+        if(ticket.status==="resolved")await admin.from("support_tickets")
+          .update({status:"triage",updated_at:new Date().toISOString()}).eq("id",ticketId);
+        await notifyAdministrators(ticket.reference,"customer_reply",reply.id);
+        return json({ok:true},200,origin);
+      }
+      if(action==="account_quotes"){
+        if(!await limit("account-quotes:"+customer.id,true,30))
+          return json({error:"Muitas consultas. Aguarde ou continue a conversa."},429,origin);
+        const {data,error}=await admin.rpc("proxiti_customer_quote_list",{
+          p_ticket:ticketId,p_access_hash:ticket.access_hash});
+        if(error)throw error;
+        return json({quotes:Array.isArray(data)?data:[]},200,origin);
+      }
+      if(action==="account_quote_decision"){
+        const quoteId=clean(body.quote_id,36);
+        const decision=body.decision==="accepted"?"accepted":
+          body.decision==="declined"?"declined":"";
+        if(!validUuid(quoteId)||!decision||body.confirmed!==true)
+          return json({error:"Confira a proposta e confirme a decisão."},400,origin);
+        if(ticket.status==="closed")
+          return json({error:"O chamado está encerrado."},409,origin);
+        if(!await limit("account-decision:"+customer.id,true,8))
+          return json({error:"Muitas tentativas. Aguarde."},429,origin);
+        const {data,error}=await admin.rpc("proxiti_customer_quote_decide",{
+          p_ticket:ticketId,p_access_hash:ticket.access_hash,
+          p_quote:quoteId,p_decision:decision,p_confirm:true});
+        if(error)return json({error:"Proposta alterada ou vencida. Atualize antes de responder."},409,origin);
+        if(!data?.already_recorded)
+          await notifyAdministrators(ticket.reference,"quote_decision",quoteId);
+        return json({ok:true,decision:data.status,reference:data.reference,
+          already_recorded:!!data.already_recorded},200,origin);
+      }
+      return json({error:"Operação da conta desconhecida."},400,origin);
+    }
     if (action === "invite") {
       const auth = req.headers.get("authorization") || "";
       if (!/^Bearer\s+[-\w.]+$/i.test(auth)) return json({ error: "Acesso não autorizado." }, 401, origin);

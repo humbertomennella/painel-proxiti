@@ -41,6 +41,10 @@ jobs:
           node --check assets/academy-learning.js
           node --check assets/academy-curriculum.js
           node tests/uniproxiti-v14-integrity.mjs
+      - name: Validar segregação de contas e carteira V19
+        run: |
+          node --check assets/customer-network-v19.js
+          node tests/customer-network-v19-integrity.mjs
       - name: Validar cadastro consolidado de clientes
         run: |
           node --check assets/clients-v16.js

@@ -20,6 +20,9 @@ on:
       - "tests/commercial-v17-integrity.mjs"
       - "tests/commercial-functional.mjs"
       - "tests/clients-v16-integrity.mjs"
+      - "tests/customer-network-v19-integrity.mjs"
+      - "supabase/customer_workspace_v19.sql"
+      - "supabase/partner_portfolio_v19.sql"
       - "tests/clients-functional.mjs"
       - "supabase/client_crm_v16.sql"
       - "supabase/commercial_operations_v15.sql"
@@ -45,6 +48,9 @@ on:
       - "tests/commercial-v17-integrity.mjs"
       - "tests/commercial-functional.mjs"
       - "tests/clients-v16-integrity.mjs"
+      - "tests/customer-network-v19-integrity.mjs"
+      - "supabase/customer_workspace_v19.sql"
+      - "supabase/partner_portfolio_v19.sql"
       - "tests/clients-functional.mjs"
       - "supabase/client_crm_v16.sql"
       - "supabase/commercial_operations_v15.sql"
@@ -80,6 +86,8 @@ jobs:
         run: node tests/commercial-v17-integrity.mjs
       - name: Verificar valores, proposta e repasse com dados simulados
         run: node tests/commercial-functional.mjs
+      - name: Conferir a segregação do portal e dos parceiros V19
+        run: node tests/customer-network-v19-integrity.mjs
       - name: Verificar cadastro de clientes, vínculos e privacidade
         run: |
           node tests/clients-v16-integrity.mjs
