@@ -155,7 +155,7 @@ Deno.serve(async (req: Request) => {
       if (!ticket) return json({error:"Acesso ao chamado não confirmado."},404,origin);
       const hash=await digest(secret);
       if (action === "quotes") {
-        if (!await limit("quote-view:"+ticketId,true,240))
+        if (!await limit("quote-view:"+ticketId,true,30))
           return json({error:"Muitas consultas à proposta. Aguarde um pouco."},429,origin);
         const {data,error}=await admin.rpc("proxiti_customer_quote_list",
           {p_ticket:ticketId,p_access_hash:hash});

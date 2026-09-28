@@ -40,6 +40,9 @@ for(const name of ["proxiti_customer_quote_list(uuid,text)",
 }
 assert(!/\bgrant execute on function public\.proxiti_customer_quote_\w+\([^;]+ to (anon|authenticated|public)/i.test(sql),
  "Não liberar RPCs que usam service_role a navegadores");
+assert(edge.includes('limit("quote-view:"+ticketId,true,30)')&&
+ !edge.includes('limit("quote-view:"+ticketId,true,240)'),
+ "O limitador do Supabase aceita no máximo 30 consultas por hora por chave");
 assert(edge.includes("await checkTicket(ticketId,secret)")&&
  edge.includes("await digest(secret)")&&edge.includes("body.confirmed!==true")&&
  edge.includes('limit("quote-decision:"+ticketId,true,8)'),
