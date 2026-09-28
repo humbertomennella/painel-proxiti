@@ -128,8 +128,11 @@ function renderAdmin(){
   const item=record("Chamado #"+r.ticket_reference+" · "+when(r.preferred_at),
    (r.modality==="remote"?"Remoto":"Presencial")+" · Solicitação aguardando confirmação");
   if(r.note)item.append(make("p",r.note));
-  item.append(button("Abrir agenda",()=>window.PROXITI_OPEN_VIEW?.("agenda")));
-  schedules.append(item);
+  const actions=make("div",undefined,"customer-network-actions");
+  actions.append(button("Ver agenda",()=>window.PROXITI_OPEN_VIEW?.("agenda")),
+    button("Marcar em análise",()=>void reviewSchedule(r,"reviewed")),
+    button("Não confirmar",()=>void reviewSchedule(r,"declined")));
+  item.append(actions);schedules.append(item);
  }
  if(!(queue?.requests||[]).length)noRows("customer-network-schedules",
   "Nenhuma solicitação de horário pendente.");
@@ -156,6 +159,19 @@ function renderAdmin(){
   q=>"Proposta #"+q.reference+" · chamado vinculado");
  options("customer-network-offer-partner",approved,"Selecione um parceiro habilitado",
   p=>p.user_id,p=>p.display_name+(p.availability?" · "+p.availability:""));
+}
+async function reviewSchedule(request,next){
+ const s=view();if(!admin(s))return;
+ if(!window.confirm(next==="reviewed"?
+   "Marcar o pedido como analisado? Isso NÃO confirma o agendamento. Registre um compromisso e confirme com o cliente pela Agenda.":
+   "Recusar este pedido de horário? Informe a alternativa ao cliente pelo chamado."))return;
+ try{
+  await read(s.client.rpc("proxiti_customer_admin_review_schedule",{
+    p_id:request.id,p_status:next}));
+  await loadAdmin();message("customer-network-admin-status",next==="reviewed"?
+    "Pedido analisado. A confirmação do compromisso ainda precisa ser registrada na Agenda.":
+    "Pedido marcado como não confirmado. Oriente o cliente pelo chamado.");
+ }catch(error){message("customer-network-admin-status",error.message,true);}
 }
 async function cancelOffer(offer){
  const s=view();if(!admin(s))return;
