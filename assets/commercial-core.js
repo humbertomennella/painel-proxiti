@@ -17,7 +17,7 @@ function parseMoney(input,{positive=false}={}){
 }
 function asMoney(cents){
  const value=Number(cents);
- if(!Number.isSafeInteger(value)||Math.abs(value)>1000000000000)
+ if(!Number.isSafeInteger(value)||Math.abs(value)>Number.MAX_SAFE_INTEGER)
    throw new Error("Valor monetário inválido.");
  return new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(value/100);
 }
