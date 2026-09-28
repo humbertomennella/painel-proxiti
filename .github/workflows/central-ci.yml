@@ -43,3 +43,7 @@ jobs:
         run: |
           node --check assets/clients-v16.js
           node tests/clients-v16-integrity.mjs
+      - name: Validar operação de parceiros V17
+        run: |
+          node --check assets/partner-v17.js
+          node tests/partner-v17-integrity.mjs
