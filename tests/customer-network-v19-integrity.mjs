@@ -7,6 +7,7 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),"..");
 const read=path=>readFileSync(resolve(root,path),"utf8");
 const html=read("index.html"),customer=read("supabase/customer_workspace_v19.sql"),
  partner=read("supabase/partner_portfolio_v19.sql"),
+ hardening=read("supabase/customer_workspace_hardening_v19_1.sql"),
  edge=read("supabase/functions/proxiti-support/index.ts"),
  js=read("assets/customer-network-v19.js"),css=read("assets/customer-network-v19.css");
 new Script(js,{filename:"customer-network-v19.js"});
@@ -68,4 +69,12 @@ for(const sql of [customer,partner]){
  assert(!/grant (?:insert|update|delete|all) on public\.(?:customer_accounts|customer_ticket_links|partner_opportunities) to authenticated/i.test(sql),
   "Alterações sensíveis precisam de RPC e não devem ficar graváveis pelo navegador");
 }
+for(const name of ["customer_devices","customer_ticket_links","customer_schedule_requests",
+ "customer_partner_preferences","customer_service_ratings"])
+ assert(hardening.includes("public."+name)&&
+  hardening.includes("public.proxiti_customer_verified()"),
+  "RLS de suspensão ausente: "+name);
+assert(hardening.includes("partner_offer_own_or_admin")&&
+ hardening.includes("public.proxiti_can('tickets_view')"),
+ "Parceiro suspenso não pode continuar lendo ofertas pelo navegador");
 console.log("PASS: Minha PROXITI V19, Auth separado, RLS por cliente, chave e e-mail do chamado, encaminhamento de parceiros e carteira restrita.");
