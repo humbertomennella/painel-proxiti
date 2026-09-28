@@ -17,6 +17,7 @@ on:
       - "tests/uniproxiti-integrity.mjs"
       - "tests/uniproxiti-v14-integrity.mjs"
       - "tests/commercial-v15-integrity.mjs"
+      - "tests/commercial-v17-integrity.mjs"
       - "tests/commercial-functional.mjs"
       - "tests/clients-v16-integrity.mjs"
       - "tests/clients-functional.mjs"
@@ -41,6 +42,7 @@ on:
       - "tests/uniproxiti-integrity.mjs"
       - "tests/uniproxiti-v14-integrity.mjs"
       - "tests/commercial-v15-integrity.mjs"
+      - "tests/commercial-v17-integrity.mjs"
       - "tests/commercial-functional.mjs"
       - "tests/clients-v16-integrity.mjs"
       - "tests/clients-functional.mjs"
@@ -74,6 +76,8 @@ jobs:
         run: node tests/overview-functional.mjs
       - name: Verificar fluxos completos de chamados e falhas com dados simulados
         run: node tests/tickets-functional.mjs
+      - name: Validar simulação e ações comerciais sem gravar valores
+        run: node tests/commercial-v17-integrity.mjs
       - name: Verificar valores, proposta e repasse com dados simulados
         run: node tests/commercial-functional.mjs
       - name: Verificar cadastro de clientes, vínculos e privacidade
