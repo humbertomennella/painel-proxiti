@@ -20,6 +20,9 @@ on:
       - "tests/commercial-functional.mjs"
       - "tests/clients-v16-integrity.mjs"
       - "tests/clients-functional.mjs"
+      - "tests/partner-v17-integrity.mjs"
+      - "tests/partner-functional.mjs"
+      - "supabase/partner_operations_v17.sql"
       - "supabase/client_crm_v16.sql"
       - "supabase/commercial_operations_v15.sql"
       - "supabase/academy_track_certification_v14.sql"
@@ -44,6 +47,9 @@ on:
       - "tests/commercial-functional.mjs"
       - "tests/clients-v16-integrity.mjs"
       - "tests/clients-functional.mjs"
+      - "tests/partner-v17-integrity.mjs"
+      - "tests/partner-functional.mjs"
+      - "supabase/partner_operations_v17.sql"
       - "supabase/client_crm_v16.sql"
       - "supabase/commercial_operations_v15.sql"
       - "supabase/academy_track_certification_v14.sql"
@@ -80,6 +86,10 @@ jobs:
         run: |
           node tests/clients-v16-integrity.mjs
           node tests/clients-functional.mjs
+      - name: Verificar disponibilidade e revisão dos parceiros
+        run: |
+          node tests/partner-v17-integrity.mjs
+          node tests/partner-functional.mjs
       - name: Verificar agenda com confirmação, paginação, reagendamento e permissões
         run: node tests/agenda-functional.mjs
       - name: Verificar UniProxiti com busca, publicação, revisão e privacidade
