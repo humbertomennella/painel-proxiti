@@ -159,3 +159,28 @@ html[data-theme] body.workspace-mode #ops-reports .commercial-report-summary .ce
 @media(max-width:720px){#ops-commercial .commercial-price-lines{grid-template-columns:minmax(0,1fr)}
  #ops-commercial .commercial-price-result>button{width:100%}
 }
+
+/* Pendências administrativas calculadas apenas sobre propostas carregadas. */
+#ops-commercial .commercial-action-board{display:grid;gap:14px;margin:0 0 18px;
+ padding:clamp(14px,1.8vw,21px);border:1px solid var(--co-border);
+ background:var(--co-card);border-radius:13px;min-width:0}
+#ops-commercial .commercial-action-board .commercial-card-heading>div{display:grid;gap:5px}
+#ops-commercial .commercial-action-board .commercial-card-heading h3{font-size:clamp(18px,1.9vw,23px)}
+#ops-commercial .commercial-action-board .commercial-card-heading p{font-size:13px;
+ line-height:1.5;color:var(--co-text);margin:0;max-width:68ch}
+#ops-commercial .commercial-action-queue{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:11px;min-width:0}
+#ops-commercial .commercial-action-item{display:grid;gap:8px;min-width:0;
+ background:var(--co-soft);border:1px solid var(--co-border);border-radius:10px;padding:13px}
+#ops-commercial .commercial-action-item strong{font-size:14px;color:var(--co-ink);
+ overflow-wrap:anywhere}
+#ops-commercial .commercial-action-item span{font-size:13px;color:var(--co-text);line-height:1.5}
+#ops-commercial .commercial-action-item small{font-size:12px;color:var(--co-text);line-height:1.5}
+#ops-commercial .commercial-action-item button{justify-self:start;min-height:40px;font-size:13px}
+#ops-commercial .commercial-action-queue>.commercial-empty{grid-column:1/-1;margin:0}
+@media(max-width:1099px){#ops-commercial .commercial-action-queue{
+ grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){#ops-commercial .commercial-action-queue{
+ grid-template-columns:minmax(0,1fr)}
+ #ops-commercial .commercial-action-item button{width:100%}
+}
