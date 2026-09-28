@@ -335,7 +335,7 @@ begin
  update public.support_tickets set client_id=p_client,updated_at=now()
  where id in (select ticket_id from public.customer_ticket_links where user_id=p_account)
   and client_id is null;
-end; $;
+end; $$;
 revoke all on function public.proxiti_customer_admin_link_crm(uuid,uuid) from public,anon;
 grant execute on function public.proxiti_customer_admin_link_crm(uuid,uuid) to authenticated;
 
