@@ -10,13 +10,14 @@ const state={client:null,uid:null,epoch:0,loading:false,services:[],tickets:[],q
 const name={draft:"Rascunho",issued:"Enviado / aguardando",accepted:"Aceito",
  declined:"Recusado",cancelled:"Cancelado"};
 const channels={email:"E-mail",whatsapp:"WhatsApp",phone:"Telefone",
- in_person:"Presencial",other:"Outro"};
+ in_person:"Presencial",other:"Outro",customer_portal:"Portal do cliente"};
 const methods={pix:"Pix",card:"Cartão",bank_transfer:"Transferência",cash:"Dinheiro",other:"Outro"};
 const eventLabels={created:"Rascunho criado",item_added:"Serviço incluído",
  item_removed:"Serviço removido",issued:"Envio registrado",accepted:"Aceite registrado",
  declined:"Recusa registrada",cancelled:"Cancelamento registrado",
  receipt_recorded:"Recebimento registrado",refund_recorded:"Estorno registrado",
- payout_planned:"Repasse planejado",payout_recorded:"Pagamento de repasse registrado"};
+ payout_planned:"Repasse planejado",payout_recorded:"Pagamento de repasse registrado",
+ customer_accepted:"Cliente aceitou pelo portal",customer_declined:"Cliente recusou pelo portal"};
 const active=()=>window.PROXITI_ACTIVE_SESSION;
 const admin=()=>active()?.profile?.role==="administrator"&&active()?.profile?.status==="active";
 const ok=(client=state.client,uid=state.uid,epoch=state.epoch)=>

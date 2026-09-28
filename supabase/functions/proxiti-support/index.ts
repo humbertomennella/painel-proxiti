@@ -61,7 +61,7 @@ async function onlineStaff() {
 
 
 /** Aviso administrativo sem dados pessoais: ativado somente após cadastrar RESEND_API_KEY no Supabase. */
-async function notifyAdministrators(reference: number, event: "created" | "customer_reply", eventId: string): Promise<void> {
+async function notifyAdministrators(reference: number, event: "created" | "customer_reply" | "quote_decision", eventId: string): Promise<void> {
   const apiKey = Deno.env.get("RESEND_API_KEY") || "";
   if (!apiKey) return;
   try {
@@ -77,7 +77,8 @@ async function notifyAdministrators(reference: number, event: "created" | "custo
     const to = [...new Set(recipients)];
     if (!to.length) { console.warn("PROXITI: nenhum administrador com e-mail para o aviso."); return; }
     const number = String(reference);
-    const title = event === "created" ? "Novo chamado" : "Nova mensagem de cliente";
+    const title = event === "created" ? "Novo chamado" :
+      event === "quote_decision" ? "Cliente respondeu ao orçamento" : "Nova mensagem de cliente";
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -147,6 +148,41 @@ Deno.serve(async (req: Request) => {
       const { error } = await admin.auth.admin.inviteUserByEmail(email,{ redirectTo: ADMIN_PANEL });
       if (error) return json({ error: "Não foi possível enviar o convite. Verifique o e-mail e as limitações do serviço." }, 409, origin);
       return json({ ok: true }, 200, origin);
+    }
+    if (action === "quotes" || action === "quote_decision") {
+      const ticketId=clean(body.ticket_id,36),secret=clean(body.access_token,64);
+      const ticket=await checkTicket(ticketId,secret);
+      if (!ticket) return json({error:"Acesso ao chamado não confirmado."},404,origin);
+      const hash=await digest(secret);
+      if (action === "quotes") {
+        if (!await limit("quote-view:"+ticketId,true,240))
+          return json({error:"Muitas consultas à proposta. Aguarde um pouco."},429,origin);
+        const {data,error}=await admin.rpc("proxiti_customer_quote_list",
+          {p_ticket:ticketId,p_access_hash:hash});
+        if(error)throw error;
+        return json({quotes:Array.isArray(data)?data:[]},200,origin);
+      }
+      const quoteId=clean(body.quote_id,36);
+      const decision=body.decision==="accepted"?"accepted":
+        body.decision==="declined"?"declined":"";
+      if(!validUuid(quoteId)||!decision||body.confirmed!==true)
+        return json({error:"Confira a proposta e confirme sua decisão."},400,origin);
+      if(ticket.status==="closed")
+        return json({error:"O chamado foi encerrado. Solicite orientação à equipe."},409,origin);
+      if(!await limit("quote-decision:"+ticketId,true,8))
+        return json({error:"Muitas tentativas. Aguarde antes de tentar novamente."},429,origin);
+      const {data,error}=await admin.rpc("proxiti_customer_quote_decide",{
+        p_ticket:ticketId,p_access_hash:hash,p_quote:quoteId,
+        p_decision:decision,p_confirm:true
+      });
+      if(error){
+        console.warn("PROXITI: resposta de proposta não confirmada.",error.code||"unknown");
+        return json({error:"A proposta pode ter mudado ou expirado. Atualize e confira a situação antes de responder novamente."},409,origin);
+      }
+      if(!data?.already_recorded)
+        await notifyAdministrators(ticket.reference,"quote_decision",quoteId);
+      return json({ok:true,decision:data.status,reference:data.reference,
+        already_recorded:!!data.already_recorded},200,origin);
     }
     if (action === "create") {
       // Campo honeypot, apenas para reduzir ruído. Não substitui o limite server-side.
