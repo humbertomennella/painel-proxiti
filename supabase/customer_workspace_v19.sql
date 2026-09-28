@@ -324,7 +324,10 @@ begin
  update public.customer_accounts set crm_client_id=p_client,updated_at=now()
  where user_id=p_account and status='active';
  if not found then raise exception 'Conta do cliente não encontrada';end if;
-end; $$;
+ update public.support_tickets set client_id=p_client,updated_at=now()
+ where id in (select ticket_id from public.customer_ticket_links where user_id=p_account)
+  and client_id is null;
+end; $;
 revoke all on function public.proxiti_customer_admin_link_crm(uuid,uuid) from public,anon;
 grant execute on function public.proxiti_customer_admin_link_crm(uuid,uuid) to authenticated;
 
@@ -360,3 +363,19 @@ revoke all on function public.proxiti_customer_open_ticket_server(uuid,text,text
  from public,anon,authenticated;
 grant execute on function public.proxiti_customer_open_ticket_server(uuid,text,text,text,text)
  to service_role;
+
+
+create or replace function public.proxiti_customer_admin_directory()
+returns jsonb language sql stable security definer set search_path='' as $$
+ select case when public.proxiti_is_admin() then
+ coalesce(jsonb_agg(jsonb_build_object(
+  'user_id',c.user_id,'display_name',c.display_name,
+  'email',u.email,'phone',c.phone,'city',c.city,
+  'crm_client_id',c.crm_client_id,'status',c.status,
+  'tickets',(select count(*) from public.customer_ticket_links l where l.user_id=c.user_id))
+  order by c.created_at desc),'[]'::jsonb)
+ else '[]'::jsonb end
+ from public.customer_accounts c join auth.users u on u.id=c.user_id;
+$$;
+revoke all on function public.proxiti_customer_admin_directory() from public,anon;
+grant execute on function public.proxiti_customer_admin_directory() to authenticated;
