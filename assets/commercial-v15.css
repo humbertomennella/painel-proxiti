@@ -1,3 +1,4 @@
+#ops-commercial[hidden],#ops-commercial [hidden]{display:none!important}
 /* PROXITI V15 | Operação comercial: mesmo tema da Central, sem bibliotecas externas. */
 html[data-theme] body.workspace-mode #ops-commercial{min-width:0;--co-border:var(--px-line,#dbe3ee);
  --co-card:var(--px-surface,#fff);--co-soft:var(--px-surface-soft,#f3f7fd);
