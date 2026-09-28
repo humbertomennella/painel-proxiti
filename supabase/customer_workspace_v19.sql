@@ -307,7 +307,7 @@ begin
     where l.user_id=(select auth.uid())
       and a.confirmed_at is not null and a.status in ('confirmed','done','cancelled')),
   'preferences',(select coalesce(jsonb_agg(jsonb_build_object(
-    'ticket_id',p.ticket_id,'partner_id',p.partner_id),'[]'::jsonb)
+    'ticket_id',p.ticket_id,'partner_id',p.partner_id)),'[]'::jsonb)
     from public.customer_partner_preferences p where p.user_id=(select auth.uid())),
   'ratings',(select coalesce(jsonb_agg(jsonb_build_object(
     'ticket_id',r.ticket_id,'partner_id',r.partner_id,'stars',r.stars,'comment',r.comment)
