@@ -29,6 +29,11 @@ jobs:
         run: node tests/central-integrity.mjs
       - name: Validar motor de diagnóstico local e segurança
         run: node tests/ticket-diagnostics-core.mjs
+      - name: Validar operação comercial e segurança dos valores
+        run: |
+          node --check assets/commercial-core.js
+          node --check assets/commercial-v15.js
+          node tests/commercial-v15-integrity.mjs
       - name: Validar scripts e certificação UNIPROXITI V14
         run: |
           node --check assets/academy-learning.js
