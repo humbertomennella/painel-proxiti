@@ -176,3 +176,41 @@ begin
 end; $$;
 revoke all on function public.proxiti_customer_admin_queue() from public,anon;
 grant execute on function public.proxiti_customer_admin_queue() to authenticated;
+
+
+-- Registro operacional factual e privado; não cria nota pública nem bloqueio automático.
+create table if not exists public.partner_client_feedback(
+ ticket_id uuid primary key references public.support_tickets(id) on delete restrict,
+ partner_id uuid not null references public.profiles(id) on delete restrict,
+ readiness text not null check(readiness in ('ready','not_ready','rescheduled')),
+ communication text not null check(communication in ('clear','followup_needed')),
+ note text not null default '' check(length(note)<=400),
+ created_at timestamptz not null default now(),
+ updated_at timestamptz not null default now()
+);
+alter table public.partner_client_feedback enable row level security;
+revoke all on public.partner_client_feedback from public,anon,authenticated;
+grant select on public.partner_client_feedback to authenticated;
+create policy partner_feedback_own_or_admin on public.partner_client_feedback
+ for select to authenticated using(partner_id=(select auth.uid()) or public.proxiti_is_admin());
+
+create or replace function public.proxiti_partner_client_feedback(
+ p_ticket uuid,p_readiness text,p_communication text,p_note text)
+returns void language plpgsql security definer set search_path='' as $$
+begin
+ if not public.proxiti_can('tickets_view') or p_readiness not in
+  ('ready','not_ready','rescheduled') or p_communication not in
+  ('clear','followup_needed') or p_note is null or length(p_note)>400
+ then raise exception 'Registro operacional inválido';end if;
+ if not exists(select 1 from public.support_tickets
+  where id=p_ticket and assigned_to=(select auth.uid()) and status in ('resolved','closed'))
+ then raise exception 'Registre apenas atendimentos concluídos sob sua responsabilidade';end if;
+ insert into public.partner_client_feedback(ticket_id,partner_id,readiness,communication,note)
+ values(p_ticket,(select auth.uid()),p_readiness,p_communication,btrim(p_note))
+ on conflict(ticket_id) do update set readiness=excluded.readiness,
+  communication=excluded.communication,note=excluded.note,updated_at=now()
+ where public.partner_client_feedback.partner_id=excluded.partner_id;
+end; $$;
+revoke all on function public.proxiti_partner_client_feedback(uuid,text,text,text)
+ from public,anon;
+grant execute on function public.proxiti_partner_client_feedback(uuid,text,text,text) to authenticated;
