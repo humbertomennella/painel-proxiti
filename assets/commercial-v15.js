@@ -339,16 +339,18 @@ async function afterMutation(message,quoteId=state.selected){
    await selectQuote(quoteId);}
 }
 async function perform(question,rpc,args,success,quoteId=state.selected){
- if(!admin()||!state.client||!ok())return;
- if(!window.confirm(question))return;
+ if(!admin()||!state.client||!ok())return false;
+ if(!window.confirm(question))return false;
  const client=state.client,uid=state.uid,epoch=state.epoch;
  feedback("Enviando o registro ao servidor. Aguarde a confirmação.");
  try{
    await read(client.rpc(rpc,args));
    if(!ok(client,uid,epoch))return;
    await afterMutation(success,quoteId);
+   return true;
  }catch(error){if(ok(client,uid,epoch))
-   feedback("Não houve confirmação. Confira o histórico antes de repetir. "+error.message,true);}
+   feedback("A operação não pôde ser confirmada na tela. Confira o histórico antes de repetir. "+error.message,true);
+   return false;}
 }
 function printQuote(){
  if(!ok()||!state.detail)return;
@@ -415,7 +417,7 @@ el("commercial-service-form").addEventListener("submit",event=>{
      p_active:el("commercial-service-active").checked};
    void perform(id?"Salvar a atualização? Orçamentos anteriores manterão seus valores.":
      "Cadastrar este serviço com os valores informados?","proxiti_commercial_save_service",
-     params,"Serviço salvo no catálogo.").then(()=>{if(ok())resetService();});
+     params,"Serviço salvo no catálogo.").then(saved=>{if(saved&&ok())resetService();});
  }catch(error){feedback(error.message,true);}
 });
 el("commercial-ticket").addEventListener("change",renderParentChoices);
@@ -451,7 +453,7 @@ el("commercial-add-item-form").addEventListener("submit",event=>{
      p_price_override:price,p_override_reason:price!==null?reason:null};
    void perform("Adicionar o serviço ao rascunho com estes valores?",
      "proxiti_commercial_add_item",params,"Serviço incluído no rascunho.")
-     .then(()=>{if(ok())el("commercial-add-item-form").reset();});
+     .then(saved=>{if(saved&&ok())el("commercial-add-item-form").reset();});
  }catch(error){feedback(error.message,true);}
 });
 el("commercial-payment-form").addEventListener("submit",event=>{
@@ -464,7 +466,7 @@ el("commercial-payment-form").addEventListener("submit",event=>{
    void perform("Confirma que este "+(params.p_kind==="received"?"recebimento":"estorno")+
      " ocorreu e que a referência foi conferida? O sistema não consulta bancos.",
      "proxiti_commercial_record_payment",params,"Movimento financeiro registrado.")
-     .then(()=>{if(ok())el("commercial-payment-form").reset();});
+     .then(saved=>{if(saved&&ok())el("commercial-payment-form").reset();});
  }catch(error){feedback(error.message,true);}
 });
 el("commercial-payout-form").addEventListener("submit",event=>{
@@ -476,7 +478,7 @@ el("commercial-payout-form").addEventListener("submit",event=>{
    void perform("Confirma que este valor foi acordado com o parceiro e documentado?"+
       " Esta ação não transfere dinheiro.","proxiti_commercial_plan_payout",
       params,"Repasse planejado com referência do acordo.")
-      .then(()=>{if(ok())el("commercial-payout-form").reset();});
+      .then(saved=>{if(saved&&ok())el("commercial-payout-form").reset();});
  }catch(error){feedback(error.message,true);}
 });
 el("commercial-quotes").addEventListener("change",event=>void selectQuote(event.currentTarget.value));
