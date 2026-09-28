@@ -40,7 +40,7 @@ create or replace function public.proxiti_customer_quote_decide(
  p_ticket uuid,p_access_hash text,p_quote uuid,p_decision text,p_confirm boolean)
 returns jsonb language plpgsql security definer set search_path='' as $$
 declare q public.commercial_quotes%rowtype;v_count integer;v_total bigint;
- v_action text;v_at timestamptz;v_reference text;v_ticket_ref bigint;
+ v_action text;v_at timestamptz;v_reference text;v_ticket_ref bigint;v_ticket_status text;
 begin
  if coalesce((select auth.role()),'') <> 'service_role' then
   raise exception 'Acesso restrito ao serviço';end if;
@@ -48,7 +48,7 @@ begin
    or not exists(select 1 from public.support_tickets t
       where t.id=p_ticket and t.access_hash=p_access_hash) then
   raise exception 'Acesso ao chamado não confirmado';end if;
- if p_decision not in ('accepted','declined') or p_confirm is distinct from true then
+ if p_decision is null or p_decision not in ('accepted','declined') or p_confirm is distinct from true then
   raise exception 'A confirmação explícita é obrigatória';end if;
  select * into q from public.commercial_quotes
   where id=p_quote and ticket_id=p_ticket and issued_at is not null for update;
@@ -68,7 +68,9 @@ begin
  select count(*),coalesce(sum(quantity::bigint*unit_price_cents),0)
  into v_count,v_total from public.commercial_quote_items where quote_id=p_quote;
  if v_count=0 or v_total<=0 then raise exception 'Proposta sem itens válidos';end if;
- select reference into v_ticket_ref from public.support_tickets where id=p_ticket;
+ select reference,status into v_ticket_ref,v_ticket_status from public.support_tickets
+  where id=p_ticket and access_hash=p_access_hash;
+ if v_ticket_status='closed' then raise exception 'Chamado encerrado';end if;
  v_at=now();
  v_reference='Decisão pelo portal privado do chamado #'||v_ticket_ref||
   '; confirmação operacional pelo titular do acesso.';
