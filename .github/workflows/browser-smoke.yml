@@ -18,6 +18,9 @@ on:
       - "tests/uniproxiti-v14-integrity.mjs"
       - "tests/commercial-v15-integrity.mjs"
       - "tests/commercial-functional.mjs"
+      - "tests/clients-v16-integrity.mjs"
+      - "tests/clients-functional.mjs"
+      - "supabase/client_crm_v16.sql"
       - "supabase/commercial_operations_v15.sql"
       - "supabase/academy_track_certification_v14.sql"
       - ".github/workflows/browser-smoke.yml"
@@ -39,6 +42,9 @@ on:
       - "tests/uniproxiti-v14-integrity.mjs"
       - "tests/commercial-v15-integrity.mjs"
       - "tests/commercial-functional.mjs"
+      - "tests/clients-v16-integrity.mjs"
+      - "tests/clients-functional.mjs"
+      - "supabase/client_crm_v16.sql"
       - "supabase/commercial_operations_v15.sql"
       - "supabase/academy_track_certification_v14.sql"
       - ".github/workflows/browser-smoke.yml"
@@ -70,6 +76,10 @@ jobs:
         run: node tests/tickets-functional.mjs
       - name: Verificar valores, proposta e repasse com dados simulados
         run: node tests/commercial-functional.mjs
+      - name: Verificar cadastro de clientes, vínculos e privacidade
+        run: |
+          node tests/clients-v16-integrity.mjs
+          node tests/clients-functional.mjs
       - name: Verificar agenda com confirmação, paginação, reagendamento e permissões
         run: node tests/agenda-functional.mjs
       - name: Verificar UniProxiti com busca, publicação, revisão e privacidade
