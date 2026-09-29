@@ -7,6 +7,8 @@ on:
       - "assets/**"
       - "supabase/**"
       - "tests/**"
+      - "docs/auditoria-**"
+      - "docs/propostas/**"
       - ".github/workflows/central-ci.yml"
   push:
     branches: [main]
@@ -15,6 +17,8 @@ on:
       - "assets/**"
       - "supabase/**"
       - "tests/**"
+      - "docs/auditoria-**"
+      - "docs/propostas/**"
       - ".github/workflows/central-ci.yml"
   workflow_dispatch:
 permissions:
@@ -27,6 +31,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verificar integridade estática
         run: node tests/central-integrity.mjs
+      - name: Validar propostas de segurança sem implantação
+        run: node tests/security-readiness-static.mjs
       - name: Validar motor de diagnóstico local e segurança
         run: node tests/ticket-diagnostics-core.mjs
       - name: Validar operação comercial e segurança dos valores
