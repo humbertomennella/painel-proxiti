@@ -7,6 +7,7 @@ on:
       - "assets/**"
       - "supabase/**"
       - "tests/**"
+      - "docs/implantacao-operacional.md"
       - ".github/workflows/central-ci.yml"
   push:
     branches: [main]
@@ -15,6 +16,7 @@ on:
       - "assets/**"
       - "supabase/**"
       - "tests/**"
+      - "docs/implantacao-operacional.md"
       - ".github/workflows/central-ci.yml"
   workflow_dispatch:
 permissions:

@@ -7,7 +7,7 @@ Atualização de setembro/2026. Este documento não contém credenciais ou dados
 - Caixa de entrada dividida: lista de chamados à esquerda e atendimento à direita, com o chamado, rascunho e scroll preservados em sessão.
 - Leitura por profissional sincronizada na tabela `public.ticket_read_receipts`, protegida por RLS. A escrita é feita pela função `proxiti_mark_ticket_read`, após validar acesso ao chamado.
 - Histórico operacional em `public.ticket_audit`: criação, designação, aceite, mudança de situação e mensagens, **sem copiar o corpo das mensagens**.
-- Avisos sonoros e notificações do navegador quando a Central estiver aberta. O usuário deve permitir os avisos no navegador. Navegador completamente fechado não recebe avisos desta versão.
+- Avisos sonoros e notificações do navegador quando a Central estiver aberta. O usuário deve permitir os avisos no navegador. Navegador completamente fechado não recebe avisos do navegador; e-mails transacionais administrativos são um mecanismo separado, disparado pela Edge Function para eventos específicos.
 - Perfil com autenticação em duas etapas por TOTP. Ao cadastrar um fator verificado, as sessões seguintes exigem um código. Convites e alterações de permissões de técnicos exigem sessão AAL2 validada no servidor.
 - O acesso ao site público continua separado da Central; perfis, mensagens e arquivos permanecem protegidos pelo Supabase.
 
@@ -21,7 +21,11 @@ A verificação em duas etapas precisa ser ativada por quem possui a conta. Nunc
 
 ### Avisos fora da aba e e-mail
 
-Clique em **Notificações → Ativar notificações do navegador**. Os avisos aparecem quando a Central está aberta em outra aba, conforme as permissões do sistema operacional. Para e-mail confiável quando a Central está fechada, é preciso conectar um serviço transacional (por exemplo Resend), verificar o domínio de envio, configurar um remetente autorizado e definir a regra para chamado sem atendimento. Nenhum e-mail automatizado foi habilitado sem esse serviço.
+Clique em **Notificações → Ativar notificações do navegador**. Os avisos aparecem quando a Central está aberta em outra aba, conforme as permissões do sistema operacional. A Central completamente fechada não recebe notificações locais.
+
+**Integração de e-mail administrativo existente, verificada em 29/09/2026:** o domínio de envio do Resend está verificado e habilitado. A Edge Function `proxiti-support` publicada chama `notifyAdministrators` para **novo chamado, mensagem recebida do cliente e resposta a proposta**, destinando avisos textuais sem dados pessoais aos administradores ativos. A integração só envia se `RESEND_API_KEY` estiver configurada no ambiente; em caso de falha do provedor, o chamado permanece salvo. Os registros do Resend consultados nessa data continham 13 mensagens operacionais com status `delivered`, sem que isso prove entrega futura universal ou leitura pelo destinatário. Não divulgar destinatários, IDs, credenciais ou assunto detalhado em documentação pública.
+
+**Limites do recurso:** o aviso por e-mail da Edge Function não é confirmação do agendamento, não envia uma cópia da conversa ao cliente, não substitui atendimento humano, não cobre toda alteração feita diretamente no painel e não garante entrega caso a configuração/serviço fique indisponível. Uma requisição aceita pela API também não equivale automaticamente a e-mail entregue. Confirme a entrega no provedor e use o painel para o histórico efetivo.
 
 ### Proteção anti-bot
 
