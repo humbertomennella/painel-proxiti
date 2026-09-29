@@ -125,6 +125,44 @@ Deno.serve(async (req: Request) => {
       const staff = await onlineStaff();
       return json({ online: staff.length }, 200, origin);
     }
+    // Cadastro público da Minha PROXITI: não exige recebimento de e-mail.
+    // A confirmação técnica do Auth permite login imediato, mas NÃO comprova
+    // titularidade do endereço; CRM preexistente permanece protegido pela
+    // coluna email_ownership_verified_at, por token de chamado e por revisão humana.
+    if (action === "customer_register") {
+      if (clean(body.company_website, 200)) return json({error:"Cadastro indisponível. Tente novamente."},400,origin);
+      if (body.privacy_accepted !== true)
+        return json({error:"Confirme a leitura da Política de Privacidade."},400,origin);
+      const name=clean(body.name,120),email=clean(body.email,254).toLowerCase();
+      const password=typeof body.password==="string"?body.password:"";
+      const passwordOk=password.length>=10&&password.length<=72&&
+        /\p{L}/u.test(password)&&/[0-9]/.test(password)&&
+        /[^\p{L}\p{N}\s]/u.test(password);
+      if(name.length<2||name.length>120||!validEmail(email)||!passwordOk)
+        return json({error:"Confira nome, e-mail e senha: pelo menos 10 caracteres, com letra, número e símbolo."},400,origin);
+      const network=(req.headers.get("cf-connecting-ip")||
+        req.headers.get("x-real-ip")||
+        (req.headers.get("x-forwarded-for")||"").split(",")[0]||"unknown").slice(0,100);
+      if(!await limit("customer-register-ip:"+network,true,6)||
+         !await limit("customer-register-email:"+email,false,3))
+        return json({error:"Muitas tentativas de cadastro. Aguarde um pouco ou use o chat sem login."},429,origin);
+      // O segredo de serviço NUNCA é enviado ao navegador. GoTrue não manda
+      // e-mail de confirmação por createUser, e a senha é encaminhada apenas
+      // ao Auth. Não registrar senha, token, conta ou endereço nos logs.
+      const {data:created,error:signupError}=await admin.auth.admin.createUser({
+        email,password,email_confirm:true,
+        user_metadata:{proxiti_account_type:"customer",display_name:name}
+      });
+      if(signupError||!created?.user?.id)
+        return json({error:"Não foi possível concluir o cadastro. Se já tem uma conta, entre ou recupere sua senha."},409,origin);
+      const {data:account,error:profileError}=await admin.from("customer_accounts")
+        .select("user_id").eq("user_id",created.user.id).maybeSingle();
+      if(profileError||!account){
+        await admin.auth.admin.deleteUser(created.user.id).catch(()=>{});
+        return json({error:"Não foi possível preparar sua área. Tente novamente mais tarde."},503,origin);
+      }
+      return json({ok:true,login_ready:true},201,origin);
+    }
     // Minha PROXITI: sessão Auth confirmada + vínculo próprio, sem token de outro cliente.
     if (action.startsWith("account_")) {
       const bearer=req.headers.get("authorization")||"";

@@ -207,14 +207,16 @@ function renderAccounts(){
  const host=el("customer-network-accounts-list");host.replaceChildren();
  for(const a of accounts){
   const item=record(a.display_name,"E-mail: "+a.email+" · "+a.tickets+
-   " chamado(s) vinculado(s) · "+(a.crm_client_id?"CRM vinculado":"CRM ainda separado"));
+   " chamado(s) vinculado(s) · "+(a.crm_client_id?"CRM vinculado":
+   a.email_ownership_verified?"Identidade conferida · CRM ainda separado":
+   "E-mail ainda não comprovado · não vincular ao CRM"));
   if(a.city)item.append(make("small","Região informada: "+a.city));
   host.append(item);
  }
  if(!accounts.length)noRows("customer-network-accounts-list",
   "Nenhum cliente criou conta na Minha PROXITI por enquanto.");
- options("customer-network-account",accounts.filter(a=>!a.crm_client_id),
-  "Selecione a conta confirmada",a=>a.user_id,
+ options("customer-network-account",accounts.filter(a=>!a.crm_client_id&&a.email_ownership_verified),
+  "Selecione uma conta com e-mail comprovado",a=>a.user_id,
   a=>a.display_name+" · "+a.email);
  options("customer-network-crm",crm,"Selecione o cadastro interno confirmado",
   c=>c.id,c=>c.display_name+" · "+c.email);
@@ -272,7 +274,7 @@ el("customer-network-link-crm").addEventListener("submit",async event=>{
  event.preventDefault();const s=view();if(!admin(s)||!event.currentTarget.reportValidity())return;
  const a=accounts.find(x=>x.user_id===el("customer-network-account").value),
    c=crm.find(x=>x.id===el("customer-network-crm").value);
- if(!a||!c||a.email?.toLowerCase()!==c.email?.toLowerCase()){
+ if(!a||!c||!a.email_ownership_verified||a.email?.toLowerCase()!==c.email?.toLowerCase()){
   message("customer-network-accounts-status",
    "A conta e o cadastro interno precisam ter o mesmo e-mail confirmado.",true);return;}
  if(!window.confirm("Vincular "+a.display_name+" ao cadastro interno "+c.display_name+
