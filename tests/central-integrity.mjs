@@ -432,4 +432,15 @@ assert.equal((deskCss.match(/{/g)||[]).length,(deskCss.match(/}/g)||[]).length,
  "CSS da mesa técnica está desbalanceado");
 assert(deskCss.includes("ticket-service-layout")&&deskCss.includes("max-width:420px")&&deskCss.includes("ticket-solution-current"),
  "Layout do chat não possui adaptação para mobile");
+const opsGuide=get("docs/implantacao-operacional.md");
+const notifier=get("supabase/functions/proxiti-support/index.ts");
+assert(opsGuide.includes("domínio de envio do Resend está verificado e habilitado")&&
+ opsGuide.includes("13 mensagens operacionais com status")&&
+ opsGuide.includes("A Central completamente fechada não recebe notificações locais.")&&
+ opsGuide.includes("não equivale automaticamente a e-mail entregue")&&
+ notifier.includes("async function notifyAdministrators(")&&
+ notifier.includes('if (!apiKey) return;')&&
+ notifier.includes('"customer_reply"')&&
+ notifier.includes('"quote_decision"'),
+ "Documento de avisos deve refletir a Edge Function e distinguir e-mail entregue de notificação local");
 console.log("PASS: mesa técnica, direitos, segurança e IDs preservados.");
