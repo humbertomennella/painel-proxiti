@@ -379,10 +379,34 @@ Deno.serve(async (req: Request) => {
         status:ticket.status,online:!!assignedTo
       }, 201, origin);
     }
-    if (action === "conversation" || action === "reply") {
+    if (action === "conversation" || action === "reply" || action === "close") {
       const ticketId = clean(body.ticket_id, 36), secret = clean(body.access_token, 64);
       const ticket = await checkTicket(ticketId,secret);
       if (!ticket) return json({ error: "Conversa não encontrada ou acesso expirado." }, 404, origin);
+      if (action === "close") {
+        if (body.confirmed !== true)
+          return json({error:"Confirme o encerramento do chamado."},400,origin);
+        if (ticket.status === "closed")
+          return json({ok:true,status:"closed",already_closed:true},200,origin);
+        if (!await limit("customer-close:"+ticketId,true,8))
+          return json({error:"Muitas tentativas de encerramento. Aguarde um pouco."},429,origin);
+        const hash=await digest(secret);
+        const {data:outcome,error:closeError}=await admin.rpc("proxiti_customer_close_chat_ticket",{
+          p_ticket:ticketId,p_access_hash:hash
+        });
+        if(closeError)throw closeError;
+        if(outcome?.result==="not_found")
+          return json({error:"Conversa não encontrada ou acesso expirado."},404,origin);
+        if(outcome?.result==="blocked"){
+          const message=outcome.reason==="appointment"?
+            "Há um agendamento pendente. Fale com a equipe para encerrar o chamado.":
+            "Há uma proposta em andamento. Fale com a equipe para encerrar o chamado.";
+          return json({error:message},409,origin);
+        }
+        if(outcome?.result!=="closed"&&outcome?.result!=="already_closed")
+          throw new Error("unexpected close outcome");
+        return json({ok:true,status:"closed",already_closed:outcome.result==="already_closed"},200,origin);
+      }
       if (action === "conversation") {
         const { data, error } = await admin.from("support_messages")
           .select("id,sender_kind,body,created_at").eq("ticket_id",ticketId)
