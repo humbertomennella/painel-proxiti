@@ -46,6 +46,7 @@ jobs:
           node --check assets/customer-network-v19.js
           node tests/customer-network-v19-integrity.mjs
           node tests/customer-signup-v19_2-integrity.mjs
+          node tests/customer-chat-close-v19_3-integrity.mjs
       - name: Validar cadastro consolidado de clientes
         run: |
           node --check assets/clients-v16.js
